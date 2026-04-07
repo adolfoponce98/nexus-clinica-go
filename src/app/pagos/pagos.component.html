@@ -1,0 +1,179 @@
+<div class="space-y-6 animate-in fade-in duration-500">
+  <header>
+    <p class="text-[10px] uppercase font-bold text-rose-500 tracking-widest mb-1">Finanzas</p>
+    <h2 class="text-4xl font-black uppercase tracking-tighter">Historial de Pagos</h2>
+  </header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-[150px]">
+          <label class="text-[10px] font-bold uppercase text-zinc-400 block mb-2">Rango de fecha</label>
+          <select class="w-full bg-zinc-50 border-none rounded-xl py-2 px-4 text-sm outline-none">
+            <option>Últimos 30 días</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[150px]">
+          <label class="text-[10px] font-bold uppercase text-zinc-400 block mb-2">Método</label>
+          <select class="w-full bg-zinc-50 border-none rounded-xl py-2 px-4 text-sm outline-none">
+            <option>Todos</option>
+          </select>
+        </div>
+        <button class="text-rose-500 text-[10px] font-bold uppercase hover:underline pb-3">Limpiar Filtros</button>
+      </div>
+
+      <div class="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
+        <table class="w-full text-left">
+          <thead class="bg-zinc-50 border-b border-zinc-100">
+            <tr>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Alumna</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Monto</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Plan</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Método</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-50">
+            <tr *ngFor="let p of paginatedPayments" class="hover:bg-zinc-50/50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-zinc-900 rounded-full flex-shrink-0 overflow-hidden">
+                    <img [src]="'https://ui-avatars.com/api/?name=' + p.alumna" alt="">
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold">{{p.alumna}}</p>
+                    <p class="text-[10px] text-zinc-400">{{p.email}}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 font-black text-sm">${{p.monto | number:'1.2-2'}} MXN</td>
+              <td class="px-6 py-4">
+                <span [class]="p.plan === 'MENSUALIDAD' ? 'bg-lime-300 text-lime-900' : 'bg-cyan-100 text-cyan-900'"
+                      class="text-[9px] font-bold px-2 py-1 rounded-lg">
+                  {{p.plan}}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2 text-zinc-500">
+                  <lucide-icon [img]="p.metodo === 'Efectivo' ? icons.Banknote : (p.metodo === 'Tarjeta' ? icons.CreditCard : icons.Landmark)" class="w-4 h-4"></lucide-icon>
+                  <span class="text-[10px] font-bold uppercase">{{p.metodo}}</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="p-6 bg-zinc-50/50 border-t border-zinc-100 flex justify-between items-center">
+          <p class="text-[10px] font-bold text-zinc-400 uppercase">Mostrando {{paginatedPayments.length}} de {{allPayments.length}} registros</p>
+          <div class="flex gap-2">
+            <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 disabled:opacity-30"> < </button>
+            <button *ngFor="let p of [].constructor(totalPages); let i = index"
+                    (click)="changePage(i + 1)"
+                    [class.bg-rose-500]="currentPage === i + 1"
+                    [class.text-white]="currentPage === i + 1"
+                    class="w-8 h-8 text-[10px] font-bold rounded-lg border border-zinc-200 transition-all">
+              {{i + 1}}
+            </button>
+            <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 disabled:opacity-30"> > </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <div class="space-y-6">
+  <div class="bg-white p-8 rounded-[2.5rem] border border-zinc-100 shadow-xl shadow-zinc-200/50">
+    <h4 class="text-xl font-black mb-1">Registrar Pago</h4>
+    <p class="text-zinc-400 text-[10px] uppercase font-bold tracking-widest mb-8">Completa los detalles para procesar el ingreso.</p>
+
+    <form [formGroup]="paymentForm" (ngSubmit)="savePayment()" class="space-y-6">
+
+      <div class="space-y-2">
+        <label class="text-[10px] font-black uppercase text-rose-500 tracking-widest ml-4">Alumna</label>
+        <div class="relative">
+          <lucide-icon [img]="icons.Search" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300"></lucide-icon>
+          <input formControlName="alumna" type="text" placeholder="Buscar por nombre..."
+                 class="w-full bg-zinc-50 border-none rounded-2xl py-5 pl-14 pr-4 text-sm font-bold placeholder:text-zinc-300 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all">
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Monto del Pago</label>
+        <div class="flex items-center bg-zinc-50 rounded-2xl px-8 py-5 border-2 border-transparent focus-within:border-zinc-100 transition-all">
+          <span class="text-2xl font-black mr-2 text-zinc-900">$</span>
+          <input formControlName="monto" type="number" class="bg-transparent border-none w-full text-3xl font-black outline-none" placeholder="0.00">
+          <span class="text-zinc-300 font-bold text-sm tracking-tighter">MXN</span>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Método de Pago</label>
+        <div class="grid grid-cols-3 gap-3">
+          <button type="button" (click)="paymentForm.patchValue({metodo: 'Efectivo'})"
+                  [class]="paymentForm.value.metodo === 'Efectivo' ? 'border-rose-400 bg-white shadow-lg shadow-rose-500/10' : 'border-zinc-50 bg-zinc-50'"
+                  class="flex flex-col items-center justify-center gap-2 p-4 border-2 rounded-2xl transition-all">
+            <lucide-icon [img]="icons.Banknote" [class]="paymentForm.value.metodo === 'Efectivo' ? 'text-rose-500' : 'text-zinc-300'" class="w-6 h-6"></lucide-icon>
+            <span [class]="paymentForm.value.metodo === 'Efectivo' ? 'text-rose-500' : 'text-zinc-400'" class="text-[8px] font-black uppercase tracking-tighter">Efectivo</span>
+          </button>
+
+          <button type="button" (click)="paymentForm.patchValue({metodo: 'Transferencia'})"
+                  [class]="paymentForm.value.metodo === 'Transferencia' ? 'border-rose-400 bg-white shadow-lg shadow-rose-500/10' : 'border-zinc-50 bg-zinc-50'"
+                  class="flex flex-col items-center justify-center gap-2 p-4 border-2 rounded-2xl transition-all">
+            <lucide-icon [img]="icons.ArrowLeftRight" [class]="paymentForm.value.metodo === 'Transferencia' ? 'text-rose-500' : 'text-zinc-300'" class="w-6 h-6"></lucide-icon>
+            <span [class]="paymentForm.value.metodo === 'Transferencia' ? 'text-rose-500' : 'text-zinc-400'" class="text-[8px] font-black uppercase tracking-tighter">Transf</span>
+          </button>
+
+          <button type="button" (click)="paymentForm.patchValue({metodo: 'Tarjeta'})"
+                  [class]="paymentForm.value.metodo === 'Tarjeta' ? 'border-rose-400 bg-white shadow-lg shadow-rose-500/10' : 'border-zinc-50 bg-zinc-50'"
+                  class="flex flex-col items-center justify-center gap-2 p-4 border-2 rounded-2xl transition-all">
+            <lucide-icon [img]="icons.CreditCard" [class]="paymentForm.value.metodo === 'Tarjeta' ? 'text-rose-500' : 'text-zinc-300'" class="w-6 h-6"></lucide-icon>
+            <span [class]="paymentForm.value.metodo === 'Tarjeta' ? 'text-rose-500' : 'text-zinc-400'" class="text-[8px] font-black uppercase tracking-tighter">Tarjeta</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">¿Quién recibe?</label>
+        <div class="relative">
+          <select formControlName="receptor"
+                  class="w-full bg-zinc-50 border-none rounded-2xl py-5 px-6 text-sm font-bold outline-none appearance-none cursor-pointer">
+            <option>Recepcionista (Turno Mañana)</option>
+            <option>Recepcionista (Turno Tarde)</option>
+            <option>Administrador</option>
+          </select>
+          <lucide-icon [img]="icons.ChevronDown" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"></lucide-icon>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Concepto / Plan</label>
+        <div class="relative">
+          <select formControlName="plan"
+                  class="w-full bg-zinc-50 border-none rounded-2xl py-5 px-6 text-sm font-bold outline-none appearance-none cursor-pointer">
+            <option>Mensualidad (Ilimitada)</option>
+            <option>Paquete 10 Clases</option>
+            <option>Intro 3-Pack</option>
+          </select>
+          <lucide-icon [img]="icons.ChevronDown" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"></lucide-icon>
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="paymentForm.invalid"
+              class="w-full bg-[#FF899B] hover:bg-[#ff7a8d] text-[#421A21] font-black py-6 rounded-2xl uppercase text-sm tracking-widest transition-all disabled:opacity-30 shadow-lg shadow-rose-500/20 mt-4">
+        Finalizar Registro
+      </button>
+    </form>
+  </div>
+
+  <div class="bg-[#006666] p-7 rounded-[2.5rem] text-white flex justify-between items-center shadow-xl shadow-teal-900/20">
+    <div>
+      <p class="text-[10px] font-bold uppercase opacity-60 tracking-widest mb-1">Recaudado hoy</p>
+      <h3 class="text-3xl font-black">$12,450.00</h3>
+    </div>
+    <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 backdrop-blur-sm">
+      <lucide-icon [img]="icons.TrendingUp" class="w-7 h-7"></lucide-icon>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>

@@ -1,0 +1,29 @@
+<nav class="flex-1 space-y-2">
+  <a routerLink="/home"
+     routerLinkActive="bg-zinc-900 text-white"
+     class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-zinc-400 hover:text-white">
+    <lucide-icon [img]="LayoutDashboard" class="w-5 h-5"></lucide-icon>
+    <span class="font-bold text-sm uppercase tracking-tighter">Dashboard</span>
+  </a>
+
+  <a routerLink="/students"
+     routerLinkActive="bg-zinc-900 text-white"
+     class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-zinc-400 hover:text-white">
+    <lucide-icon [img]="Users" class="w-5 h-5"></lucide-icon>
+    <span class="font-bold text-sm uppercase tracking-tighter">Students</span>
+  </a>
+
+  <a routerLink="/staff"
+     routerLinkActive="bg-zinc-900 text-white"
+     class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-zinc-400 hover:text-white">
+    <lucide-icon [img]="UserRound" class="w-5 h-5"></lucide-icon>
+    <span class="font-bold text-sm uppercase tracking-tighter">Staff</span>
+  </a>
+
+  <a routerLink="/planes"
+     routerLinkActive="bg-zinc-900 text-white"
+     class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-zinc-400 hover:text-white">
+    <lucide-icon [img]="ReceiptText" class="w-5 h-5"></lucide-icon>
+    <span class="font-bold text-sm uppercase tracking-tighter">Plans</span>
+  </a>
+</nav>

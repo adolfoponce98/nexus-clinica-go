@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Esto fuerza que el fondo sea oscuro incluso si Tailwind falla un segundo */
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #09090b; /* zinc-950 */
+  color: white;
+  min-height: 100vh;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}

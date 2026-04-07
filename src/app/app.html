@@ -1,0 +1,45 @@
+<div class="flex min-h-screen bg-zinc-50 font-sans text-zinc-900">
+
+  <aside class="w-64 bg-zinc-950 flex flex-col p-6 text-zinc-400 shrink-0">
+    <div class="flex items-center gap-3 mb-12">
+      <div class="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/20">
+        <lucide-icon [img]="RotateCcw" class="text-white w-6 h-6"></lucide-icon>
+      </div>
+      <h1 class="text-white font-black uppercase leading-none tracking-tighter">SpinPro</h1>
+    </div>
+
+    <nav class="flex-1 space-y-2">
+      <a routerLink="/home" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
+        <lucide-icon [img]="LayoutDashboard" class="w-5 h-5"></lucide-icon>
+        <span class="font-bold text-sm">Home</span>
+      </a>
+      <a routerLink="/students" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
+        <lucide-icon [img]="Users" class="w-5 h-5"></lucide-icon>
+        <span class="font-bold text-sm">Alumnas</span>
+      </a>
+      <a routerLink="/staff" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
+        <lucide-icon [img]="Briefcase" class="w-5 h-5"></lucide-icon>
+        <span class="font-bold text-sm">Maestras</span>
+      </a>
+      <a routerLink="/planes" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
+        <lucide-icon [img]="CreditCard" class="w-5 h-5"></lucide-icon>
+        <span class="font-bold text-sm">Planes</span>
+      </a>
+        <a routerLink="/pagos" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
+        <lucide-icon [img]="DollarSign" class="w-5 h-5"></lucide-icon>
+        <span class="font-bold text-sm">Pagos</span>
+      </a>
+           <a routerLink="/sucursales" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
+        <lucide-icon [img]="Store" class="w-5 h-5"></lucide-icon>
+        <span class="font-bold text-sm">Mi Sucursal</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+    <div class="flex-1 overflow-y-auto p-8">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>
