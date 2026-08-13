@@ -1,45 +1,99 @@
-import { Component, signal,computed, ElementRef, ViewChild } from '@angular/core';
+import { Component, signal, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, MapPin, Phone, Edit2, Zap, Image, Wrench, RotateCcw, PlusCircle, Save } from 'lucide-angular';
-import { CdkDragEnd, DragDropModule } from '@angular/cdk/drag-drop'; // Librería clave
-import { Bike, StudioInfo } from './sucursal.model';
+import { CdkDragEnd, DragDropModule } from '@angular/cdk/drag-drop';
+import { doc, onSnapshot, Unsubscribe, getFirestore } from 'firebase/firestore';
+import { BranchModel } from './miStudio.model'; // Ajusta la ruta a tu modelo
+
+interface MyBikeUI {
+  id: string;
+  x: number;
+  y: number;
+  status: 'active' | 'maintenance';
+}
 
 @Component({
   selector: 'app-sucursal',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, DragDropModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, DragDropModule],
   templateUrl: './studio.component.html'
 })
-export class SucursalComponent {
-  // Iconos
+export class SucursalComponent implements OnInit, OnDestroy {
   readonly icons = { MapPin, Phone, Edit2, Zap, Image, Wrench, RotateCcw, PlusCircle, Save };
 
   @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
 
-  // Datos de la Sucursal (Signal para reactividad)
-  studio = signal<StudioInfo>({
-    name: 'Condesa HQ',
-    description: 'The flagship sanctuary for high-intensity rhythmic cycling in Mexico City.',
-    address: 'Amsterdam 123, Condesa, CDMX',
-    phone: '+52 55 1234 5678',
-    images: [ 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80', 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?q=80' ],
-    bikes: [
-      { id: 'A1', x: 25, y: 15, status: 'active' },
-      { id: 'A2', x: 50, y: 15, status: 'active' },
-      { id: 'A3', x: 75, y: 15, status: 'maintenance' },
-      { id: 'B1', x: 15, y: 40, status: 'active' },
-      { id: 'B2', x: 85, y: 40, status: 'active' }
-    ]
+  private unsubscribe?: Unsubscribe;
+  idBranch: string = 'BEAST-TESISTAN'; // Ajusta según tu ID de sucursal actual
+
+  // Estado reactivo basado exactamente en BranchModel
+  studio = signal<BranchModel>({
+    address: '',
+    createdAt: '',
+    email: '',
+    galery: [],
+    idBranch: '',
+    location: { lat: '', lon: '' },
+    name: 'Cargando Sucursal...',
+    phone: '',
+    rating: 0.0,
+    scheduler: '',
+    schedulerDay: '',
+    numberStudents: 0,
+    numberCoach: 0,
+    typeClasses: [],
+    myBikes: [],
+    myBikesNumber: 0,
+    schedulersStudio: [],
+    tolerance: ''
   });
 
-  // Métricas calculadas
- totalBikes = computed(() => this.studio().bikes.length);
-activeBikes = computed(() => this.studio().bikes.filter(b => b.status === 'active').length);
-  // --- CAROUSEL DE IMÁGENES ---
+  // Mapeo seguro de las bicis para la interfaz interactiva
+  bikesUI = signal<MyBikeUI[]>([]);
+
   currentImageIndex = 0;
 
+  ngOnInit(): void {
+    this.loadBranchRealtime(this.idBranch);
+  }
+
+  ngOnDestroy(): void {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+  }
+
+  loadBranchRealtime(branchId: string) {
+    const db = getFirestore();
+    const branchRef = doc(db, 'branches', branchId);
+
+    this.unsubscribe = onSnapshot(branchRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data() as BranchModel;
+        this.studio.set(data);
+
+        // Mapear myBikes del modelo a la estructura de la UI si existen
+        if (data.myBikes && Array.isArray(data.myBikes)) {
+          const mappedBikes: MyBikeUI[] = data.myBikes.map((b: any, index: number) => ({
+            id: b.id || `B-${index + 1}`,
+            x: b.x ?? (15 + (index * 15) % 70),
+            y: b.y ?? (20 + Math.floor(index / 5) * 25),
+            status: b.status || 'active'
+          }));
+          this.bikesUI.set(mappedBikes);
+        }
+      }
+    }, (error) => {
+      console.error('Error al escuchar la sucursal:', error);
+    });
+  }
+
   nextImage() {
-    this.currentImageIndex = (this.currentImageIndex + 1) % this.studio().images.length;
+    const galery = this.studio().galery;
+    if (galery && galery.length > 0) {
+      this.currentImageIndex = (this.currentImageIndex + 1) % galery.length;
+    }
   }
 
   onImageUpload(event: Event) {
@@ -47,74 +101,62 @@ activeBikes = computed(() => this.studio().bikes.filter(b => b.status === 'activ
     if (file) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
+        const base64Image = e.target.result;
         this.studio.update(prev => ({
           ...prev,
-          images: [...prev.images, e.target.result]
+          galery: [...prev.galery, base64Image]
         }));
-        this.currentImageIndex = this.studio().images.length - 1; // Ir a la nueva imagen
+        this.currentImageIndex = this.studio().galery.length - 1;
       };
       reader.readAsDataURL(file);
     }
   }
 
-onBikeDropped(event: CdkDragEnd, bikeId: string) {
-  const parentRect = this.mapContainer.nativeElement.getBoundingClientRect();
-  const elementRect = event.source.getRootElement().getBoundingClientRect();
+  onBikeDropped(event: CdkDragEnd, bikeId: string) {
+    if (!this.mapContainer) return;
+    const parentRect = this.mapContainer.nativeElement.getBoundingClientRect();
+    const elementRect = event.source.getRootElement().getBoundingClientRect();
 
-  // Calculamos la posición del elemento respecto al padre en porcentaje
-  const xPercent = ((elementRect.left - parentRect.left) / parentRect.width) * 100;
-  const yPercent = ((elementRect.top - parentRect.top) / parentRect.height) * 100;
+    const xPercent = ((elementRect.left - parentRect.left) / parentRect.width) * 100;
+    const yPercent = ((elementRect.top - parentRect.top) / parentRect.height) * 100;
 
-  this.studio.update(prev => ({
-    ...prev,
-    bikes: prev.bikes.map(b => b.id === bikeId ? { ...b, x: xPercent, y: yPercent } : b)
-  }));
+    this.bikesUI.update(bikes =>
+      bikes.map(b => b.id === bikeId ? { ...b, x: xPercent, y: yPercent } : b)
+    );
 
-  // Opcional: Resetear el transform interno de CDK para que no se acumule con el nuevo render
-  event.source.reset();
-}
+    event.source.reset();
+  }
 
-resetLayout() {
-  // Opción A: Devolver las bicis a posiciones predefinidas (Ejemplo)
-  this.studio.update(prev => ({
-    ...prev,
-    bikes: [
-      { id: 'A1', x: 25, y: 15, status: 'active' },
-      { id: 'A2', x: 50, y: 15, status: 'active' },
-      { id: 'A3', x: 75, y: 15, status: 'maintenance' },
-      { id: 'B1', x: 15, y: 40, status: 'active' },
-      { id: 'B2', x: 85, y: 40, status: 'active' }
-    ]
-  }));
+  resetLayout() {
+    this.bikesUI.update(bikes =>
+      bikes.map((b, index) => ({
+        ...b,
+        x: 15 + (index * 15) % 70,
+        y: 20 + Math.floor(index / 5) * 25,
+        status: 'active'
+      }))
+    );
+  }
 
-  // Opción B: Si prefieres que simplemente limpie todas las bicis:
-  // this.studio.update(prev => ({ ...prev, bikes: [] }));
-}
+  addBike() {
+    const nextId = `B-${Date.now().toString().slice(-3)}`;
+    const newBike: MyBikeUI = { id: nextId, x: 10, y: 10, status: 'active' };
+    this.bikesUI.update(bikes => [...bikes, newBike]);
+  }
 
-addBike() {
-  // 1. Usar un ID basado en timestamp para evitar colisiones si borras bicis
-  const nextId = `C${Date.now().toString().slice(-3)}`;
-
-  // 2. Posición inicial
-  const newBike: Bike = { id: nextId, x: 10, y: 10, status: 'active' };
-
-  // 3. Actualizar la señal
-  this.studio.update(prev => ({
-    ...prev,
-    bikes: [...prev.bikes, newBike]
-  }));
-}
   toggleBikeStatus(bikeId: string) {
-    this.studio.update(prev => ({
-      ...prev,
-      bikes: prev.bikes.map(b =>
+    this.bikesUI.update(bikes =>
+      bikes.map(b =>
         b.id === bikeId ? { ...b, status: b.status === 'active' ? 'maintenance' : 'active' } : b
       )
-    }));
+    );
   }
 
   saveLayout() {
-    console.log('Layout guardado:', this.studio().bikes);
-    // Aquí iría tu llamada al backend para guardar las posiciones finales
+    console.log('Layout y datos guardados de la sucursal:', {
+      ...this.studio(),
+      myBikes: this.bikesUI()
+    });
+    // Aquí puedes implementar tu servicio o guardado en Firebase con setDoc/updateDoc
   }
 }

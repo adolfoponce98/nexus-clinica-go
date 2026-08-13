@@ -10,7 +10,7 @@
         <div class="w-1 h-8 bg-cyan-400 rounded-full"></div>
         <div>
           <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Active Plans</p>
-          <p class="text-xl font-black">12</p>
+          <p class="text-xl font-black">{{ plans().length }}</p>
         </div>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-zinc-100 flex items-center gap-4 shadow-sm">
@@ -37,31 +37,27 @@
           <input type="text" [(ngModel)]="currentPlan().name" placeholder="Ej: Platinum Monthly" class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors">
         </div>
 
+        <div class="space-y-2">
+          <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Descripción</label>
+          <input type="text" [(ngModel)]="currentPlan().descripcion" placeholder="Detalles del paquete..." class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors">
+        </div>
+
         <div class="grid grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Precio (MXN)</label>
-            <input type="number" [(ngModel)]="currentPlan().price" class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none">
+            <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Precio Regular (MXN)</label>
+            <input type="number" [(ngModel)]="currentPlan().precioRegular" class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none">
           </div>
           <div class="space-y-2">
             <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Créditos</label>
-            <input type="text" [(ngModel)]="currentPlan().credits" placeholder="10" class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none">
+            <input type="number" [(ngModel)]="currentPlan().creditos" placeholder="10" class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none">
           </div>
         </div>
 
         <div class="space-y-2">
-          <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Vigencia (Días)</label>
-          <select [(ngModel)]="currentPlan().validity" class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none bg-transparent appearance-none">
-            <option value="15 días">15 días</option>
-            <option value="30 días">30 días</option>
-            <option value="365 días">365 días</option>
-          </select>
-        </div>
-
-        <div class="space-y-2">
-          <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Tipo de Plan</label>
+          <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Tipo de Membresía</label>
           <div class="grid grid-cols-2 bg-zinc-50 p-1 rounded-xl">
-            <button (click)="currentPlan().type = 'Paquete'" [class]="currentPlan().type === 'Paquete' ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400'" class="py-2 rounded-lg text-[10px] font-black uppercase transition-all">Paquete</button>
-            <button (click)="currentPlan().type = 'Suscripción'" [class]="currentPlan().type === 'Suscripción' ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400'" class="py-2 rounded-lg text-[10px] font-black uppercase transition-all">Suscripción</button>
+            <button (click)="currentPlan().tipoMmebresia = 1" [class]="currentPlan().tipoMmebresia === 1 ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400'" class="py-2 rounded-lg text-[10px] font-black uppercase transition-all">Paquete (1)</button>
+            <button (click)="currentPlan().tipoMmebresia = 2" [class]="currentPlan().tipoMmebresia === 2 ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400'" class="py-2 rounded-lg text-[10px] font-black uppercase transition-all">Suscripción (2)</button>
           </div>
         </div>
 
@@ -86,41 +82,41 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        @for (plan of plans(); track plan.id) {
+        @for (plan of plans(); track plan.idPaquete) {
           <div
             (click)="selectPlan(plan)"
-            [class]="selectedId() === plan.id ? 'bg-zinc-950 text-white scale-[1.02] shadow-2xl' : 'bg-white text-zinc-900 border-zinc-100 hover:border-rose-200'"
+            [class]="selectedId() === plan.idPaquete ? 'bg-zinc-950 text-white scale-[1.02] shadow-2xl' : 'bg-white text-zinc-900 border-zinc-100 hover:border-rose-200'"
             class="p-8 rounded-[32px] border transition-all duration-300 cursor-pointer group relative overflow-hidden"
           >
             <div class="flex justify-between items-start mb-8">
-              <span [class]="selectedId() === plan.id ? 'bg-rose-500 text-white' : 'bg-lime-400 text-zinc-950'" class="px-2 py-0.5 text-[7px] font-black rounded-md uppercase tracking-widest">
-                {{ plan.tag || plan.type }}
+              <span [class]="selectedId() === plan.idPaquete ? 'bg-rose-500 text-white' : 'bg-lime-400 text-zinc-950'" class="px-2 py-0.5 text-[7px] font-black rounded-md uppercase tracking-widest">
+                {{ plan.tipoMmebresia === 2 ? 'SUSCRIPCIÓN' : 'PAQUETE' }}
               </span>
               <lucide-icon [img]="MoreVertical" class="w-4 h-4 text-zinc-300"></lucide-icon>
             </div>
 
             <h5 class="text-xl font-black mb-1 leading-tight">{{ plan.name }}</h5>
-            <p [class]="selectedId() === plan.id ? 'text-zinc-500' : 'text-zinc-400'" class="text-[9px] font-bold uppercase tracking-widest mb-6">
-              {{ plan.type === 'Suscripción' ? 'Suscripción Recurrente' : 'Venta por única vez' }}
+            <p [class]="selectedId() === plan.idPaquete ? 'text-zinc-500' : 'text-zinc-400'" class="text-[9px] font-bold uppercase tracking-widest mb-6">
+              {{ plan.descripcion || (plan.tipoMmebresia === 2 ? 'Suscripción Recurrente' : 'Venta por única vez') }}
             </p>
 
             <div class="flex items-baseline gap-1 mb-8">
-              <span class="text-2xl font-black">${{ plan.price | number:'1.0-0' }}</span>
+              <span class="text-2xl font-black">${{ plan.precioRegular | number:'1.0-0' }}</span>
               <span class="text-[10px] font-bold text-zinc-400">MXN</span>
             </div>
 
             <div class="grid grid-cols-2 border-t border-zinc-50/10 pt-6">
               <div>
                 <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Credits</p>
-                <p class="text-sm font-black">{{ plan.credits }}</p>
+                <p class="text-sm font-black">{{ plan.creditos }} Sesiones</p>
               </div>
               <div>
-                <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Validity</p>
-                <p class="text-sm font-black">{{ plan.validity }}</p>
+                <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Tipo ID</p>
+                <p class="text-sm font-black">Tipo: {{ plan.tipoMmebresia }}</p>
               </div>
             </div>
 
-            @if (selectedId() === plan.id) {
+            @if (selectedId() === plan.idPaquete) {
               <div class="absolute -bottom-4 -right-4 w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
                 <lucide-icon [img]="Plus" class="w-6 h-6 text-white rotate-45"></lucide-icon>
               </div>

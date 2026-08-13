@@ -1,4 +1,5 @@
-<div class="space-y-8 animate-in fade-in duration-500">
+<div class="space-y-8 animate-in fade-in duration-500 relative">
+  <!-- ENCABEZADO Y BOTÓN NUEVA ALUMNA -->
   <div class="flex justify-between items-end">
     <div>
       <h2 class="text-4xl font-black uppercase tracking-tighter text-zinc-900">Gestión de Alumnas</h2>
@@ -9,13 +10,21 @@
       </nav>
     </div>
 
-    <div class="flex bg-zinc-100 p-1 rounded-xl gap-1">
-      <button class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white shadow-sm">Todos</button>
-      <button class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-zinc-600">Activos</button>
-      <button class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-zinc-600">Inactivos</button>
+    <div class="flex items-center gap-4">
+      <!-- Botón Nueva Alumna -->
+      <button (click)="abrirNuevaAlumna()" class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-rose-500/20 transition-all">
+        <lucide-icon [img]="UserPlus" class="w-4 h-4"></lucide-icon>
+        Nueva Alumna
+      </button>
+
+      <div class="flex bg-zinc-100 p-1 rounded-xl gap-1">
+        <button class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white shadow-sm">Todos</button>
+        <button class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-zinc-600">Activos</button>
+      </div>
     </div>
   </div>
 
+  <!-- TABLA DE ALUMNAS -->
   <div class="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
     <table class="w-full text-left border-collapse">
       <thead>
@@ -29,12 +38,12 @@
       </thead>
       <tbody class="divide-y divide-zinc-50">
         @for (student of students(); track student.id) {
-          <tr class="hover:bg-zinc-50/50 transition-colors group">
+          <tr class="hover:bg-zinc-50/50 transition-colors group relative">
             <td class="px-8 py-4">
               <div class="flex items-center gap-3">
-                <img [src]="student.avatar" class="w-10 h-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform" />
+              <!--<img [src]="student.avatar" class="w-10 h-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform" />-->
                 <div>
-                  <p class="text-sm font-black text-zinc-900">{{ student.name }}</p>
+                  <p class="text-sm font-black text-zinc-900">{{ student.fullName }}</p>
                   <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter">ID: {{ student.id }}</p>
                 </div>
               </div>
@@ -43,69 +52,73 @@
             <td class="px-8 py-4 text-xs font-bold text-zinc-500">{{ student.email }}</td>
             <td class="px-8 py-4">
               <div class="flex justify-center">
-                <span [class]="getStatusClass(student.status)">
-                  {{ student.status }}
-                </span>
+                <span [class]="getStatusClass(student.status)">{{ student.status }}</span>
               </div>
             </td>
-            <td class="px-8 py-4 text-right">
-              <button class="p-2 hover:bg-zinc-100 rounded-lg transition-colors text-zinc-300 hover:text-zinc-600">
+            <td class="px-8 py-4 text-right relative">
+              <button (click)="toggleActionMenu(student.id, $event)" class="p-2 hover:bg-zinc-100 rounded-lg transition-colors text-zinc-300 hover:text-zinc-600">
                 <lucide-icon [img]="MoreHorizontal" class="w-5 h-5"></lucide-icon>
               </button>
+
+              @if (activeMenuStudentId === student.id) {
+                <div class="absolute right-8 mt-2 w-40 bg-white rounded-2xl shadow-xl shadow-zinc-200 border border-zinc-100 py-2 z-20 text-left animate-in fade-in zoom-in duration-150">
+                  <button (click)="verDetalle(student)" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors">
+                    <lucide-icon [img]="Eye" class="w-4 h-4 text-zinc-400"></lucide-icon> Ver Detalle
+                  </button>
+                  <button (click)="abrirEditar(student)" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors">
+                    <lucide-icon [img]="Edit3" class="w-4 h-4 text-zinc-400"></lucide-icon> Editar
+                  </button>
+                  <button (click)="borrarAlumno(student.id)" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors">
+                    <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon> Borrar
+                  </button>
+                </div>
+              }
             </td>
           </tr>
         }
       </tbody>
     </table>
-
-    <div class="px-8 py-5 flex justify-between items-center bg-zinc-50/30 border-t border-zinc-100">
-      <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Mostrando 1 a 10 de 1,240 alumnas</p>
-      <div class="flex gap-2">
-        <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 hover:bg-white"><lucide-icon [img]="ChevronLeft" class="w-4 h-4"></lucide-icon></button>
-        <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-500 text-white text-xs font-black shadow-lg shadow-rose-500/20">1</button>
-        <button class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-black text-zinc-400 hover:bg-white">2</button>
-        <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 hover:bg-white"><lucide-icon [img]="ChevronRight" class="w-4 h-4"></lucide-icon></button>
-      </div>
-    </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-zinc-950 p-8 rounded-3xl text-white relative overflow-hidden group">
-      <div class="relative z-10">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-6">Retención Mensual</p>
-        <h3 class="text-6xl font-black mb-2">92%</h3>
-        <p class="text-xs font-bold text-emerald-400">+4.2% <span class="text-zinc-600 font-normal uppercase ml-1">vs mes anterior</span></p>
-      </div>
-      <lucide-icon [img]="TrendingUp" class="absolute -bottom-4 -right-4 w-32 h-32 text-zinc-900 group-hover:text-zinc-800 transition-colors"></lucide-icon>
-    </div>
+  <!-- ================= MODAL UNIFICADO (CREAR / EDITAR) ================= -->
+  @if (showModal) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm" (click)="showModal = false"></div>
+      <div class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in slide-in-from-bottom-4 duration-300">
+        <button (click)="showModal = false" class="absolute right-6 top-6 text-zinc-300 hover:text-zinc-500">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
 
-    <div class="bg-white p-8 rounded-3xl border border-zinc-100 flex flex-col">
-      <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-6">Nuevas Inscripciones</p>
-      <div class="flex items-end justify-between mt-auto">
-        <div>
-          <h3 class="text-6xl font-black">48</h3>
-          <p class="text-[10px] font-bold text-zinc-400 uppercase mt-2">Últimos 7 días</p>
-        </div>
-        <div class="flex items-end gap-1.5 h-16">
-          <div class="w-2 bg-rose-100 rounded-full h-1/2"></div>
-          <div class="w-2 bg-rose-200 rounded-full h-3/4"></div>
-          <div class="w-2 bg-rose-400 rounded-full h-2/3"></div>
-          <div class="w-2 bg-rose-500 rounded-full h-full"></div>
-        </div>
-      </div>
-    </div>
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-6">
+          {{ isEditing ? 'Editar Alumna' : 'Nueva Alumna' }}
+        </h3>
 
-    <div class="bg-rose-500 p-8 rounded-3xl text-white flex flex-col justify-between">
-      <p class="text-[10px] font-bold uppercase tracking-widest text-rose-200">Clases Populares</p>
-      <div>
-        <h4 class="text-2xl font-black leading-tight mb-4">HIIT Spinning:<br>Morning Pulse</h4>
-        <div class="flex -space-x-2">
-          @for (i of [1,2,3]; track i) {
-            <img [src]="'https://i.pravatar.cc/100?img=' + (i+10)" class="w-8 h-8 rounded-full border-2 border-rose-500" />
-          }
-          <div class="w-8 h-8 rounded-full bg-rose-400 border-2 border-rose-500 flex items-center justify-center text-[8px] font-black">+12</div>
+        <div class="space-y-4">
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 block">Nombre completo</label>
+            <input type="text" [(ngModel)]="selectedStudent.name" class="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-800 focus:outline-none focus:border-rose-500" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 block">Teléfono</label>
+            <input type="text" [(ngModel)]="selectedStudent.phone" class="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-800 focus:outline-none focus:border-rose-500" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 block">Correo Electrónico</label>
+            <input type="email" [(ngModel)]="selectedStudent.email" class="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-800 focus:outline-none focus:border-rose-500" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 block">Contraseña</label>
+            <input type="text" [(ngModel)]="selectedStudent.password" class="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-800 focus:outline-none focus:border-rose-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 w-full mt-8">
+          <button (click)="showModal = false" class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 bg-zinc-50 hover:bg-zinc-100 transition-all">Cancelar</button>
+          <button (click)="guardarAlumno()" class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all">
+            {{ isEditing ? 'Guardar Cambios' : 'Registrar' }}
+          </button>
         </div>
       </div>
     </div>
-  </div>
+  }
 </div>

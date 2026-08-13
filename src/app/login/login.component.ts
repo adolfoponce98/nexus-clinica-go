@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { AuthService } from '../auth/auth.service';
 import {
   LucideAngularModule,
   Bike,
@@ -21,8 +22,9 @@ import {
   standalone: true, // Asegúrate de que sea standalone
   templateUrl: './login.component.html',
 })
-export class App {
+export class LoginComponent {
   loginForm: FormGroup;
+  private authService = inject(AuthService);
 readonly bike = Bike;
 readonly Bike = Bike;
   readonly User = User;
@@ -30,7 +32,7 @@ readonly Bike = Bike;
   readonly Zap = Zap;
   readonly ShieldCheck = ShieldCheck;
   readonly Rss = Rss;
-
+  userData: any = null;
   private http = inject(HttpClient);
   private router = inject(Router);
   private fb = inject(FormBuilder);
@@ -42,6 +44,20 @@ isLoading = signal(false); // Estado para el loader
     });
   }
 
+  ngOnInit() {
+    // Obtenemos los datos guardados en la sesión
+    this.userData = this.authService.getSession();
+
+    // Ejemplo de uso de los datos del response que guardaste:
+    console.log('Token Firebase:', this.userData?.tokenFirebase);
+    console.log('Sucursal:', this.userData?.brancheInUser);
+  }
+
+  cerrarSesion() {
+    this.authService.logout(); // Borra el almacenamiento
+    this.router.navigate(['/login']); // Redirige al login
+  }
+
   onSubmit() {
     if (this.loginForm.valid) {
       this.isLoading.set(true);
@@ -50,9 +66,10 @@ isLoading = signal(false); // Estado para el loader
       const url = 'https://login-rdotx3vmaq-uc.a.run.app';
       console.log (payload)
 
-      this.http.post('/api/', payload).subscribe({
+      this.http.post(url, payload).subscribe({
         next: (response) => {
           console.log('Login exitoso', response);
+         this.authService.saveSession(response);
           this.router.navigate(['/home']); // Redirección al home
         },
         error: (err) => {
