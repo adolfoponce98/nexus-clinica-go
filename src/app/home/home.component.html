@@ -1,429 +1,475 @@
-<div class="flex min-h-screen bg-zinc-50 font-sans text-zinc-900">
-  <main class="flex-1 flex flex-col h-screen overflow-hidden">
-
-    <!-- CONTENT BODY -->
-    <div class="flex-1 overflow-y-auto p-8 space-y-8">
-      <div>
-        <h2 class="text-3xl font-black uppercase tracking-tighter">Dashboard</h2>
-        <p class="text-zinc-500 text-sm">Análisis de rendimiento y métricas operativas</p>
-      </div>
-
-      <!-- CARDS PRINCIPALES: Alumnas, Maestros, Check-ins y Mes -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-        <!-- Total Alumnas -->
-        <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex justify-between items-start">
-          <div>
-            <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Total Alumnas</p>
-            <h3 class="text-4xl font-black">{{ dashboardData?.branchInfo?.numberStudents ?? 0 }}</h3>
-            <p class="text-[10px] font-bold text-emerald-500 mt-2">↑ 12% <span class="text-zinc-400">vs mes pasado</span></p>
-          </div>
-          <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
-            <lucide-icon [img]="Users" class="w-6 h-6"></lucide-icon>
-          </div>
-        </div>
-
-        <!-- Total Maestros -->
-        <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex justify-between items-start">
-          <div>
-            <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Total Maestras</p>
-            <h3 class="text-4xl font-black">{{ dashboardData?.employees?.length ?? 0 }}</h3>
-            <p class="text-[10px] font-bold text-zinc-400 mt-2">Staff activo esta semana</p>
-          </div>
-          <div class="w-12 h-12 bg-cyan-50 rounded-2xl flex items-center justify-center text-cyan-500">
-            <lucide-icon [img]="Dumbbell" class="w-6 h-6"></lucide-icon>
-          </div>
-        </div>
-
-
-
-        <!-- Ingresos del Mes -->
-        <div class="bg-zinc-950 p-6 rounded-3xl text-white shadow-xl flex justify-between items-start">
-          <div>
-            <p class="text-[10px] uppercase font-bold text-zinc-500 tracking-widest mb-1">Ingresos del Mes</p>
-            <h3 class="text-4xl font-black">$ 42.8k</h3>
-            <p class="text-[10px] font-bold text-rose-400 mt-2">~ 8.4% <span class="text-zinc-500">Récord histórico</span></p>
-          </div>
-          <div class="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-rose-500">
-            <span class="text-2xl font-black">$</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- SECCIÓN DE GRÁFICAS Y CLASES POR SEMANA -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Check-ins en Tiempo Real -->
-        <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex flex-col justify-between">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Check-ins en Vivo</p>
-              <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-xs font-bold text-zinc-600">18:00 hrs (Clase Activa)</span>
-              </div>
-            </div>
-            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500">
-              <lucide-icon [img]="CheckCircle2" class="w-6 h-6"></lucide-icon>
-            </div>
-          </div>
-          <div class="space-y-2">
-            <div class="flex justify-between text-xs font-bold">
-              <span class="text-zinc-500">Agendadas vs Check-in</span>
-              <span class="text-zinc-900">38 / 42</span>
-            </div>
-            <div class="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden">
-              <div class="bg-emerald-500 h-full rounded-full" style="width: 90%;"></div>
-            </div>
-            <p class="text-[10px] font-bold text-emerald-500 text-right">90% de asistencia</p>
-          </div>
-        </div>
-        <!-- Clases Programadas del Mes Dividida en 4 Semanas -->
-        <div class="bg-white p-8 rounded-3xl border border-zinc-100 flex flex-col justify-between">
-          <div>
-            <div class="flex justify-between items-center mb-1">
-              <h4 class="font-black text-lg">Clases del Mes</h4>
-              <lucide-icon [img]="Calendar" class="w-5 h-5 text-zinc-400"></lucide-icon>
-            </div>
-            <p class="text-zinc-400 text-xs mb-6 tracking-tighter">Distribución por 4 semanas</p>
-          </div>
-
-          <div class="space-y-4">
-            <!-- Semana 1 -->
-            <div>
-              <div class="flex justify-between text-[11px] font-bold mb-1">
-                <span class="text-zinc-700 uppercase">Semana 1</span>
-                <span class="text-zinc-400">{{ dashboardData?.performance?.semana1 ?? 0 }} clases</span>
-              </div>
-              <div class="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
-                <div class="bg-rose-500 h-full rounded-full" style="width: 100%;"></div>
-              </div>
-            </div>
-
-            <!-- Semana 2 -->
-            <div>
-              <div class="flex justify-between text-[11px] font-bold mb-1">
-                <span class="text-zinc-700 uppercase">Semana 2</span>
-                <span class="text-zinc-400">{{ dashboardData?.performance?.semana2 ?? 0 }} clases</span>
-              </div>
-              <div class="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
-                <div class="bg-rose-500 h-full rounded-full" style="width: 90%;"></div>
-              </div>
-            </div>
-
-            <!-- Semana 3 -->
-            <div>
-              <div class="flex justify-between text-[11px] font-bold mb-1">
-                <span class="text-zinc-700 uppercase">Semana 3</span>
-                <span class="text-zinc-400">{{ dashboardData?.performance?.semana3 ?? 0 }} clases</span>
-              </div>
-              <div class="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
-                <div class="bg-rose-500 h-full rounded-full" style="width: 80%;"></div>
-              </div>
-            </div>
-
-            <!-- Semana 4 -->
-            <div>
-              <div class="flex justify-between text-[11px] font-bold mb-1">
-                <span class="text-zinc-700 uppercase">Semana 4</span>
-                <span class="text-zinc-400">{{ dashboardData?.performance?.semana4 ?? 0 }} clases</span>
-              </div>
-              <div class="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
-                <div class="bg-rose-500 h-full rounded-full" style="width: 95%;"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center text-xs">
-            <span class="font-bold text-zinc-400 uppercase tracking-widest text-[10px]">Total mes</span>
-            <span class="font-black text-zinc-900">195 Clases</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- MENÚS DE ACCESO DIRECTO -->
-      <div>
-        <h3 class="font-black text-xl mb-4 tracking-tight">Accesos Directos</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
-
-          <!-- Nuevo Alumno -->
-          <button class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/5 flex flex-col items-center text-center transition-all group">
-            <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mb-3 group-hover:scale-110 transition-transform">
-              <lucide-icon [img]="UserPlus" class="w-6 h-6"></lucide-icon>
-            </div>
-            <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Nuevo Alumno</span>
-          </button>
-
-          <!-- Planes y paquetes -->
-          <button class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/5 flex flex-col items-center text-center transition-all group">
-            <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 mb-3 group-hover:scale-110 transition-transform">
-              <lucide-icon [img]="CreditCard" class="w-6 h-6"></lucide-icon>
-            </div>
-            <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Planes y Paquetes</span>
-          </button>
-
-          <!-- Nuevo maestro -->
-       <!-- Botón o tarjeta para abrir el modal de nuevo maestro -->
-<button (click)="showTeacherModal = true" type="button" class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/5 flex flex-col items-center text-center transition-all group cursor-pointer">
-  <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 mb-3 group-hover:scale-110 transition-transform">
-    <lucide-icon [img]="icons.UserPlus" class="w-6 h-6"></lucide-icon>
-  </div>
-  <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Agregar Maestro</span>
-  <span class="text-[9px] font-bold text-zinc-400 mt-1">Registrar instructor</span>
-</button>
-
-          <!-- Usuarios de sucursal -->
-          <button class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/5 flex flex-col items-center text-center transition-all group">
-            <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 mb-3 group-hover:scale-110 transition-transform">
-              <lucide-icon [img]="Building2" class="w-6 h-6"></lucide-icon>
-            </div>
-            <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Usuarios Sucursal</span>
-          </button>
-
-          <!-- Horarios de sucursal -->
-      <!-- Horarios de sucursal -->
-<button (click)="showScheduleModal = true" type="button" class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/5 flex flex-col items-center text-center transition-all group cursor-pointer">
-  <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 mb-3 group-hover:scale-110 transition-transform">
-    <lucide-icon [img]="Clock" class="w-6 h-6"></lucide-icon>
-  </div>
-  <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Horarios Sucursal</span>
-  <span class="text-[9px] font-bold text-zinc-400 mt-1">{{ selectedSchedules().length }} seleccionados</span>
-</button>
-          <!-- Tipos de clase -->
-    <!-- Card de Tipo de Clase -->
-<button (click)="showTypeClassModal = true" type="button" class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/5 flex flex-col items-center text-center transition-all group cursor-pointer">
-  <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mb-3 group-hover:scale-110 transition-transform">
-    <lucide-icon [img]="icons.Tag" class="w-6 h-6"></lucide-icon>
-  </div>
-  <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Tipo de Clase</span>
-  <span class="text-[9px] font-bold text-zinc-400 mt-1">{{ typeClasses().length }} registradas</span>
-</button>
-
-          <!-- Número de bicis -->
-         <!-- Card de Número de Bicis -->
-<button (click)="openBikesModal( 0)" type="button" class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/5 flex flex-col items-center text-center transition-all group cursor-pointer">
-  <div class="w-12 h-12 bg-cyan-50 rounded-2xl flex items-center justify-center text-cyan-500 mb-3 group-hover:scale-110 transition-transform">
-    <lucide-icon [img]="icons.Bike" class="w-6 h-6"></lucide-icon>
-  </div>
-  <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Número de Bicis</span>
-  <span class="text-[9px] font-bold text-zinc-400 mt-1">{{  0 }} disponibles</span>
-</button>
-
-        </div>
-      </div>
-
-    </div>
-  </main>
-</div>
-
-<!-- Modal de Horarios -->
-@if (showScheduleModal) {
-  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-    <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-black uppercase">Configurar Horarios</h3>
-        <button (click)="showScheduleModal = false" class="text-zinc-400 hover:text-rose-500">✕</button>
-      </div>
-
-      <div class="space-y-8">
-        <!-- Bloque Matutino -->
-       <div>
-  <div class="flex items-center justify-between mb-4">
-    <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Matutino (6:00 AM - 12:00 PM)</h4>
-    <div class="flex items-center gap-2">
-      <span class="text-[9px] font-bold text-zinc-400 uppercase">Tolerancia Global (min):</span>
-      <input type="number" [(ngModel)]="toleranciaMatutina" class="w-16 text-center text-xs font-black bg-zinc-100 rounded-lg p-1 outline-none">
-    </div>
-  </div>
-  <div class="grid grid-cols-4 gap-2">
-    @for (h of morningHours; track h) {
-      <button (click)="toggleHour(h)"
-              [class]="isHourSelected(h) ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'"
-              class="py-3 rounded-xl font-black text-[10px] transition-all">{{ h }}</button>
-    }
-  </div>
-</div>
-
-        <!-- Bloque Vespertino -->
-      <!-- Bloque Vespertino -->
-<div class="mt-8">
-  <div class="flex items-center justify-between mb-4">
-    <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Vespertino (4:00 PM - 11:00 PM)</h4>
-    <div class="flex items-center gap-2">
-      <span class="text-[9px] font-bold text-zinc-400 uppercase">Tolerancia Global (min):</span>
-      <input type="number" [(ngModel)]="toleranciaVespertina" class="w-16 text-center text-xs font-black bg-zinc-100 rounded-lg p-1 outline-none">
-    </div>
-  </div>
-  <div class="grid grid-cols-4 gap-2">
-    @for (h of eveningHours; track h) {
-      <button (click)="toggleHour(h)"
-              [class]="isHourSelected(h) ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'"
-              class="py-3 rounded-xl font-black text-[10px] transition-all">{{ h }}</button>
-    }
-  </div>
-</div>
-      </div>
-
-      <button (click)="showScheduleModal = false" class="w-full mt-8 bg-zinc-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest">
-        Guardar Disponibilidad
-      </button>
-    </div>
-  </div>
-}
-
-
- <app-type-class-modal
-  [isOpen]="showTypeClassModal"
-  (close)="showTypeClassModal = false"
-  (save)="typeClasses.update(list => [...list, $event])">
-</app-type-class-modal>
-
-
-@if (showTeacherModal) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
-    <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl space-y-6">
-
-      <!-- Cabecera -->
-      <div class="flex justify-between items-center border-b border-zinc-100 pb-4">
-        <div>
-          <h3 class="text-2xl font-black uppercase tracking-tight text-zinc-900">Registrar Nuevo Maestro</h3>
-          <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Completa la información del perfil del instructor</p>
-        </div>
-        <button (click)="showTeacherModal = false" class="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all cursor-pointer font-black">✕</button>
-      </div>
-
-      <form [formGroup]="teacherForm" (ngSubmit)="saveTeacher()" class="space-y-6">
-
-        <!-- Preview de Fotografía Circular & Selector de Color -->
-        <div class="flex flex-col sm:flex-row items-center gap-6 bg-zinc-50 p-6 rounded-3xl border border-zinc-100">
-          <div class="relative group">
-            <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-zinc-200 flex items-center justify-center">
-              @if (photoPreview) {
-                <img [src]="photoPreview" class="w-full h-full object-cover" alt="Preview">
-              } @else {
-                <lucide-icon [img]="icons.UserPlus" class="w-8 h-8 text-zinc-400"></lucide-icon>
-              }
-            </div>
-            <label class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-black uppercase">
-              Cambiar
-              <input type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)">
-            </label>
-          </div>
-
-          <div class="space-y-2 flex-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest block">Color Identificador</label>
-            <div class="flex gap-3">
-              @for (color of colorOptions; track color) {
-                <button type="button"
-                        (click)="teacherForm.patchValue({ colorHex: color })"
-                        [style.background-color]="color"
-                        [class.ring-4]="teacherForm.value.colorHex === color"
-                        class="w-8 h-8 rounded-full ring-offset-2 ring-rose-500 transition-all cursor-pointer"></button>
-              }
-            </div>
-          </div>
-        </div>
-
-        <!-- Campos de Texto Principales -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Nombre Completo</label>
-            <input formControlName="name" type="text" placeholder="Ej. Ana Sofía Garza" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-rose-500/10">
-          </div>
-          <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Teléfono</label>
-            <input formControlName="phone" type="text" placeholder="Ej. 33 1234 5678" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-rose-500/10">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Correo Electrónico</label>
-            <input formControlName="email" type="email" placeholder="correo@email.com" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-rose-500/10">
-          </div>
-          <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">F. Nacimiento</label>
-            <input formControlName="birthDate" type="date" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-rose-500/10">
-          </div>
-          <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">F. Contratación</label>
-            <input formControlName="hireDate" type="date" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-rose-500/10">
-          </div>
-        </div>
-
-        <!-- Biografía (Máximo 300 caracteres) -->
-        <div class="space-y-1">
-          <div class="flex justify-between items-center ml-2 mr-2">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Biografía</label>
-            <span class="text-[9px] font-bold text-zinc-400">{{ teacherForm.value.description?.length || 0 }}/300</span>
-          </div>
-          <textarea formControlName="description" maxlength="300" rows="3" placeholder="Breve descripción del instructor..." class="w-full bg-zinc-50 border-none rounded-2xl p-5 text-sm font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-rose-500/10 resize-none"></textarea>
-        </div>
-
-        <!-- Habilidades (Chips dinámicos) -->
-        <div class="space-y-2">
-          <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Habilidades</label>
-          <div class="flex gap-2">
-            <input [(ngModel)]="newSkillInput" [ngModelOptions]="{standalone: true}" type="text" placeholder="Ej. Ciclismo Rítmico, Fuerza..." class="w-full bg-zinc-50 border-none rounded-2xl py-3 px-5 text-sm font-bold text-zinc-900 outline-none">
-            <button type="button" (click)="addSkill()" class="bg-zinc-900 hover:bg-zinc-800 text-white px-6 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer">Añadir</button>
-          </div>
-          <!-- Contenedor de Chips -->
-          <div class="flex flex-wrap gap-2 pt-2">
-            @for (skill of skillsList(); track skill) {
-              <span class="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 border border-rose-100">
-                {{ skill }}
-                <button type="button" (click)="removeSkill(skill)" class="hover:text-rose-900">✕</button>
-              </span>
-            }
-          </div>
-        </div>
-
-        <!-- Botón Guardar -->
-        <button type="submit" [disabled]="teacherForm.invalid" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-zinc-950/20 disabled:opacity-30">
-          Guardar Maestro
-        </button>
-      </form>
-    </div>
-  </div>
-}
-@if (showBikesModal) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
-    <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl space-y-6">
-
-      <!-- Cabecera -->
-      <div class="flex justify-between items-center border-b border-zinc-100 pb-4">
-        <div>
-          <h3 class="text-xl font-black uppercase tracking-tight text-zinc-900">Disponibilidad de Bicis</h3>
-          <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Actualiza el inventario en tiempo real</p>
-        </div>
-        <button (click)="showBikesModal = false" class="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all cursor-pointer font-black">✕</button>
-      </div>
-
-      <!-- Input Numérico -->
-      <div class="space-y-2">
-        <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Cantidad actual</label>
-        <div class="flex items-center bg-zinc-50 rounded-2xl px-6 py-4 border-2 border-transparent focus-within:border-zinc-200 transition-all">
-          <input [(ngModel)]="currentBikesNumber" type="number" min="0" class="bg-transparent border-none w-full text-3xl font-black outline-none text-zinc-900 text-center" placeholder="0">
-        </div>
-      </div>
-
-      <!-- Botón Guardar -->
-      <button (click)="saveBikesNumber()" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-zinc-950/20">
-        Actualizar Disponibilidad
-      </button>
-
-    </div>
-  </div>
-}
-
 <!-- PANTALLA DE CARGA -->
-<div *ngIf="isLoading" class="flex flex-col items-center justify-center h-screen bg-zinc-50">
-  <div class="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
-  <p class="text-zinc-500 mt-3 font-medium text-sm">Cargando información del dashboard...</p>
-</div>
+@if (isLoading) {
+  <div class="flex flex-col items-center justify-center h-screen bg-zinc-50">
+    <div class="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-zinc-500 mt-3 font-medium text-sm">Cargando información del dashboard...</p>
+  </div>
+}
 
 <!-- CONTENIDO PRINCIPAL -->
-<div *ngIf="!isLoading" class="p-6">
-  <!-- Tu contenido actual del home -->
+@if (!isLoading) {
+  <div class="flex min-h-screen bg-zinc-50 font-sans text-zinc-900">
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+      <!-- CONTENT BODY -->
+      <div class="flex-1 overflow-y-auto p-8 space-y-8">
+        <div>
+          <h2 class="text-3xl font-black uppercase tracking-tighter">Dashboard</h2>
+          <p class="text-zinc-500 text-sm">Análisis de rendimiento y métricas operativas</p>
+        </div>
+
+        <!-- CARDS PRINCIPALES -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <!-- Total Alumnas -->
+          <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex justify-between items-start">
+            <div>
+              <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Total Alumnas</p>
+              <h3 class="text-4xl font-black">{{ dashboardData?.branchInfo?.numberStudents ?? 0 }}</h3>
+              <p class="text-[10px] font-bold text-emerald-500 mt-2">↑ 12% <span class="text-zinc-400">vs mes pasado</span></p>
+            </div>
+            <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
+              <lucide-icon [img]="Users" class="w-6 h-6"></lucide-icon>
+            </div>
+          </div>
+
+          <!-- Total Maestros -->
+          <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex justify-between items-start">
+            <div>
+              <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Total Maestras</p>
+              <h3 class="text-4xl font-black">{{ dashboardData?.employees?.length ?? 0 }}</h3>
+              <p class="text-[10px] font-bold text-zinc-400 mt-2">Staff activo esta semana</p>
+            </div>
+            <div class="w-12 h-12 bg-cyan-50 rounded-2xl flex items-center justify-center text-cyan-500">
+              <lucide-icon [img]="Dumbbell" class="w-6 h-6"></lucide-icon>
+            </div>
+          </div>
+
+          <!-- Total Paquetes -->
+          <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex justify-between items-start">
+            <div>
+              <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Total Paquetes</p>
+              <h3 class="text-4xl font-black">{{ dashboardData?.branchInfo?.numberStudents ?? 0 }}</h3>
+              <p class="text-[10px] font-bold text-emerald-500 mt-2">↑ 12% <span class="text-zinc-400"></span></p>
+            </div>
+            <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
+              <lucide-icon [img]="Users" class="w-6 h-6"></lucide-icon>
+            </div>
+          </div>
+
+          <!-- Ingresos del Mes -->
+          <div class="bg-zinc-950 p-6 rounded-3xl text-white shadow-xl flex justify-between items-start">
+            <div>
+              <p class="text-[10px] uppercase font-bold text-zinc-500 tracking-widest mb-1">Ingresos del Mes</p>
+              <h3 class="text-4xl font-black">$ 42.8k</h3>
+              <p class="text-[10px] font-bold text-rose-400 mt-2">~ 8.4% <span class="text-zinc-500">Récord histórico</span></p>
+            </div>
+            <div class="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-rose-500">
+              <span class="text-2xl font-black">$</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SECCIÓN DE GRÁFICAS Y CHECK-INS -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+<!-- Check-ins en Tiempo Real con Cuadrícula y Loader -->
+<div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex flex-col justify-between relative">
+  <div>
+    <div class="flex justify-between items-start mb-3">
+      <div>
+        <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Check-ins en Vivo</p>
+
+        <!-- Navegación de Horarios -->
+        <div class="flex items-center gap-2 mt-1">
+          <button (click)="cambiarHora(-1)" class="w-6 h-6 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 transition-all cursor-pointer font-bold text-xs" title="Hora anterior">
+            ‹
+          </button>
+
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-xs font-black text-zinc-800">{{ selectedActiveHour }} hrs</span>
+          </div>
+
+          <button (click)="cambiarHora(1)" class="w-6 h-6 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 transition-all cursor-pointer font-bold text-xs" title="Hora siguiente">
+            ›
+          </button>
+        </div>
+      </div>
+
+      <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500">
+        <lucide-icon [img]="CheckCircle2" class="w-6 h-6"></lucide-icon>
+      </div>
+    </div>
+
+    <!-- Barra de Progreso y Estadísticas -->
+    <div class="space-y-2 mb-4">
+      <div class="flex justify-between text-xs font-bold">
+        <span class="text-zinc-500">Agendadas vs Check-in</span>
+        <span class="text-zinc-900">{{ totalCheckins }} / {{ totalAgendadas }}</span>
+      </div>
+      <div class="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden">
+        <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" [style.width.%]="porcentajeAsistencia"></div>
+      </div>
+      <p class="text-[10px] font-bold text-emerald-500 text-right">{{ porcentajeAsistencia }}% de asistencia</p>
+    </div>
+  </div>
+
+  <!-- Contenedor de Bicis con Loader integrado -->
+  <div class="border-t border-zinc-100 pt-4 mt-2 relative min-h-[120px]">
+    <div class="flex justify-between items-center mb-2">
+      <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest">Bicis Asignadas</p>
+      <span class="text-[10px] font-black text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-full">{{ checkinsList.length }}</span>
+    </div>
+
+    <!-- LOADER DENTRO DE LA CARD -->
+    @if (isLoadingCheckins) {
+      <div class="absolute inset-0 bg-white/80 backdrop-blur-[2px] flex flex-col items-center justify-center z-10 py-6">
+        <div class="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mb-1"></div>
+        <p class="text-[9px] font-bold uppercase tracking-wider text-zinc-400">Cargando horario...</p>
+      </div>
+    }
+
+    <!-- Cuadrícula de Bicis -->
+    <div class="max-h-52 overflow-y-auto pr-1 flex flex-wrap gap-1.5">
+      @if (checkinsList.length === 0 && !isLoadingCheckins) {
+        <p class="w-full text-xs text-zinc-400 text-center py-4 font-medium">No hay registros para este horario</p>
+      } @else {
+        @for (item of checkinsList; track item.correo; let i = $index) {
+          <div [class]="item.estatusCheckin === 1 ? 'bg-amber-50/60 border-amber-200/60' : 'bg-zinc-50 border-zinc-100'"
+               class="p-1.5 px-2 rounded-xl border flex items-center gap-2 transition-all">
+
+            <div [class]="item.estatusCheckin === 1 ? 'bg-amber-100 text-amber-500' : 'bg-zinc-200 text-zinc-400'"
+                 class="w-5 h-5 rounded-lg flex items-center justify-center shrink-0">
+              <lucide-icon [img]="icons.Bike" class="w-3 h-3"></lucide-icon>
+            </div>
+
+            <div class="flex flex-col">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[8px] font-black text-zinc-400">#{{ i + 1 }}</span>
+                <p [class]="item.estatusCheckin === 1 ? 'text-amber-700 font-black' : 'text-zinc-600 font-bold'"
+                   class="text-[10px] leading-tight" [title]="item.nombre">
+                  {{ item.nombre || 'Sin nombre' }}
+                </p>
+              </div>
+              <span class="text-[7px] font-bold uppercase tracking-tight"
+                    [class]="item.estatusCheckin === 1 ? 'text-amber-500' : 'text-zinc-400'">
+                {{ item.estatusCheckin === 1 ? 'Check-in' : 'Pendiente' }}
+              </span>
+            </div>
+
+          </div>
+        }
+      }
+    </div>
+  </div>
 </div>
+
+          <!-- Clases Programadas del Mes -->
+          <div class="bg-white p-8 rounded-3xl border border-zinc-100 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <h4 class="font-black text-lg">Clases del Mes</h4>
+                <lucide-icon [img]="Calendar" class="w-5 h-5 text-zinc-400"></lucide-icon>
+              </div>
+              <p class="text-zinc-400 text-xs mb-6 tracking-tighter">Distribución por 4 semanas</p>
+            </div>
+
+            <div class="space-y-4 grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div>
+                <div class="flex justify-between text-[11px] font-bold mb-1">
+                  <span class="text-zinc-700 uppercase">Semana 1</span>
+                  <span class="text-zinc-400">{{ dashboardData?.performance?.semana1 ?? 0 }} clases</span>
+                </div>
+                <div class="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-rose-500 h-full rounded-full" style="width: 100%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[11px] font-bold mb-1">
+                  <span class="text-zinc-700 uppercase">Semana 2</span>
+                  <span class="text-zinc-400">{{ dashboardData?.performance?.semana2 ?? 0 }} clases</span>
+                </div>
+                <div class="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-rose-500 h-full rounded-full" style="width: 90%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[11px] font-bold mb-1">
+                  <span class="text-zinc-700 uppercase">Semana 3</span>
+                  <span class="text-zinc-400">{{ dashboardData?.performance?.semana3 ?? 0 }} clases</span>
+                </div>
+                <div class="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-rose-500 h-full rounded-full" style="width: 80%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[11px] font-bold mb-1">
+                  <span class="text-zinc-700 uppercase">Semana 4</span>
+                  <span class="text-zinc-400">{{ dashboardData?.performance?.semana4 ?? 0 }} clases</span>
+                </div>
+                <div class="w-full bg-zinc-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-rose-500 h-full rounded-full" style="width: 95%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center text-xs">
+              <span class="font-bold text-zinc-400 uppercase tracking-widest text-[10px]">Total mes</span>
+              <span class="font-black text-zinc-900">195 Clases</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MENÚS DE ACCESO DIRECTO -->
+        <div>
+          <h3 class="font-black text-xl mb-4 tracking-tight">Accesos Directos</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
+
+            <button class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg flex flex-col items-center text-center transition-all group">
+              <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mb-3 group-hover:scale-110 transition-transform">
+                <lucide-icon [img]="UserPlus" class="w-6 h-6"></lucide-icon>
+              </div>
+              <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Nuevo Alumno</span>
+            </button>
+
+            <button class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg flex flex-col items-center text-center transition-all group">
+              <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 mb-3 group-hover:scale-110 transition-transform">
+                <lucide-icon [img]="CreditCard" class="w-6 h-6"></lucide-icon>
+              </div>
+              <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Planes y Paquetes</span>
+            </button>
+
+            <button (click)="showTeacherModal = true" type="button" class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg flex flex-col items-center text-center transition-all group cursor-pointer">
+              <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 mb-3 group-hover:scale-110 transition-transform">
+                <lucide-icon [img]="icons.UserPlus" class="w-6 h-6"></lucide-icon>
+              </div>
+              <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Agregar Maestro</span>
+              <span class="text-[9px] font-bold text-zinc-400 mt-1">Registrar instructor</span>
+            </button>
+
+            <button class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg flex flex-col items-center text-center transition-all group">
+              <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 mb-3 group-hover:scale-110 transition-transform">
+                <lucide-icon [img]="Building2" class="w-6 h-6"></lucide-icon>
+              </div>
+              <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Usuarios Sucursal</span>
+            </button>
+
+            <button (click)="showScheduleModal = true" type="button" class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg flex flex-col items-center text-center transition-all group cursor-pointer">
+              <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 mb-3 group-hover:scale-110 transition-transform">
+                <lucide-icon [img]="Clock" class="w-6 h-6"></lucide-icon>
+              </div>
+              <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Horarios Sucursal</span>
+              <span class="text-[9px] font-bold text-zinc-400 mt-1">{{ selectedSchedules().length }} seleccionados</span>
+            </button>
+
+            <button (click)="showTypeClassModal = true" type="button" class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg flex flex-col items-center text-center transition-all group cursor-pointer">
+              <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mb-3 group-hover:scale-110 transition-transform">
+                <lucide-icon [img]="icons.Tag" class="w-6 h-6"></lucide-icon>
+              </div>
+              <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Tipo de Clase</span>
+              <span class="text-[9px] font-bold text-zinc-400 mt-1">{{ typeClasses().length }} registradas</span>
+            </button>
+
+            <button (click)="openBikesModal(0)" type="button" class="bg-white p-5 rounded-3xl border border-zinc-100 hover:border-rose-500 hover:shadow-lg flex flex-col items-center text-center transition-all group cursor-pointer">
+              <div class="w-12 h-12 bg-cyan-50 rounded-2xl flex items-center justify-center text-cyan-500 mb-3 group-hover:scale-110 transition-transform">
+                <lucide-icon [img]="icons.Bike" class="w-6 h-6"></lucide-icon>
+              </div>
+              <span class="text-xs font-black uppercase tracking-tight text-zinc-800">Número de Bicis</span>
+              <span class="text-[9px] font-bold text-zinc-400 mt-1">Disponibles</span>
+            </button>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL DE HORARIOS -->
+  @if (showScheduleModal) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
+      <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-black uppercase">Configurar Horarios</h3>
+          <button (click)="showScheduleModal = false" class="text-zinc-400 hover:text-rose-500">✕</button>
+        </div>
+
+        <div class="space-y-8">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Matutino (6:00 AM - 12:00 PM)</h4>
+              <div class="flex items-center gap-2">
+                <span class="text-[9px] font-bold text-zinc-400 uppercase">Tolerancia Global (min):</span>
+                <input type="number" [(ngModel)]="toleranciaMatutina" class="w-16 text-center text-xs font-black bg-zinc-100 rounded-lg p-1 outline-none">
+              </div>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+              @for (h of morningHours; track h) {
+                <button (click)="toggleHour(h)"
+                        [class]="isHourSelected(h) ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'"
+                        class="py-3 rounded-xl font-black text-[10px] transition-all">{{ h }}</button>
+              }
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Vespertino (4:00 PM - 11:00 PM)</h4>
+              <div class="flex items-center gap-2">
+                <span class="text-[9px] font-bold text-zinc-400 uppercase">Tolerancia Global (min):</span>
+                <input type="number" [(ngModel)]="toleranciaVespertina" class="w-16 text-center text-xs font-black bg-zinc-100 rounded-lg p-1 outline-none">
+              </div>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+              @for (h of eveningHours; track h) {
+                <button (click)="toggleHour(h)"
+                        [class]="isHourSelected(h) ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'"
+                        class="py-3 rounded-xl font-black text-[10px] transition-all">{{ h }}</button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <button (click)="showScheduleModal = false" class="w-full mt-8 bg-zinc-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest">
+          Guardar Disponibilidad
+        </button>
+      </div>
+    </div>
+  }
+
+  <app-type-class-modal
+    [isOpen]="showTypeClassModal"
+    (close)="showTypeClassModal = false"
+    (save)="typeClasses.update(list => [...list, $event])">
+  </app-type-class-modal>
+
+  <!-- MODAL DE MAESTRO -->
+  @if (showTeacherModal) {
+    <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
+      <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl space-y-6">
+        <div class="flex justify-between items-center border-b border-zinc-100 pb-4">
+          <div>
+            <h3 class="text-2xl font-black uppercase tracking-tight text-zinc-900">Registrar Nuevo Maestro</h3>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Completa la información del perfil del instructor</p>
+          </div>
+          <button (click)="showTeacherModal = false" class="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all cursor-pointer font-black">✕</button>
+        </div>
+
+        <form [formGroup]="teacherForm" (ngSubmit)="saveTeacher()" class="space-y-6">
+          <div class="flex flex-col sm:flex-row items-center gap-6 bg-zinc-50 p-6 rounded-3xl border border-zinc-100">
+            <div class="relative group">
+              <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-zinc-200 flex items-center justify-center">
+                @if (photoPreview) {
+                  <img [src]="photoPreview" class="w-full h-full object-cover" alt="Preview">
+                } @else {
+                  <lucide-icon [img]="icons.UserPlus" class="w-8 h-8 text-zinc-400"></lucide-icon>
+                }
+              </div>
+              <label class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-black uppercase">
+                Cambiar
+                <input type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)">
+              </label>
+            </div>
+
+            <div class="space-y-2 flex-1">
+              <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest block">Color Identificador</label>
+              <div class="flex gap-3">
+                @for (color of colorOptions; track color) {
+                  <button type="button"
+                          (click)="teacherForm.patchValue({ colorHex: color })"
+                          [style.background-color]="color"
+                          [class.ring-4]="teacherForm.value.colorHex === color"
+                          class="w-8 h-8 rounded-full ring-offset-2 ring-rose-500 transition-all cursor-pointer"></button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Nombre Completo</label>
+              <input formControlName="name" type="text" placeholder="Ej. Ana Sofía Garza" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Teléfono</label>
+              <input formControlName="phone" type="text" placeholder="Ej. 33 1234 5678" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Correo Electrónico</label>
+              <input formControlName="email" type="email" placeholder="correo@email.com" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">F. Nacimiento</label>
+              <input formControlName="birthDate" type="date" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">F. Contratación</label>
+              <input formControlName="hireDate" type="date" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex justify-between items-center ml-2 mr-2">
+              <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Biografía</label>
+              <span class="text-[9px] font-bold text-zinc-400">{{ teacherForm.value.description?.length || 0 }}/300</span>
+            </div>
+            <textarea formControlName="description" maxlength="300" rows="3" placeholder="Breve descripción del instructor..." class="w-full bg-zinc-50 border-none rounded-2xl p-5 text-sm font-bold text-zinc-900 outline-none resize-none"></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Habilidades</label>
+            <div class="flex gap-2">
+              <input [(ngModel)]="newSkillInput" [ngModelOptions]="{standalone: true}" type="text" placeholder="Ej. Ciclismo Rítmico..." class="w-full bg-zinc-50 border-none rounded-2xl py-3 px-5 text-sm font-bold text-zinc-900 outline-none">
+              <button type="button" (click)="addSkill()" class="bg-zinc-900 hover:bg-zinc-800 text-white px-6 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer">Añadir</button>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-2">
+              @for (skill of skillsList(); track skill) {
+                <span class="bg-rose-50 text-rose-600 px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 border border-rose-100">
+                  {{ skill }}
+                  <button type="button" (click)="removeSkill(skill)" class="hover:text-rose-900">✕</button>
+                </span>
+              }
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="teacherForm.invalid" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg disabled:opacity-30">
+            Guardar Maestro
+          </button>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL DE BICIS -->
+  @if (showBikesModal) {
+    <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
+      <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl space-y-6">
+        <div class="flex justify-between items-center border-b border-zinc-100 pb-4">
+          <div>
+            <h3 class="text-xl font-black uppercase tracking-tight text-zinc-900">Disponibilidad de Bicis</h3>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Actualiza el inventario en tiempo real</p>
+          </div>
+          <button (click)="showBikesModal = false" class="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all cursor-pointer font-black">✕</button>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Cantidad actual</label>
+          <div class="flex items-center bg-zinc-50 rounded-2xl px-6 py-4 border-2 border-transparent focus-within:border-zinc-200 transition-all">
+            <input [(ngModel)]="currentBikesNumber" type="number" min="0" class="bg-transparent border-none w-full text-3xl font-black outline-none text-zinc-900 text-center" placeholder="0">
+          </div>
+        </div>
+
+        <button (click)="saveBikesNumber()" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg">
+          Actualizar Disponibilidad
+        </button>
+      </div>
+    </div>
+  }
+}
