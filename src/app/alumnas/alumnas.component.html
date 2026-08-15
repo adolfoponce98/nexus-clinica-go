@@ -41,7 +41,6 @@
           <tr class="hover:bg-zinc-50/50 transition-colors group relative">
             <td class="px-8 py-4">
               <div class="flex items-center gap-3">
-              <!--<img [src]="student.avatar" class="w-10 h-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform" />-->
                 <div>
                   <p class="text-sm font-black text-zinc-900">{{ student.fullName }}</p>
                   <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter">ID: {{ student.id }}</p>
@@ -62,13 +61,13 @@
 
               @if (activeMenuStudentId === student.id) {
                 <div class="absolute right-8 mt-2 w-40 bg-white rounded-2xl shadow-xl shadow-zinc-200 border border-zinc-100 py-2 z-20 text-left animate-in fade-in zoom-in duration-150">
-                  <button (click)="verDetalle(student)" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors">
+                  <button (click)="verDetalle(student)" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors cursor-pointer">
                     <lucide-icon [img]="Eye" class="w-4 h-4 text-zinc-400"></lucide-icon> Ver Detalle
                   </button>
-                  <button (click)="abrirEditar(student)" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors">
+                  <button (click)="abrirEditar(student)" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors cursor-pointer">
                     <lucide-icon [img]="Edit3" class="w-4 h-4 text-zinc-400"></lucide-icon> Editar
                   </button>
-                  <button (click)="borrarAlumno(student.id)" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors">
+                  <button (click)="borrarAlumno(student.id)" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer">
                     <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon> Borrar
                   </button>
                 </div>
@@ -121,4 +120,356 @@
       </div>
     </div>
   }
+
+  <!-- ================= MODAL DETALLE COMPLETO DE ALUMNA (USERS -> EMAIL) ================= -->
+  @if (showDetailModal) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="showDetailModal = false"></div>
+
+      <div class="relative bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in zoom-in-95 duration-200">
+
+        <!-- Botón Cerrar -->
+        <button (click)="showDetailModal = false" class="absolute right-6 top-6 w-10 h-10 bg-zinc-50 hover:bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-all font-black">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+
+        @if (isLoadingProfile) {
+          <!-- Loader de Perfil -->
+          <div class="flex flex-col items-center justify-center py-20">
+            <div class="w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p class="text-xs font-bold uppercase tracking-wider text-zinc-400">Cargando perfil completo...</p>
+          </div>
+        } @else if (currentStudentProfile) {
+
+          <!-- Encabezado de Perfil -->
+          <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-zinc-100">
+            <img [src]="currentStudentProfile.fotoPerfil || 'https://i.pravatar.cc/150?u=default'"
+                 class="w-20 h-20 rounded-2xl object-cover shadow-md border-2 border-zinc-100" alt="Avatar">
+
+            <div class="text-center sm:text-left flex-1">
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+                <h3 class="text-2xl font-black text-zinc-900 tracking-tight">{{ currentStudentProfile.fullName }}</h3>
+                <span [class]="getStatusClass(currentStudentProfile.status)">
+                  {{ currentStudentProfile.status === 1 ? 'ACTIVO' : 'INACTIVO' }}
+                </span>
+              </div>
+              <p class="text-xs font-bold text-zinc-500">{{ currentStudentProfile.email }} | {{ currentStudentProfile.phone }}</p>
+
+              <div class="flex flex-wrap gap-4 mt-3 text-[10px] font-bold text-zinc-400">
+                <span>ID Socio: <strong class="text-zinc-700">{{ currentStudentProfile.idSocio || '-' }}</strong></span>
+                <span>NIP: <strong class="text-zinc-700">{{ currentStudentProfile.nipSocio || '-' }}</strong></span>
+                <span>Miembresía: <strong class="text-zinc-700">{{ currentStudentProfile.memberShipName || '-' }}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECCIÓN DE PAQUETE ACTIVO (Con validación de vacío o "-") -->
+      <!-- SECCIÓN DE PAQUETE ACTIVO -->
+          <div class="mt-6">
+            <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 mb-3 flex items-center gap-2">
+              <lucide-icon [img]="Package" class="w-4 h-4 text-rose-500"></lucide-icon> Paquete Activo
+            </h4>
+
+            @if (!currentStudentProfile.activePackage || currentStudentProfile.activePackage.idPaquete === '-' || currentStudentProfile.activePackage.idPaquete === '' || currentStudentProfile.activePackage.name === '-' || currentStudentProfile.activePackage.name === '') {
+              <!-- Alerta de Sin Suscripción -->
+              <div class="bg-amber-50 border border-amber-200/60 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4 text-center sm:text-left">
+                  <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center shrink-0">
+                    <lucide-icon [img]="AlertCircle" class="w-6 h-6"></lucide-icon>
+                  </div>
+                  <div>
+                    <h5 class="text-sm font-black text-amber-900 uppercase tracking-tight">Sin suscripción o paquete activo</h5>
+                    <p class="text-xs font-medium text-amber-700 mt-0.5">El usuario no cuenta con créditos o un paquete vigente en este momento.</p>
+                  </div>
+                </div>
+                <button (click)="abrirSeccionAsignarPaquete()" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 transition-all shrink-0 cursor-pointer">
+                  Asignar Paquete
+                </button>
+              </div>
+
+              <!-- ================= SECCIÓN DE ASIGNACIÓN DE MEMBRESÍAS (Abajo del layout) ================= -->
+              @if (showAsignarPaqueteSection) {
+                <div class="mt-4 bg-zinc-50 border border-zinc-200 rounded-3xl p-6 space-y-4 animate-in fade-in duration-200">
+                  <div class="flex justify-between items-center">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-zinc-700">Selecciona una Membresía</h5>
+                    <button (click)="showAsignarPaqueteSection = false" class="text-zinc-400 hover:text-zinc-700 text-xs font-bold">Cancelar</button>
+                  </div>
+
+                  <!-- LOADER DE MEMBRESÍAS -->
+                  @if (isLoadingMembresias) {
+                    <div class="flex flex-col items-center justify-center py-8">
+                      <div class="w-6 h-6 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                      <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Cargando membresías disponibles...</p>
+                    </div>
+                  } @else {
+                    @if (listaMembresias.length === 0) {
+                      <p class="text-xs text-zinc-400 text-center py-4 font-medium">No hay membresías registradas para esta sucursal.</p>
+                    } @else {
+                      <!-- CUADRÍCULA DE MEMBRESÍAS -->
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        @for (membresia of listaMembresias; track membresia.idPaquete) {
+                          <div (click)="seleccionarMembresia(membresia.idPaquete)"
+                               [class]="selectedMembresiaId === membresia.idPaquete ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-300'"
+                               class="p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between">
+                            <div>
+                              <div class="flex justify-between items-start mb-1">
+                                <h6 class="text-xs font-black uppercase tracking-tight">{{ membresia.name }}</h6>
+                                <span [class]="selectedMembresiaId === membresia.idPaquete ? 'bg-amber-400 text-zinc-950' : 'bg-zinc-100 text-zinc-600'"
+                                      class="text-[9px] font-black px-2 py-0.5 rounded-full">
+                                  ${{ membresia.precioDescuento > 0 ? membresia.precioDescuento : membresia.precioRegular }} MXN
+                                </span>
+                              </div>
+                              <p class="text-[10px] opacity-75 line-clamp-2 mt-1">{{ membresia.descripcion }}</p>
+                            </div>
+                            <div class="mt-3 pt-2 border-t border-white/10 flex justify-between items-center text-[10px] font-bold">
+                              <span>Créditos: {{ membresia.creditos }}</span>
+                              <span>{{ selectedMembresiaId === membresia.idPaquete ? 'Seleccionada ✓' : 'Seleccionar' }}</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+
+                      <!-- BOTÓN DE ASIGNAR MEMBRESÍA -->
+                      @if (selectedMembresiaId) {
+                        <div class="pt-2">
+                          <button (click)="confirmarAsignacionMembresia()" [disabled]="isAssigningPackage" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 disabled:opacity-50">
+                            @if (isAssigningPackage) {
+                              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              Asignando membresía...
+                            } @else {
+                              Asignar Membresía Seleccionada
+                            }
+                          </button>
+                        </div>
+                      }
+                    }
+                  }
+                </div>
+              }
+
+            } @else {
+              <!-- Información detallada del Paquete Activo -->
+              <div class="bg-zinc-50 border border-zinc-100 rounded-3xl p-6 space-y-4">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Paquete</p>
+                    <p class="text-sm font-black text-zinc-900 mt-1">{{ currentStudentProfile.activePackage.name }}</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Clases (Tomadas / Totales)</p>
+                    <p class="text-sm font-black text-zinc-900 mt-1">
+                      <span class="text-rose-500">{{ currentStudentProfile.activePackage.clasesTomadas }}</span> / {{ currentStudentProfile.activePackage.clasesTotales }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Costo</p>
+                    <p class="text-sm font-black text-zinc-900 mt-1">${{ currentStudentProfile.activePackage.precio }} MXN</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Expiración</p>
+                    <p class="text-sm font-black text-zinc-900 mt-1">{{ currentStudentProfile.activePackage.expiracion || '-' }}</p>
+                  </div>
+                </div>
+
+                <!-- Botones de Eliminar o Cambiar Paquete al final -->
+                <div class="pt-4 border-t border-zinc-200/60 flex flex-wrap items-center justify-end gap-3">
+                  <button (click)="confirmarEliminarPaquete()" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-rose-600 bg-rose-50 hover:bg-rose-100 transition-all cursor-pointer">
+                    Eliminar Paquete
+                  </button>
+                  <button (click)="abrirCambiarPaquete()" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white bg-zinc-900 hover:bg-zinc-800 transition-all cursor-pointer">
+                    Cambiar Paquete
+                  </button>
+                </div>
+
+                <!-- ================= SECCIÓN DE CAMBIO DE PAQUETE (Mismo flujo de asignar) ================= -->
+                @if (showAsignarPaqueteSection) {
+                  <div class="mt-4 bg-white border border-zinc-200 rounded-3xl p-6 space-y-4 animate-in fade-in duration-200">
+                    <div class="flex justify-between items-center">
+                      <h5 class="text-xs font-black uppercase tracking-widest text-zinc-700">Selecciona el Nuevo Paquete</h5>
+                      <button (click)="showAsignarPaqueteSection = false" class="text-zinc-400 hover:text-zinc-700 text-xs font-bold">Cancelar</button>
+                    </div>
+
+                    <!-- LOADER DE MEMBRESÍAS -->
+                    @if (isLoadingMembresias) {
+                      <div class="flex flex-col items-center justify-center py-8">
+                        <div class="w-6 h-6 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Cargando membresías disponibles...</p>
+                      </div>
+                    } @else {
+                      @if (listaMembresias.length === 0) {
+                        <p class="text-xs text-zinc-400 text-center py-4 font-medium">No hay membresías registradas para esta sucursal.</p>
+                      } @else {
+                        <!-- CUADRÍCULA DE MEMBRESÍAS -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                          @for (membresia of listaMembresias; track membresia.idPaquete) {
+                            <div (click)="seleccionarMembresia(membresia.idPaquete)"
+                                 [class]="selectedMembresiaId === membresia.idPaquete ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-zinc-50 text-zinc-900 border-zinc-100 hover:border-zinc-300'"
+                                 class="p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between">
+                              <div>
+                                <div class="flex justify-between items-start mb-1">
+                                  <h6 class="text-xs font-black uppercase tracking-tight">{{ membresia.name }}</h6>
+                                  <span [class]="selectedMembresiaId === membresia.idPaquete ? 'bg-amber-400 text-zinc-950' : 'bg-zinc-200 text-zinc-700'"
+                                        class="text-[9px] font-black px-2 py-0.5 rounded-full">
+                                    ${{ membresia.precioDescuento > 0 ? membresia.precioDescuento : membresia.precioRegular }} MXN
+                                  </span>
+                                </div>
+                                <p class="text-[10px] opacity-75 line-clamp-2 mt-1">{{ membresia.descripcion }}</p>
+                              </div>
+                              <div class="mt-3 pt-2 border-t border-white/10 flex justify-between items-center text-[10px] font-bold">
+                                <span>Créditos: {{ membresia.creditos }}</span>
+                                <span>{{ selectedMembresiaId === membresia.idPaquete ? 'Seleccionada ✓' : 'Seleccionar' }}</span>
+                              </div>
+                            </div>
+                          }
+                        </div>
+
+                        <!-- BOTÓN DE CONFIRMAR CAMBIO -->
+                        @if (selectedMembresiaId) {
+                          <div class="pt-2">
+                            <button (click)="confirmarAsignacionMembresia()" [disabled]="isAssigningPackage" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 disabled:opacity-50">
+                              @if (isAssigningPackage) {
+                                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Guardando cambio...
+                              } @else {
+                                Confirmar Cambio de Paquete
+                              }
+                            </button>
+                          </div>
+                        }
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- HISTORIAL DE CLASES Y PAGOS (Grid de 2 columnas) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+
+            <!-- Historial de Clases -->
+            <div class="bg-zinc-50 border border-zinc-100 rounded-3xl p-6 flex flex-col">
+              <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                <lucide-icon [img]="Calendar" class="w-4 h-4 text-rose-500"></lucide-icon> Historial de Clases
+              </h4>
+
+              <div class="space-y-3 max-h-60 overflow-y-auto pr-1 flex-1">
+                @if (!currentStudentProfile.historyClasses || currentStudentProfile.historyClasses.length === 0) {
+                  <p class="text-xs text-zinc-400 text-center py-8 font-medium">No hay clases registradas en el historial.</p>
+                } @else {
+                  @for (clase of currentStudentProfile.historyClasses; track clase.time) {
+                    <div class="bg-white p-3.5 rounded-2xl border border-zinc-100 flex items-center justify-between gap-2">
+                      <div>
+                        <p class="text-xs font-black text-zinc-900">{{ clase.name || 'Clase de Ciclismo' }}</p>
+                        <p class="text-[10px] font-bold text-zinc-400 mt-0.5">Coach: {{ clase.coach || 'Instructor' }} | {{ clase.time }}</p>
+                      </div>
+                      <span class="text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider bg-zinc-100 text-zinc-600">
+                        {{ clase.status || 'Completada' }}
+                      </span>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- Historial de Pagos -->
+            <div class="bg-zinc-50 border border-zinc-100 rounded-3xl p-6 flex flex-col">
+              <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                <lucide-icon [img]="CreditCard" class="w-4 h-4 text-rose-500"></lucide-icon> Historial de Pagos
+              </h4>
+
+              <div class="space-y-3 max-h-60 overflow-y-auto pr-1 flex-1">
+                @if (!currentStudentProfile.pagos || currentStudentProfile.pagos.length === 0) {
+                  <p class="text-xs text-zinc-400 text-center py-8 font-medium">No hay pagos registrados.</p>
+                } @else {
+                  @for (pago of currentStudentProfile.pagos; track pago.fechaRegistro) {
+                    <div class="bg-white p-3.5 rounded-2xl border border-zinc-100 flex items-center justify-between gap-2">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xs">
+                          $
+                        </div>
+                        <div>
+                          <p class="text-xs font-black text-zinc-900">ID: {{ pago.fechaRegistro }}</p>
+                          <p class="text-[10px] font-bold text-zinc-400 mt-0.5">Transacción exitosa</p>
+                        </div>
+                      </div>
+                      <span class="text-xs font-black text-emerald-600">
+                        ${{ pago.monto }}
+                      </span>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+          </div>
+
+          <!-- INFORMACIÓN ADICIONAL Y SUCURSALES -->
+          <div class="mt-6 pt-6 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-zinc-500">
+            <div>
+              <span>Sucursales asociadas: </span>
+              <span class="text-zinc-900">{{ currentStudentProfile.brancheInUser?.join(', ') || 'N/A' }}</span>
+            </div>
+            <div>
+              <span>Fecha de registro: </span>
+              <span class="text-zinc-900">{{ currentStudentProfile.createdAt || '-' }}</span>
+            </div>
+          </div>
+
+        }
+      </div>
+    </div>
+  }
 </div>
+<!-- ================= POPUP DE ÉXITO: MEMBRESÍA ASIGNADA ================= -->
+  @if (showSuccessPopup) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="showSuccessPopup = false"></div>
+
+      <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in zoom-in-95 duration-200 text-center">
+        <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+          <lucide-icon [img]="CheckCircle2" class="w-8 h-8"></lucide-icon>
+        </div>
+
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">¡Membresía Asignada!</h3>
+        <p class="text-xs font-medium text-zinc-500 leading-relaxed mb-6">
+          La membresía se ha vinculado correctamente a la alumna de forma exitosa.
+        </p>
+
+        <button (click)="showSuccessPopup = false; showDetailModal = false;" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-zinc-950/20">
+          Entendido
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ================= POPUP DE CONFIRMACIÓN: ELIMINAR PAQUETE ================= -->
+  @if (showDeleteConfirmModal) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="showDeleteConfirmModal = false"></div>
+
+      <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in zoom-in-95 duration-200 text-center">
+        <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+          <lucide-icon [img]="AlertCircle" class="w-8 h-8"></lucide-icon>
+        </div>
+
+        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">¿Eliminar Paquete?</h3>
+        <p class="text-xs font-medium text-zinc-500 leading-relaxed mb-6">
+          ¿Estás seguro de eliminar el paquete actual de esta alumna? Esta acción no se puede deshacer.
+        </p>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button (click)="showDeleteConfirmModal = false" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition-all cursor-pointer">
+            Cancelar
+          </button>
+          <button (click)="ejecutarEliminacionPaquete()" [disabled]="isDeletingPackage" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all cursor-pointer flex items-center justify-center">
+            @if (isDeletingPackage) {
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            } @else {
+              Sí, Eliminar
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }

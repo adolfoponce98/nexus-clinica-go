@@ -25,6 +25,11 @@ export class StudentService {
   private apiUrl = 'https://register-rdotx3vmaq-uc.a.run.app';
   private headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
+  asignarMembresiaAPI(url: string, body: any): Observable<any> {
+  const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+  return this.http.post<any>(url, body, { headers });
+}
+
   constructor(private http: HttpClient) {}
 
   registrarAlumna(data: UserDataModelAuth): Observable<RegisterUserResponse> {

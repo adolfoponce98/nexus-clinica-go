@@ -11,10 +11,10 @@
   <div class="flex justify-between items-end">
     <div>
       <p class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">Roster Management</p>
-      <h2 class="text-4xl font-black uppercase tracking-tighter text-zinc-900">Staff & Instructors</h2>
+      <h2 class="text-4xl font-black uppercase tracking-tighter text-zinc-900">Maestr@s</h2>
     </div>
     <div class="bg-zinc-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest">
-      Total: {{ instructors().length }} Instructors
+      Total: {{ instructors().length }} Maestr@s
     </div>
   </div>
 
@@ -31,22 +31,22 @@
 
           <form class="space-y-6">
             <div class="space-y-2">
-              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Instructor Name</label>
+              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Nombre del maestr@</label>
               <input type="text" [value]="staff.name" class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors">
             </div>
 
             <div class="space-y-2">
-              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Email Address</label>
+              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Correo electronico (obligatorio)</label>
               <input type="email" [value]="staff.email || ''" class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors">
             </div>
 
             <div class="grid grid-cols-2 gap-6">
               <div class="space-y-2">
-                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Phone</label>
+                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Telefono (opcional)</label>
                 <input type="text" [value]="staff.phone" class="w-full border-b border-zinc-100 py-2 font-bold text-zinc-900 outline-none">
               </div>
               <div class="space-y-2">
-                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Calendar Color</label>
+                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Color distintivo</label>
                 <div class="flex items-center gap-2 py-2">
                   <div class="w-6 h-6 rounded-full border border-zinc-200" [style.background-color]="staff.colorHex || '#e4e4e7'"></div>
                   <span class="text-xs font-bold text-zinc-600">{{ staff.colorHex || 'N/A' }}</span>
@@ -55,20 +55,20 @@
             </div>
 
             <div class="space-y-3">
-              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Specializations (Skills)</label>
+              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Habilidades (Skills)</label>
               <div class="flex flex-wrap gap-2">
                 @if (staff.skills && staff.skills.length > 0) {
                   @for (skill of staff.skills; track skill) {
                     <span class="px-3 py-1 bg-cyan-50 text-cyan-600 text-[8px] font-black rounded-full uppercase">{{ skill }}</span>
                   }
                 } @else {
-                  <span class="text-xs text-zinc-400 italic">No skills registered</span>
+                  <span class="text-xs text-zinc-400 italic">Sin habilidades registradas</span>
                 }
               </div>
             </div>
 
             <button class="w-full bg-zinc-950 text-white font-black py-4 rounded-2xl uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition-all">
-              Update Instructor Profile
+              Actualizar o Guardar datos
             </button>
           </form>
         </div>

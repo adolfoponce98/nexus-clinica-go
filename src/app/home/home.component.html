@@ -25,7 +25,7 @@
           <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex justify-between items-start">
             <div>
               <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Total Alumnas</p>
-              <h3 class="text-4xl font-black">{{ dashboardData?.branchInfo?.numberStudents ?? 0 }}</h3>
+              <h3 class="text-4xl font-black">{{ dashboardData?.totalSubscriptions ?? 0 }}</h3>
               <p class="text-[10px] font-bold text-emerald-500 mt-2">↑ 12% <span class="text-zinc-400">vs mes pasado</span></p>
             </div>
             <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
@@ -49,7 +49,7 @@
           <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex justify-between items-start">
             <div>
               <p class="text-[10px] uppercase font-bold text-zinc-400 tracking-widest mb-1">Total Paquetes</p>
-              <h3 class="text-4xl font-black">{{ dashboardData?.branchInfo?.numberStudents ?? 0 }}</h3>
+              <h3 class="text-4xl font-black">{{ dashboardData?.memberships?.length ?? 0 }}</h3>
               <p class="text-[10px] font-bold text-emerald-500 mt-2">↑ 12% <span class="text-zinc-400"></span></p>
             </div>
             <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">

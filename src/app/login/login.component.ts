@@ -6,6 +6,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
+import { LoginService,LoginUserRequest } from './login.service';
 import {
   LucideAngularModule,
   Bike,
@@ -21,6 +22,7 @@ import {
   imports: [MatIconModule,ReactiveFormsModule,LucideAngularModule],
   standalone: true, // Asegúrate de que sea standalone
   templateUrl: './login.component.html',
+   providers: [LoginService],
 })
 export class LoginComponent {
   loginForm: FormGroup;
@@ -37,7 +39,7 @@ readonly Bike = Bike;
   private router = inject(Router);
   private fb = inject(FormBuilder);
 isLoading = signal(false); // Estado para el loader
-  constructor() {
+  constructor(private loginService: LoginService) {
   this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]], // Cambiado a email para el endpoint
       password: ['', [Validators.required]]
@@ -61,16 +63,24 @@ isLoading = signal(false); // Estado para el loader
   onSubmit() {
     if (this.loginForm.valid) {
       this.isLoading.set(true);
-
       const payload = this.loginForm.value; // Contiene { email, password }
-      const url = 'https://loginuserssystem-rdotx3vmaq-uc.a.run.app';
       console.log (payload)
+   // CORRECCIÓN: Estructurarlo como un objeto con las propiedades correctas
+      const request: LoginUserRequest = {
+        email: payload.email,
+        password: payload.password // Asegúrate de que en tu formulario el control se llame 'password' o 'pasword' según corresponda
+      };
 
-      this.http.post(url, payload).subscribe({
+   this.loginService.login( request).subscribe({
         next: (response) => {
+          if(response.success){
           console.log('Login exitoso', response);
          this.authService.saveSession(response);
           this.router.navigate(['/home']); // Redirección al home
+          }else{
+                  alert('Credenciales incorrectas o error de servidor');
+          }
+
         },
         error: (err) => {
           console.error('Error en login', err);
