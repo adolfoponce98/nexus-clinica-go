@@ -1,7 +1,7 @@
 <div class="relative min-h-screen flex items-center justify-center bg-zinc-950 text-white font-sans overflow-hidden">
   <div class="absolute inset-0 z-0">
     <img
-      src="assets/image.png"
+      src="assets/image.jpg"
       class="w-full h-full object-cover opacity-30 grayscale"
       alt="Gym Background"
     >
@@ -12,17 +12,16 @@
 
     <section>
       <div class="flex items-center gap-2 mb-8">
-       <lucide-icon [img]="Bike" class="text-amber-400 w-8 h-8"></lucide-icon>
-        <h1 class="text-2xl font-black italic tracking-tighter uppercase">Beast Admin</h1>
+     <img src="assets/logoh.png" class="h-8 object-contain grayscale" alt="Logo">
       </div>
 
       <h2 class="text-6xl font-black uppercase leading-tight mb-4">
-        Precision <br>
-        <span class="text-amber-400 italic">In Motion.</span>
+        Mantente <br>
+        <span class="text-amber-400 italic">en Movimiento.</span>
       </h2>
 
       <p class="text-zinc-400 max-w-md text-lg mb-8">
-       Administra tu studio de Indoor o Gym y ten el control en todo un sistema completo de administración
+       Administra tu studio de Indoor o Gym y toma el control en todo un sistema completo de administración
       </p>
 
       <div class="flex gap-8 border-l-2 border-cyan-400 pl-6">
@@ -70,18 +69,21 @@
 <button
   type="submit"
   [disabled]="isLoading() || loginForm.invalid"
-  class="w-full bg-amber-400 hover:bg-amber-500 disabled:bg-zinc-700 text-zinc-950 font-black py-4 rounded-lg flex items-center justify-center gap-2 transition-all uppercase tracking-tighter"
+  class="w-full bg-amber-400 hover:bg-amber-500 disabled:bg-zinc-700 text-zinc-950 font-black py-4 rounded-lg flex items-center justify-center gap-2 transition-all uppercase tracking-tighter cursor-pointer disabled:cursor-not-allowed"
 >
   @if (!isLoading()) {
     Entrar <lucide-icon [img]="Zap" class="w-4 h-4 fill-current"></lucide-icon>
   } @else {
-    <ng-container *ngTemplateOutlet="loader"></ng-container>
+    <div class="flex items-center gap-2">
+      <div class="w-5 h-5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></div>
+      Cargando...
+    </div>
   }
 </button>
   <ng-template #loader>
     <div class="flex items-center gap-2">
       <div class="w-5 h-5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></div>
-      Processing...
+      Cargando...
     </div>
   </ng-template>
 

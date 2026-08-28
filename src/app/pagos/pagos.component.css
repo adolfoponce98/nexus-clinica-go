@@ -1,0 +1,23 @@
+@media print {
+  /* Oculta toda la interfaz normal de la aplicación al mandar a imprimir */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Hace visible únicamente el ticket térmico oculto */
+  #ticket-impresion, #ticket-impresion * {
+    visibility: visible !important;
+  }
+
+  #ticket-impresion {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm; /* Cambia a 80mm si tu impresora térmica es de ese tamaño */
+    font-family: 'Courier New', Courier, monospace;
+    color: black;
+    padding: 2mm;
+    margin: 0;
+  }
+}

@@ -18,4 +18,11 @@ export class MaestrasService {
   obtenerMaestras(request: GetTeacherByBranchRequest): Observable<GetTeacherByBranchResponse> {
     return this.http.post<GetTeacherByBranchResponse>(this.apiUrl, request, { headers: this.headers });
   }
+  crearMaestro(payload: any): Observable<any> {
+    return this.http.post('https://createemploye-rdotx3vmaq-uc.a.run.app', payload);
+  }
+
+  eliminarMaestro(payload: { branchId: string, idDocumentFirebase: string }): Observable<any> {
+    return this.http.post('https://deleteemploye-rdotx3vmaq-uc.a.run.app', payload);
+  }
 }

@@ -10,8 +10,10 @@ export interface LocationModel {
 }
 
 export interface TypeClassModel {
-  // Define las propiedades de tus tipos de clase si las tienes
-  [key: string]: any;
+  descripcion: string;
+  dificultad: number;
+  duracion: string;
+  name: string;
 }
 
 export interface MyBike {
@@ -67,6 +69,41 @@ export interface InfoSchedulerMonthly {
   semana5: number;
 }
 
+export interface PagoItem {
+  id: string;
+  branchId: string;
+  monto: number;
+  emailAlumno: string;
+  emailRecepcion: string;
+  metodoPago: string;
+  concepto: string;
+  conceptoPagoId: string;
+  fechaRegistro: string;
+  timestamp: number;
+}
+
+export interface GastoItem {
+  id: string;
+  idBranch: string;
+  monto: number;
+  concepto: string;
+  tipoGasto: number;
+  correo: string;
+  fechaRegistro: string;
+  timestamp: number;
+}
+
+export interface FinanzasData {
+  pagos: {
+    acumulado_mensual: number;
+    registros: PagoItem[];
+  };
+  gastos: {
+    acumulado_mensual: number;
+    registros: GastoItem[];
+  };
+}
+
 export interface DashBoardResponse {
   email: string;
   idBranch: string;
@@ -75,7 +112,8 @@ export interface DashBoardResponse {
   branchInfo: BranchModel;
   performance: InfoSchedulerMonthly;
   totalSubscriptions: number;
-  myBikesNumber:number;
+  myBikesNumber: number;
+  finanzas: FinanzasData; // <--- Añadido para integrar la información de pagos, gastos y acumulados
 }
 
 export interface TypeClassModel {

@@ -1,53 +1,121 @@
 <div class="flex min-h-screen bg-zinc-50 font-sans text-zinc-900">
+<!-- SIDEBAR COLAPSIBLE -->
+  <aside [class.w-64]="!isSidebarCollapsed" [class.w-20]="isSidebarCollapsed" class="bg-zinc-950 flex flex-col p-4 text-zinc-400 shrink-0 transition-all duration-300 relative">
 
-  <!-- SIDEBAR -->
-  <aside class="w-64 bg-zinc-950 flex flex-col p-6 text-zinc-400 shrink-0">
-    <div class="flex items-center gap-3 mb-12">
-      <img src="assets/logoh.png" class="w-full h-full object-cover grayscale" alt="Gym Background">
+    <!-- Botón para colapsar/expandir -->
+    <button (click)="toggleSidebar()" class="absolute -right-3 top-6 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer z-20 shadow-md" title="Colapsar menú">
+      <lucide-icon [img]="isSidebarCollapsed ? PanelLeftClose : PanelLeftClose" class="w-3.5 h-3.5 transition-transform duration-300" [class.rotate-180]="isSidebarCollapsed"></lucide-icon>
+    </button>
+
+    <!-- Logo / Imagen -->
+    <div class="flex items-center justify-center mb-8 px-2 overflow-hidden">
+      @if (!isSidebarCollapsed) {
+        <img src="assets/logoh.png" class="h-8 object-contain grayscale" alt="Logo">
+      } @else {
+        <span class="text-white font-black text-lg">B</span>
+      }
     </div>
 
-    <div class="flex flex-col items-center justify-center text-center mb-12 w-full">
-      <h1 class="text-zinc-400 font-bold uppercase tracking-tight text-xs">
-        Sucursal:
-        <span class="text-amber-400 font-black text-sm block mt-1">
-          {{ userData?.brancheInUser?.[0] || 'BEAST' }}
-        </span>
-      </h1>
-    </div>
 
-    <nav class="flex-1 space-y-2">
-      <a routerLink="/home" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
-        <lucide-icon [img]="LayoutDashboard" class="w-5 h-5"></lucide-icon>
-        <span class="font-bold text-sm">Home</span>
+
+    <!-- Navegación -->
+    <nav class="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden pr-1">
+
+      @if (hasPermission('home')) {
+        <a routerLink="/home" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Home' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+          <lucide-icon [img]="LayoutDashboard" class="w-5 h-5 shrink-0"></lucide-icon>
+          @if (!isSidebarCollapsed) {
+            <span class="font-bold text-sm truncate">Home</span>
+          }
+        </a>
+      }
+
+      @if (hasPermission('calendario')) {
+        <a routerLink="/calendario" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Calendario' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+          <lucide-icon [img]="Calendar" class="w-5 h-5 shrink-0"></lucide-icon>
+          @if (!isSidebarCollapsed) {
+            <span class="font-bold text-sm truncate">Calendario</span>
+          }
+        </a>
+      }
+
+      <a routerLink="/monitor" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Monitor Cardíaco' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+        <lucide-icon [img]="Activity" class="w-5 h-5 shrink-0"></lucide-icon>
+        @if (!isSidebarCollapsed) {
+          <span class="font-bold text-sm truncate">Monitor Cardíaco</span>
+        }
       </a>
-      <a routerLink="/calendario" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
-        <lucide-icon [img]="LayoutDashboard" class="w-5 h-5"></lucide-icon>
-        <span class="font-bold text-sm">Calendario</span>
+
+      @if (hasPermission('alumnas')) {
+        <a routerLink="/students" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Alumnas' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+          <lucide-icon [img]="Users" class="w-5 h-5 shrink-0"></lucide-icon>
+          @if (!isSidebarCollapsed) {
+            <span class="font-bold text-sm truncate">Alumnas</span>
+          }
+        </a>
+      }
+
+      @if (hasPermission('maestras')) {
+        <a routerLink="/staff" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Maestras' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+          <lucide-icon [img]="Briefcase" class="w-5 h-5 shrink-0"></lucide-icon>
+          @if (!isSidebarCollapsed) {
+            <span class="font-bold text-sm truncate">Maestras</span>
+          }
+        </a>
+      }
+
+      @if (hasPermission('planes')) {
+        <a routerLink="/planes" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Planes' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+          <lucide-icon [img]="CreditCard" class="w-5 h-5 shrink-0"></lucide-icon>
+          @if (!isSidebarCollapsed) {
+            <span class="font-bold text-sm truncate">Planes</span>
+          }
+        </a>
+      }
+
+      @if (hasPermission('pagos')) {
+        <a routerLink="/pagos" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Pagos' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+          <lucide-icon [img]="DollarSign" class="w-5 h-5 shrink-0"></lucide-icon>
+          @if (!isSidebarCollapsed) {
+            <span class="font-bold text-sm truncate">Pagos</span>
+          }
+        </a>
+      }
+
+      @if (hasPermission('gastos')) {
+        <a routerLink="/gastos" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Gastos' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+          <lucide-icon [img]="Receipt" class="w-5 h-5 shrink-0"></lucide-icon>
+          @if (!isSidebarCollapsed) {
+            <span class="font-bold text-sm truncate">Gastos</span>
+          }
+        </a>
+      }
+
+      @if (hasPermission('sucursal')) {
+        <a routerLink="/sucursales" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Mi Sucursal' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+          <lucide-icon [img]="Store" class="w-5 h-5 shrink-0"></lucide-icon>
+          @if (!isSidebarCollapsed) {
+            <span class="font-bold text-sm truncate">Mi Sucursal</span>
+          }
+        </a>
+      }
+
+      <a routerLink="/usuarios_sistema" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Usuarios Sistema' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+        <lucide-icon [img]="UserCog" class="w-5 h-5 shrink-0"></lucide-icon>
+        @if (!isSidebarCollapsed) {
+          <span class="font-bold text-sm truncate">Usuarios Sistema</span>
+        }
       </a>
-      <a routerLink="/monitor" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
-        <lucide-icon [img]="Activity" class="w-5 h-5"></lucide-icon>
-        <span class="font-bold text-sm">Monitor Cardíaco</span>
-      </a>
-      <a routerLink="/students" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
-        <lucide-icon [img]="Users" class="w-5 h-5"></lucide-icon>
-        <span class="font-bold text-sm">Alumnas</span>
-      </a>
-      <a routerLink="/staff" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
-        <lucide-icon [img]="Briefcase" class="w-5 h-5"></lucide-icon>
-        <span class="font-bold text-sm">Maestras</span>
-      </a>
-      <a routerLink="/planes" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
-        <lucide-icon [img]="CreditCard" class="w-5 h-5"></lucide-icon>
-        <span class="font-bold text-sm">Planes</span>
-      </a>
-      <a routerLink="/pagos" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
-        <lucide-icon [img]="DollarSign" class="w-5 h-5"></lucide-icon>
-        <span class="font-bold text-sm">Pagos</span>
-      </a>
-      <a routerLink="/sucursales" routerLinkActive="bg-zinc-900 text-white" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all">
-        <lucide-icon [img]="Store" class="w-5 h-5"></lucide-icon>
-        <span class="font-bold text-sm">Mi Sucursal</span>
-      </a>
+
+      @if (hasPermission('permisos')) {
+        <a routerLink="/permisos" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Permisos' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
+          <lucide-icon [img]="Shield" class="w-5 h-5 shrink-0"></lucide-icon>
+          @if (!isSidebarCollapsed) {
+            <span class="font-bold text-sm truncate">Permisos</span>
+          }
+        </a>
+      }
+
     </nav>
   </aside>
 
@@ -57,7 +125,7 @@
     <!-- HEADER -->
     <header class="h-20 bg-white/80 backdrop-blur-md border-b border-zinc-200 px-8 flex items-center justify-between shrink-0 relative">
 
-      <!-- BLOQUE IZQUIERDA: Campana, Ayuda y Botón Dar de Alta -->
+      <!-- BLOQUE IZQUIERDA: Campana, Ayuda y Estado de Impresora -->
       <div class="flex items-center gap-6">
         <div class="flex gap-4 text-zinc-400 relative">
           <!-- BOTÓN DE NOTIFICACIONES / CAMPANA -->
@@ -107,10 +175,28 @@
           }
         </div>
 
-        <button class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all">
-          Dar de Alta
+        <!-- BOTÓN DINÁMICO DE CONFIGURACIÓN DE IMPRESORA -->
+        <button (click)="openPrinterModal()" class="flex items-center gap-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-zinc-200 cursor-pointer shadow-sm">
+          <lucide-icon [img]="Printer" class="w-4 h-4 text-zinc-600"></lucide-icon>
+          @if (printerStatus === 'unconfigured') {
+            <span>Configurar Impresora</span>
+          } @else if (printerStatus === 'connected') {
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="truncate max-w-[120px]">{{ printerName }}</span>
+              <span class="text-[9px] uppercase font-black px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded">Online</span>
+            </div>
+          } @else {
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              <span class="truncate max-w-[120px]">{{ printerName }}</span>
+              <span class="text-[9px] uppercase font-black px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Offline</span>
+            </div>
+          }
         </button>
       </div>
+    <!-- Sucursal (Oculto si está colapsado) -->
+
 
       <!-- BLOQUE DERECHA: Perfil de usuario y menús -->
       <div class="flex items-center gap-6">
@@ -130,7 +216,7 @@
           @if (showUserMenu){
            <div class="absolute right-0 mt-4 w-48 bg-white rounded-2xl shadow-2xl shadow-zinc-200 border border-zinc-100 p-2 z-50 animate-in fade-in zoom-in duration-200">
             <button (click)="confirmLogout()"
-                    class="w-full flex items-center gap-3 px-4 py-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors text-sm font-bold">
+                    class="w-full flex items-center gap-3 px-4 py-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors text-sm font-bold cursor-pointer">
               <lucide-icon [img]="LogOut" class="w-4 h-4"></lucide-icon>
               Cerrar Sesión
             </button>
@@ -138,12 +224,85 @@
           }
         </div>
 
-        @if (showLogoutConfirm){
+
+      </div>
+    </header>
+
+    <!-- ROUTER OUTLET -->
+    <div class="flex-1 overflow-y-auto p-8">
+      <router-outlet></router-outlet>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL DE CONFIGURACIÓN DE IMPRESORA BLUETOOTH -->
+@if (showPrinterModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="closePrinterModal()"></div>
+
+    <div class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 animate-in zoom-in-95 duration-200 space-y-6">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
+            <lucide-icon [img]="Printer" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div>
+            <h3 class="text-lg font-black text-zinc-900 uppercase">Impresora Bluetooth</h3>
+            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Gestión de dispositivos térmicos</p>
+          </div>
+        </div>
+        <button (click)="closePrinterModal()" class="text-zinc-300 hover:text-zinc-600 cursor-pointer">
+          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Estado actual -->
+      <div class="bg-zinc-50 p-4 rounded-2xl border border-zinc-100 flex items-center justify-between">
+        <div>
+          <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Estado actual</p>
+          <p class="text-xs font-black text-zinc-800 mt-0.5">
+            {{ printerStatus === 'connected' ? printerName : (printerName ? printerName + ' (Guardada)' : 'Ninguna impresora vinculada') }}
+          </p>
+        </div>
+        <span [class]="printerStatus === 'connected' ? 'bg-emerald-100 text-emerald-700' : (printerStatus === 'disconnected' ? 'bg-amber-100 text-amber-700' : 'bg-zinc-200 text-zinc-600')" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+          {{ printerStatus === 'connected' ? 'ONLINE' : (printerStatus === 'disconnected' ? 'OFFLINE' : 'NO CONFIGURADA') }}
+        </span>
+      </div>
+
+      <!-- Acciones -->
+      <div class="space-y-3">
+        <button (click)="scanBluetoothDevices()" [disabled]="isScanning"
+                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20 disabled:opacity-50">
+          @if (isScanning) {
+            <lucide-icon [img]="RefreshCw" class="w-4 h-4 animate-spin"></lucide-icon>
+            <span>Buscando dispositivos...</span>
+          } @else {
+            <lucide-icon [img]="Bluetooth" class="w-4 h-4"></lucide-icon>
+            <span>Vincular Nueva Impresora</span>
+          }
+        </button>
+
+        @if (printerStatus !== 'unconfigured') {
+          <button (click)="disconnectPrinter()"
+                  class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-pointer">
+            Desvincular Impresora Actual
+          </button>
+        }
+      </div>
+
+      <button (click)="closePrinterModal()" class="w-full py-3 text-xs font-bold text-zinc-400 hover:text-zinc-600 uppercase tracking-wider cursor-pointer">
+        Cerrar
+      </button>
+    </div>
+  </div>
+}
+  @if (showLogoutConfirm){
           <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm" (click)="showLogoutConfirm = false"></div>
 
             <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 animate-in slide-in-from-bottom-4 duration-300">
-              <button (click)="showLogoutConfirm = false" class="absolute right-6 top-6 text-zinc-300 hover:text-zinc-500">
+              <button (click)="showLogoutConfirm = false" class="absolute right-6 top-6 text-zinc-300 hover:text-zinc-500 cursor-pointer">
                 <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
               </button>
 
@@ -159,11 +318,11 @@
 
                 <div class="grid grid-cols-2 gap-3 w-full">
                   <button (click)="showLogoutConfirm = false"
-                          class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 bg-zinc-50 hover:bg-zinc-100 transition-all">
+                          class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 bg-zinc-50 hover:bg-zinc-100 transition-all cursor-pointer">
                     Cancelar
                   </button>
                   <button (click)="logout()"
-                          class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all">
+                          class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all cursor-pointer">
                     Sí, Salir
                   </button>
                 </div>
@@ -171,13 +330,3 @@
             </div>
           </div>
         }
-      </div>
-    </header>
-
-    <!-- ROUTER OUTLET -->
-    <div class="flex-1 overflow-y-auto p-8">
-      <router-outlet></router-outlet>
-    </div>
-
-  </main>
-</div>

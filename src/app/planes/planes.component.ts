@@ -1,10 +1,11 @@
-import { Component, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Plus, MoreVertical, LayoutGrid, List } from 'lucide-angular';
+import { HttpClient } from '@angular/common/http';
+import { LucideAngularModule, Plus, MoreVertical, LayoutGrid, List, CheckCircle2 } from 'lucide-angular';
 import { collection, onSnapshot, Unsubscribe, getFirestore } from 'firebase/firestore';
 import { PaqueteMemberShipModel } from './planes.model';
-
+import { AuthService } from '../auth/auth.service';
 @Component({
   selector: 'app-plans',
   standalone: true,
@@ -12,36 +13,44 @@ import { PaqueteMemberShipModel } from './planes.model';
   templateUrl: './planes.component.html'
 })
 export class PlansComponent implements OnInit, OnDestroy {
+  private authService = inject(AuthService);
   readonly Plus = Plus;
   readonly MoreVertical = MoreVertical;
   readonly LayoutGrid = LayoutGrid;
   readonly List = List;
+  readonly CheckCircle2 = CheckCircle2;
+  isGridMode = signal<boolean>(false); // Por defecto en modo lista
+  private http = inject(HttpClient);
   private unsubscribe?: Unsubscribe;
 
-  // ID de sucursal actual (puedes ajustarlo o pasarlo dinámicamente)
+  // URL del servicio proporcionado
+  private apiUrl = 'https://crearmembresia-rdotx3vmaq-uc.a.run.app';
+
   idBranch: string = 'BEAST-TESISTAN';
 
-  // Estado del formulario mapeado directamente al modelo de Firebase
-  currentPlan = signal<PaqueteMemberShipModel>({
+  // Estado del formulario ampliado con el campo booleano para mostrar al usuario
+  currentPlan = signal<PaqueteMemberShipModel & { visibleParaUsuario?: boolean }>({
     idPaquete: '',
     name: '',
     descripcion: '',
-    tipoMmebresia: 1, // 1: Paquete, 2: Suscripción (por ejemplo)
+    tipoMmebresia: 1,
     creditos: 0,
     precioRegular: 0,
     precioDescuento: 0,
     beneficios: [],
     fechaCreacion: '',
     idAdmin: '',
-    idBranch: this.idBranch
+    idBranch: this.idBranch,
+    visibleParaUsuario: true // Valor por defecto
   });
 
   selectedId = signal<string | null>(null);
-
-  // Lista reactiva de planes cargada desde Firestore
   plans = signal<PaqueteMemberShipModel[]>([]);
+   userData: any = null;
+  // Estado para controlar el diálogo de éxito
+  showSuccessDialog = signal<boolean>(false);
+  successMessage = signal<string>('');
 
-  // Historial simulado (mantenido intacto por diseño)
   recentActivations = signal([
     { user: 'Ricardo Mendoza', plan: 'Monthly Unlimited', amount: 3400, expires: 'Oct 24, 2023', status: 'PAID' },
     { user: 'Sofia Valdes', plan: '10 Class Pack', amount: 2200, expires: 'Nov 12, 2023', status: 'PAID' },
@@ -50,6 +59,7 @@ export class PlansComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadPlansRealtime(this.idBranch);
+    this.userData = this.authService.getSession();
   }
 
   ngOnDestroy(): void {
@@ -60,7 +70,7 @@ export class PlansComponent implements OnInit, OnDestroy {
 
   loadPlansRealtime(branchId: string) {
     const db = getFirestore();
-    const plansRef = collection(db, `membresias/${branchId}/membrecias`); // O la ruta de tu colección de planes
+    const plansRef = collection(db, `membresias/${branchId}/membrecias`);
 
     this.unsubscribe = onSnapshot(plansRef, (snapshot) => {
       const firebasePlans: PaqueteMemberShipModel[] = snapshot.docs.map(doc => {
@@ -76,7 +86,8 @@ export class PlansComponent implements OnInit, OnDestroy {
           beneficios: data.beneficios || [],
           fechaCreacion: data.fechaCreacion || '',
           idAdmin: data.idAdmin || '',
-          idBranch: data.idBranch || branchId
+          idBranch: data.idBranch || branchId,
+          visibleParaUsuario: data.visibleParaUsuario ?? true
         };
       });
 
@@ -87,22 +98,43 @@ export class PlansComponent implements OnInit, OnDestroy {
   }
 
   selectPlan(plan: PaqueteMemberShipModel) {
-    this.selectedId.set(plan.idPaquete || null);
-    this.currentPlan.set({ ...plan });
+   this.selectedId.set(plan.idPaquete || null);
+  this.currentPlan.set({
+    ...plan,
+    idPaquete: plan.idPaquete || '', // Asegura que el idPaquete se mantenga para el update
+    visibleParaUsuario: (plan as any).visibleParaUsuario ?? true
+  });
   }
 
   savePlan() {
     const planData = this.currentPlan();
-    // Lógica de guardado o actualización en Firestore / Servicio
-    if (!this.selectedId()) {
-      // Crear nuevo localmente o vía API/Firestore
-      const newPlan = { ...planData, idPaquete: 'PLAN-' + Date.now() };
-      this.plans.update(p => [...p, newPlan]);
-    } else {
-      // Editar existente
-      this.plans.update(p => p.map(item => item.idPaquete === planData.idPaquete ? planData : item));
-    }
-    this.resetForm();
+    planData.idAdmin =this.userData?.email || ''
+    planData.idBranch = this.userData?.brancheInUser?.[0] || ""
+    planData.name =this.currentPlan().name||"Sin nombre"
+    planData.precioRegular=this.currentPlan().precioRegular
+    planData.precioDescuento=this.currentPlan().precioRegular
+
+    // Asignar ID si es nuevo
+    const payload: PaqueteMemberShipModel = {
+      ...planData,
+      idPaquete: this.selectedId() ? this.selectedId()! : 'PLAN-' + Date.now(),
+      fechaCreacion: planData.fechaCreacion || new Date().toISOString()
+    };
+
+    // Consumo del servicio HTTP
+    this.http.post<{ success: boolean; branchId: string }>(this.apiUrl, payload).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.successMessage.set(this.selectedId() ? '¡Plan actualizado correctamente!' : '¡Nuevo plan guardado correctamente!');
+          this.showSuccessDialog.set(true);
+          this.resetForm();
+        }
+      },
+      error: (error) => {
+        console.error('Error al consumir el servicio de membresía:', error);
+        alert('Hubo un error al guardar los cambios en el servidor.');
+      }
+    });
   }
 
   resetForm() {
@@ -118,7 +150,8 @@ export class PlansComponent implements OnInit, OnDestroy {
       beneficios: [],
       fechaCreacion: '',
       idAdmin: '',
-      idBranch: this.idBranch
+      idBranch: this.idBranch,
+      visibleParaUsuario: true
     });
   }
 }

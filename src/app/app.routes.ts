@@ -2,6 +2,7 @@ import { Routes,CanActivateFn,Router } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { MainLayoutComponent } from './main/main-layout.component'; // El componente contenedor que creamos
 import { HomeComponent } from './home/home.component';
+import { GastosComponent } from './gastos/gastos.component';
 import { StudentsComponent } from './alumnas/alumnas.component';
 import { StudentDetailComponent } from './alumnas/detalle_alumna.component';
 import { StaffComponent } from './staff/maestras.component';
@@ -10,6 +11,7 @@ import { PagosComponent } from './pagos/pagos.component';
 import { SucursalComponent } from './miEstudio/studio.component';
 import { CalendarComponent } from './calendar/calendar.component';
 import { HeartMonitorComponent } from './monitor/heart-monitor.component';
+import { PermisosComponent } from './permisos/permisos.component';
 import { AuthService } from './auth/auth.service';
 import { inject } from '@angular/core';
 // Protege rutas privadas
@@ -40,6 +42,8 @@ export const routes: Routes = [
      canActivate: [authGuard], // Solo entra si HAY sesión
     children: [
       { path: 'home', component: HomeComponent },
+      { path: 'permisos', component: PermisosComponent },
+      { path: 'gastos', component: GastosComponent },
       { path: 'students', component: StudentsComponent },
       { path: 'students/:id', component: StudentDetailComponent },
       { path: 'monitor', component: HeartMonitorComponent },

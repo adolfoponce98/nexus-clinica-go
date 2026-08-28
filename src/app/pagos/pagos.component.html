@@ -32,6 +32,7 @@
               <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Monto</th>
               <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Plan</th>
               <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Método</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400 text-right">Ticket</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-zinc-50">
@@ -60,10 +61,16 @@
                     <span class="text-[10px] font-bold uppercase">{{ p.metodo }}</span>
                   </div>
                 </td>
+                <td class="px-6 py-4 text-right">
+                  <button (click)="openTicket(p)" class="p-2 bg-zinc-100 hover:bg-zinc-900 hover:text-white rounded-xl transition-all inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer">
+                    <lucide-icon [img]="icons.FileText" class="w-4 h-4"></lucide-icon>
+                    <span>Ver</span>
+                  </button>
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="4" class="px-6 py-12 text-center text-xs font-bold text-zinc-400 uppercase tracking-widest">
+                <td colspan="5" class="px-6 py-12 text-center text-xs font-bold text-zinc-400 uppercase tracking-widest">
                   No hay pagos registrados en este mes.
                 </td>
               </tr>
@@ -74,16 +81,16 @@
         <div class="p-6 bg-zinc-50/50 border-t border-zinc-100 flex justify-between items-center">
           <p class="text-[10px] font-bold text-zinc-400 uppercase">Mostrando {{ paginatedPayments.length }} de {{ allPayments.length }} registros</p>
           <div class="flex gap-2">
-            <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 disabled:opacity-30 font-bold"> &lt; </button>
+            <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 disabled:opacity-30 font-bold cursor-pointer"> &lt; </button>
             @for (i of [].constructor(totalPages); track $index) {
               <button (click)="changePage($index + 1)"
                       [class.bg-rose-500]="currentPage === $index + 1"
                       [class.text-white]="currentPage === $index + 1"
-                      class="w-8 h-8 text-[10px] font-bold rounded-lg border border-zinc-200 transition-all">
+                      class="w-8 h-8 text-[10px] font-bold rounded-lg border border-zinc-200 transition-all cursor-pointer">
                 {{ $index + 1 }}
               </button>
             }
-            <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 disabled:opacity-30 font-bold"> &gt; </button>
+            <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 disabled:opacity-30 font-bold cursor-pointer"> &gt; </button>
           </div>
         </div>
       </div>
@@ -107,7 +114,6 @@
                      class="w-full bg-zinc-50 border-none rounded-2xl py-5 pl-14 pr-4 text-sm font-bold placeholder:text-zinc-300 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all">
             </div>
 
-            <!-- Lista desplegable de sugerencias de Firebase -->
             @if (showSuggestions && filteredStudents.length > 0) {
               <div class="absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-100 rounded-2xl shadow-2xl z-50 max-h-48 overflow-y-auto divide-y divide-zinc-50">
                 @for (student of filteredStudents; track student.email) {
@@ -123,15 +129,51 @@
             }
           </div>
 
-          <!-- Monto -->
-          <div class="space-y-2">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Monto del Pago</label>
-            <div class="flex items-center bg-zinc-50 rounded-2xl px-8 py-5 border-2 border-transparent focus-within:border-zinc-100 transition-all">
-              <span class="text-2xl font-black mr-2 text-zinc-900">$</span>
-              <input formControlName="monto" type="number" class="bg-transparent border-none w-full text-3xl font-black outline-none text-zinc-900" placeholder="0.00">
-              <span class="text-zinc-300 font-bold text-sm tracking-tighter">MXN</span>
-            </div>
-          </div>
+        <!-- Reordenamos: Concepto primero, luego Monto -->
+
+<!-- Concepto / Plan -->
+<div class="space-y-2">
+  <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Concepto / Plan</label>
+  <div class="relative">
+    <select formControlName="plan"
+            class="w-full bg-zinc-50 border-none rounded-2xl py-5 px-6 text-sm font-bold outline-none appearance-none cursor-pointer text-zinc-800">
+      <option value="" disabled selected>Selecciona un concepto...</option>
+
+      <!-- Planes de Firestore -->
+      @for (plan of availablePlans; track plan.idPaquete) {
+        <option [value]="plan.name">{{ plan.name }}</option>
+      }
+
+      <!-- Opciones Extra -->
+      <option value="Pago extraordinario">Pago extraordinario</option>
+      <option value="PREPAGO">PREPAGO</option>
+      <option value="ABONO">ABONO</option>
+      <option value="OTRO">OTRO</option>
+    </select>
+    <lucide-icon [img]="icons.ChevronDown" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"></lucide-icon>
+  </div>
+</div>
+
+<!-- Monto (Precargado si es plan, editable si es manual) -->
+<div class="space-y-2">
+  <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Monto del Pago</label>
+  <div class="flex items-center bg-zinc-50 rounded-2xl px-8 py-5 border-2 border-transparent focus-within:border-zinc-100 transition-all">
+    <span class="text-2xl font-black mr-2 text-zinc-900">$</span>
+    <input formControlName="monto" type="number"
+           [readonly]="!isManualConcept && paymentForm.value.plan !== ''"
+           class="bg-transparent border-none w-full text-3xl font-black outline-none text-zinc-900" placeholder="0.00">
+    <span class="text-zinc-300 font-bold text-sm tracking-tighter">MXN</span>
+  </div>
+</div>
+
+<!-- Comentarios Adicionales (Solo si es Manual) -->
+@if (isManualConcept) {
+  <div class="space-y-2 animate-in slide-in-from-top-2">
+    <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Comentarios Adicionales</label>
+    <input formControlName="comentarios" type="text" placeholder="Ej. Pago por servicio extra..."
+           class="w-full bg-zinc-50 border-none rounded-2xl py-5 px-6 text-sm font-bold outline-none transition-all">
+  </div>
+}
 
           <!-- Método de Pago -->
           <div class="space-y-2">
@@ -160,52 +202,101 @@
             </div>
           </div>
 
-          <!-- Receptor -->
-          <div class="space-y-2">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">¿Quién recibe?</label>
-            <div class="relative">
-              <select formControlName="receptor"
-                      class="w-full bg-zinc-50 border-none rounded-2xl py-5 px-6 text-sm font-bold outline-none appearance-none cursor-pointer text-zinc-800">
-                <option value="Recepcionista (Turno Mañana)">Recepcionista (Turno Mañana)</option>
-                <option value="Recepcionista (Turno Tarde)">Recepcionista (Turno Tarde)</option>
-                <option value="Administrador">Administrador</option>
-              </select>
-              <lucide-icon [img]="icons.ChevronDown" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"></lucide-icon>
-            </div>
-          </div>
-
-          <!-- Concepto / Plan -->
-          <div class="space-y-2">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Concepto / Plan</label>
-            <div class="relative">
-              <select formControlName="plan"
-                      class="w-full bg-zinc-50 border-none rounded-2xl py-5 px-6 text-sm font-bold outline-none appearance-none cursor-pointer text-zinc-800">
-                <option value="Mensualidad (Ilimitada)">Mensualidad (Ilimitada)</option>
-                <option value="Paquete 10 Clases">Paquete 10 Clases</option>
-                <option value="Intro 3-Pack">Intro 3-Pack</option>
-              </select>
-              <lucide-icon [img]="icons.ChevronDown" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"></lucide-icon>
-            </div>
-          </div>
-
           <button type="submit" [disabled]="paymentForm.invalid"
                   class="w-full bg-[#FF899B] hover:bg-[#ff7a8d] text-[#421A21] font-black py-6 rounded-2xl uppercase text-sm tracking-widest transition-all disabled:opacity-30 shadow-lg shadow-rose-500/20 mt-4 cursor-pointer">
             Finalizar Registro
           </button>
         </form>
       </div>
+<!-- Tarjeta de Recaudado del Mes -->
+<div class="bg-[#006666] p-8 rounded-[2.5rem] text-white shadow-xl shadow-teal-900/20 space-y-6">
 
-      <!-- Tarjeta de Recaudado Hoy -->
-      <div class="bg-[#006666] p-7 rounded-[2.5rem] text-white flex justify-between items-center shadow-xl shadow-teal-900/20">
-        <div>
-          <p class="text-[10px] font-bold uppercase opacity-60 tracking-widest mb-1">Registros del Mes</p>
-          <h3 class="text-3xl font-black">{{ allPayments.length }} Pagos</h3>
-        </div>
-        <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 backdrop-blur-sm">
-          <lucide-icon [img]="icons.TrendingUp" class="w-7 h-7"></lucide-icon>
-        </div>
+  <!-- Encabezado con Total General -->
+  <div>
+    <p class="text-[10px] font-bold uppercase opacity-60 tracking-widest mb-1">Recaudado este mes</p>
+    <h3 class="text-4xl font-black">${{ totalGeneralMes | number:'1.2-2' }} <span class="text-lg opacity-70">MXN</span></h3>
+    <p class="text-[10px] font-bold uppercase opacity-60 mt-2">{{ allPayments.length }} Transacciones totales</p>
+  </div>
+
+  <!-- Desglose por Concepto -->
+  <div class="space-y-3 pt-4 border-t border-white/10">
+    <p class="text-[9px] font-bold uppercase opacity-50 tracking-widest mb-2">Desglose por Concepto</p>
+
+    @for (item of desglosadoPorConcepto; track item.nombre) {
+      <div class="flex justify-between items-center text-xs">
+        <span class="truncate max-w-[150px] font-medium opacity-90">{{ item.nombre }}</span>
+        <span class="font-black">${{ item.total | number:'1.0-0' }}</span>
       </div>
+    }
+  </div>
+
+  <div class="pt-2">
+    <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+      <div class="h-full bg-rose-400 w-3/4"></div>
+    </div>
+  </div>
+</div>
     </div>
 
   </div>
 </div>
+<!-- MODAL / DIÁLOGO DE TICKET DE PAGO -->
+@if (showTicketModal && selectedTicket) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm print:hidden" (click)="closeTicket()"></div>
+
+    <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/30 animate-in zoom-in-95 duration-200 space-y-6 print:bg-transparent print:shadow-none print:p-0 print:border-none print:max-w-none">
+<div id="ticket-impresion" style="font-family: 'Courier New', Courier, monospace; width: 100%; color: black; font-weight: bold;">
+  <!-- ENCABEZADO PRINCIPAL -->
+  <div style="text-align: center; font-weight: 900; font-size: 16px; line-height: 1.1; margin-bottom: 2px;">BEAST FITNESS STUDIO</div>
+  <div style="text-align: center; font-size: 11px; font-weight: bold; margin-bottom: 4px;">SUCURSAL: {{ idBranch }}</div>
+
+  <div style="font-size: 12px; font-weight: 900; text-align: center; margin: 2px 0;">==============================</div>
+
+  <!-- DATOS DE LA ALUMNA Y PAGO -->
+  <div style="font-size: 12px; font-weight: 900; margin-top: 4px;">ALUMNA:</div>
+  <div style="font-size: 13px; font-weight: 900; text-transform: uppercase; margin-bottom: 4px;">{{ selectedTicket.alumna }}</div>
+
+  <div style="font-size: 11px; font-weight: bold;">CORREO: {{ selectedTicket.email }}</div>
+  <div style="font-size: 11px; font-weight: bold;">CONCEPTO: {{ selectedTicket.plan }}</div>
+  <div style="font-size: 11px; font-weight: bold;">MÉTODO: {{ selectedTicket.metodo }}</div>
+  <div style="font-size: 11px; font-weight: bold;">RECIBIÓ: {{ selectedTicket.receptor }}</div>
+  <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px;">FECHA: {{ selectedTicket.fecha.toLocaleString() }}</div>
+
+  <div style="font-size: 12px; font-weight: 900; text-align: center; margin: 2px 0;">==============================</div>
+
+  <!-- TOTAL -->
+  <div style="text-align: center; font-weight: 900; font-size: 15px; margin-top: 4px; margin-bottom: 4px;">
+    TOTAL: ${{ selectedTicket.monto | number:'1.2-2' }} MXN
+  </div>
+
+  <div style="font-size: 12px; font-weight: 900; text-align: center; margin: 2px 0;">==============================</div>
+
+  <!-- PIE DE TICKET -->
+  <div style="text-align: center; font-size: 11px; font-weight: 900; margin-top: 6px;">¡GRACIAS POR TU PREFERENCIA!</div>
+  <div style="text-align: center; font-size: 9px; font-weight: bold; margin-top: 2px;">COMPROBANTE DE PAGO VÁLIDO</div>
+</div>
+      <!-- Botones de Acción (Se ocultan al imprimir con la clase print:hidden) -->
+      <div class="space-y-3 print:hidden">
+        <button (click)="enviarTicketExterno()"
+                class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md">
+          <lucide-icon [img]="icons.Send" class="w-4 h-4"></lucide-icon>
+          <span>Enviar a WhatsApp / Correo</span>
+        </button>
+
+        <button (click)="imprimirTicket()" [disabled]="isPrinting"
+                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-amber-500/20 disabled:opacity-50">
+          @if (isPrinting) {
+            <lucide-icon [img]="icons.RefreshCw" class="w-4 h-4 animate-spin"></lucide-icon>
+            <span>Imprimiendo ticket...</span>
+          } @else {
+            <lucide-icon [img]="icons.Printer" class="w-4 h-4"></lucide-icon>
+            <span>Imprimir Ticket</span>
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+

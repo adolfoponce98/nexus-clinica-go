@@ -1,0 +1,202 @@
+<div class="space-y-6 animate-in fade-in duration-500">
+  <header>
+    <p class="text-[10px] uppercase font-bold text-rose-500 tracking-widest mb-1">Finanzas</p>
+    <h2 class="text-4xl font-black uppercase tracking-tighter">Historial de Gastos</h2>
+  </header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Columna Izquierda: Filtros y Tabla de Gastos -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-[150px]">
+          <label class="text-[10px] font-bold uppercase text-zinc-400 block mb-2">Rango de fecha</label>
+          <select class="w-full bg-zinc-50 border-none rounded-xl py-2 px-4 text-sm outline-none font-bold text-zinc-700">
+            <option>Mes Actual (En curso)</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[150px]">
+          <label class="text-[10px] font-bold uppercase text-zinc-400 block mb-2">Tipo de Gasto</label>
+          <select class="w-full bg-zinc-50 border-none rounded-xl py-2 px-4 text-sm outline-none font-bold text-zinc-700">
+            <option>Todos</option>
+          </select>
+        </div>
+        <button class="text-rose-500 text-[10px] font-bold uppercase hover:underline pb-3">Limpiar Filtros</button>
+      </div>
+
+      <div class="bg-white rounded-3xl border border-zinc-100 shadow-sm overflow-hidden">
+        <table class="w-full text-left">
+          <thead class="bg-zinc-50 border-b border-zinc-100">
+            <tr>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Concepto</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Monto</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Tipo</th>
+              <th class="px-6 py-4 text-[10px] font-bold uppercase text-zinc-400">Registrado por</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-50">
+            @for (g of paginatedGastos; track g.id) {
+              <tr class="hover:bg-zinc-50/50 transition-colors">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-zinc-900 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-white text-xs font-black">
+                      {{ g.concepto.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-zinc-900">{{ g.concepto }}</p>
+                      <p class="text-[10px] text-zinc-400">{{ g.fechaRegistro | date:'medium' }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 font-black text-sm text-zinc-900">${{ g.monto | number:'1.2-2' }} MXN</td>
+                <td class="px-6 py-4">
+                  <span class="bg-rose-100 text-rose-800 text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                    {{ getTipoGastoText(g.tipoGasto) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="text-xs font-bold text-zinc-600">{{ g.correo }}</span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="px-6 py-12 text-center text-xs font-bold text-zinc-400 uppercase tracking-widest">
+                  No hay gastos registrados en este mes.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <div class="p-6 bg-zinc-50/50 border-t border-zinc-100 flex justify-between items-center">
+          <p class="text-[10px] font-bold text-zinc-400 uppercase">Mostrando {{ paginatedGastos.length }} de {{ allGastos.length }} registros</p>
+          <div class="flex gap-2">
+            <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 disabled:opacity-30 font-bold"> &lt; </button>
+            @for (i of [].constructor(totalPages); track $index) {
+              <button (click)="changePage($index + 1)"
+                      [class.bg-rose-500]="currentPage === $index + 1"
+                      [class.text-white]="currentPage === $index + 1"
+                      class="w-8 h-8 text-[10px] font-bold rounded-lg border border-zinc-200 transition-all">
+                {{ $index + 1 }}
+              </button>
+            }
+            <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 disabled:opacity-30 font-bold"> &gt; </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha: Formulario de Registro y Resumen -->
+    <div class="space-y-6">
+      <div class="bg-white p-8 rounded-[2.5rem] border border-zinc-100 shadow-xl shadow-zinc-200/50">
+        <h4 class="text-xl font-black mb-1">Registrar Gasto</h4>
+        <p class="text-zinc-400 text-[10px] uppercase font-bold tracking-widest mb-8">Completa los detalles para procesar el egreso.</p>
+
+        <form [formGroup]="gastoForm" (ngSubmit)="saveGasto()" class="space-y-6">
+
+          <!-- Concepto del Gasto -->
+          <div class="space-y-2">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Concepto / Motivo</label>
+            <input formControlName="concepto" type="text" placeholder="Ej. Compra de suministros..."
+                   class="w-full bg-zinc-50 border-none rounded-2xl py-5 px-6 text-sm font-bold placeholder:text-zinc-300 outline-none transition-all">
+          </div>
+
+          <!-- Monto -->
+          <div class="space-y-2">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Monto del Gasto</label>
+            <div class="flex items-center bg-zinc-50 rounded-2xl px-8 py-5 border-2 border-transparent focus-within:border-zinc-100 transition-all">
+              <span class="text-2xl font-black mr-2 text-zinc-900">$</span>
+              <input formControlName="monto" type="number" class="bg-transparent border-none w-full text-3xl font-black outline-none text-zinc-900" placeholder="0.00">
+              <span class="text-zinc-300 font-bold text-sm tracking-tighter">MXN</span>
+            </div>
+          </div>
+
+          <!-- Selector: Tipo de Gasto (Mapeado a Enteros: 0, 1, 2, 3) -->
+          <div class="space-y-2">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Tipo de Gasto</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" (click)="gastoForm.patchValue({tipoGasto: 0})"
+                      [class]="gastoForm.value.tipoGasto === 0 ? 'border-rose-400 bg-white shadow-lg shadow-rose-500/10 text-rose-500 font-black' : 'border-zinc-50 bg-zinc-50 text-zinc-400 font-bold'"
+                      class="p-3 border-2 rounded-2xl transition-all cursor-pointer text-[9px] uppercase tracking-wider">
+                Insumo (0)
+              </button>
+              <button type="button" (click)="gastoForm.patchValue({tipoGasto: 1})"
+                      [class]="gastoForm.value.tipoGasto === 1 ? 'border-rose-400 bg-white shadow-lg shadow-rose-500/10 text-rose-500 font-black' : 'border-zinc-50 bg-zinc-50 text-zinc-400 font-bold'"
+                      class="p-3 border-2 rounded-2xl transition-all cursor-pointer text-[9px] uppercase tracking-wider">
+                Renta (1)
+              </button>
+              <button type="button" (click)="gastoForm.patchValue({tipoGasto: 2})"
+                      [class]="gastoForm.value.tipoGasto === 2 ? 'border-rose-400 bg-white shadow-lg shadow-rose-500/10 text-rose-500 font-black' : 'border-zinc-50 bg-zinc-50 text-zinc-400 font-bold'"
+                      class="p-3 border-2 rounded-2xl transition-all cursor-pointer text-[9px] uppercase tracking-wider">
+                Reembolsable (2)
+              </button>
+              <button type="button" (click)="gastoForm.patchValue({tipoGasto: 3})"
+                      [class]="gastoForm.value.tipoGasto === 3 ? 'border-rose-400 bg-white shadow-lg shadow-rose-500/10 text-rose-500 font-black' : 'border-zinc-50 bg-zinc-50 text-zinc-400 font-bold'"
+                      class="p-3 border-2 rounded-2xl transition-all cursor-pointer text-[9px] uppercase tracking-wider">
+                Pago Empleado (3)
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="gastoForm.invalid"
+                  class="w-full bg-[#FF899B] hover:bg-[#ff7a8d] text-[#421A21] font-black py-6 rounded-2xl uppercase text-sm tracking-widest transition-all disabled:opacity-30 shadow-lg shadow-rose-500/20 mt-4 cursor-pointer">
+            Registrar Gasto
+          </button>
+        </form>
+      </div>
+
+   <!-- Tarjeta de Desglose de Gastos del Mes -->
+      <div class="bg-zinc-900 p-8 rounded-[2.5rem] text-white space-y-6 shadow-xl">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-[10px] font-bold uppercase opacity-60 tracking-widest mb-1">Resumen Financiero</p>
+            <h3 class="text-2xl font-black">Gastos del Mes</h3>
+          </div>
+          <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 backdrop-blur-sm">
+            <lucide-icon [img]="icons.TrendingUp" class="w-6 h-6 text-rose-400"></lucide-icon>
+          </div>
+        </div>
+
+        <!-- Desglose por Concepto / Tipo -->
+        <div class="space-y-3 pt-2 border-t border-white/10">
+
+          <!-- Insumos (0) -->
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-zinc-400 font-bold uppercase tracking-wider">Insumos (0)</span>
+            <span class="font-black">${{ getTotalPorTipo(0) | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- Renta (1) -->
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-zinc-400 font-bold uppercase tracking-wider">Renta (1)</span>
+            <span class="font-black">${{ getTotalPorTipo(1) | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- Reembolsable (2) -> Destacado por Cobrar -->
+          <div class="flex justify-between items-center text-xs bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl">
+            <div>
+              <p class="font-black text-amber-400 uppercase tracking-wider text-[10px]">Reembolsable (Por Cobrar)</p>
+            </div>
+            <span class="font-black text-amber-400">${{ getTotalPorTipo(2) | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- Pago Empleado (3) -->
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-zinc-400 font-bold uppercase tracking-wider">Pago Empleado (3)</span>
+            <span class="font-black">${{ getTotalPorTipo(3) | number:'1.2-2' }}</span>
+          </div>
+
+        </div>
+
+        <!-- Suma Total Aparte -->
+        <div class="pt-4 border-t border-white/10 flex justify-between items-baseline">
+          <div>
+            <p class="text-[9px] font-black text-rose-400 uppercase tracking-widest">Suma Total Egresos</p>
+          </div>
+          <h4 class="text-3xl font-black text-white">${{ totalGeneral | number:'1.2-2' }} <span class="text-xs font-normal text-zinc-400">MXN</span></h4>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

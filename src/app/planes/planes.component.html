@@ -56,14 +56,27 @@
         <div class="space-y-2">
           <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Tipo de Membresía</label>
           <div class="grid grid-cols-2 bg-zinc-50 p-1 rounded-xl">
-            <button (click)="currentPlan().tipoMmebresia = 1" [class]="currentPlan().tipoMmebresia === 1 ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400'" class="py-2 rounded-lg text-[10px] font-black uppercase transition-all">Paquete (1)</button>
-            <button (click)="currentPlan().tipoMmebresia = 2" [class]="currentPlan().tipoMmebresia === 2 ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400'" class="py-2 rounded-lg text-[10px] font-black uppercase transition-all">Suscripción (2)</button>
+            <button (click)="currentPlan.update(p => ({ ...p, tipoMmebresia: 1 }))" [class]="currentPlan().tipoMmebresia === 1 ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400'" class="py-2 rounded-lg text-[10px] font-black uppercase transition-all">Paquete (1)</button>
+            <button (click)="currentPlan.update(p => ({ ...p, tipoMmebresia: 2 }))" [class]="currentPlan().tipoMmebresia === 2 ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400'" class="py-2 rounded-lg text-[10px] font-black uppercase transition-all">Suscripción (2)</button>
+          </div>
+        </div>
+
+        <!-- Switch de Visibilidad -->
+        <div class="space-y-2 pt-2">
+          <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Visibilidad</label>
+          <div class="flex items-center justify-between bg-zinc-50 p-4 rounded-xl">
+            <span class="text-xs font-bold text-zinc-700">Mostrar paquete al usuario</span>
+            <input
+              type="checkbox"
+              [ngModel]="currentPlan().visibleParaUsuario"
+              (ngModelChange)="currentPlan.update(p => ({ ...p, visibleParaUsuario: $event }))"
+              class="w-4 h-4 accent-rose-500 rounded cursor-pointer">
           </div>
         </div>
 
         <div class="pt-4 flex gap-2">
           <button (click)="savePlan()" class="flex-1 bg-zinc-950 text-white font-black py-4 rounded-2xl uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition-all flex items-center justify-center gap-2">
-            Guardar Configuración <lucide-icon [img]="Plus" class="w-3 h-3"></lucide-icon>
+            {{ selectedId() ? 'Actualizar plan' : 'Guardar nuevo plan' }} <lucide-icon [img]="Plus" class="w-3 h-3"></lucide-icon>
           </button>
           @if (selectedId()) {
             <button (click)="resetForm()" class="bg-zinc-100 text-zinc-400 px-4 rounded-2xl hover:text-zinc-900 transition-colors">×</button>
@@ -71,52 +84,101 @@
         </div>
       </div>
     </aside>
-
-    <div class="lg:col-span-8 space-y-6">
+<div class="lg:col-span-8 space-y-6">
       <div class="flex justify-between items-center px-2">
         <h4 class="text-sm font-black uppercase tracking-widest text-zinc-900">Catálogo de Planes</h4>
         <div class="flex gap-2">
-          <button class="p-2 text-rose-500 bg-rose-50 rounded-lg"><lucide-icon [img]="LayoutGrid" class="w-4 h-4"></lucide-icon></button>
-          <button class="p-2 text-zinc-300 hover:text-zinc-900 transition-colors"><lucide-icon [img]="List" class="w-4 h-4"></lucide-icon></button>
+          <!-- Botón Grid -->
+          <button
+            (click)="isGridMode.set(true)"
+            [class]="isGridMode() ? 'text-rose-500 bg-rose-50' : 'text-zinc-300 hover:text-zinc-900'"
+            class="p-2 rounded-lg transition-all">
+            <lucide-icon [img]="LayoutGrid" class="w-4 h-4"></lucide-icon>
+          </button>
+          <!-- Botón Lista -->
+          <button
+            (click)="isGridMode.set(false)"
+            [class]="!isGridMode() ? 'text-rose-500 bg-rose-50' : 'text-zinc-300 hover:text-zinc-900'"
+            class="p-2 rounded-lg transition-all">
+            <lucide-icon [img]="List" class="w-4 h-4"></lucide-icon>
+          </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Contenedor dinámico: Grid de 2 columnas o Lista compacta vertical -->
+      <div [class]="isGridMode() ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-3'">
         @for (plan of plans(); track plan.idPaquete) {
           <div
             (click)="selectPlan(plan)"
-            [class]="selectedId() === plan.idPaquete ? 'bg-zinc-950 text-white scale-[1.02] shadow-2xl' : 'bg-white text-zinc-900 border-zinc-100 hover:border-rose-200'"
-            class="p-8 rounded-[32px] border transition-all duration-300 cursor-pointer group relative overflow-hidden"
+            [class]="selectedId() === plan.idPaquete ? 'bg-zinc-950 text-white scale-[1.01] shadow-xl' : 'bg-white text-zinc-900 border-zinc-100 hover:border-rose-200'"
+            class="transition-all duration-300 cursor-pointer group relative overflow-hidden border {{ isGridMode() ? 'p-8 rounded-[32px] flex flex-col justify-between' : 'p-5 rounded-2xl flex items-center justify-between gap-4' }}"
           >
-            <div class="flex justify-between items-start mb-8">
-              <span [class]="selectedId() === plan.idPaquete ? 'bg-rose-500 text-white' : 'bg-lime-400 text-zinc-950'" class="px-2 py-0.5 text-[7px] font-black rounded-md uppercase tracking-widest">
-                {{ plan.tipoMmebresia === 2 ? 'SUSCRIPCIÓN' : 'PAQUETE' }}
-              </span>
-              <lucide-icon [img]="MoreVertical" class="w-4 h-4 text-zinc-300"></lucide-icon>
-            </div>
 
-            <h5 class="text-xl font-black mb-1 leading-tight">{{ plan.name }}</h5>
-            <p [class]="selectedId() === plan.idPaquete ? 'text-zinc-500' : 'text-zinc-400'" class="text-[9px] font-bold uppercase tracking-widest mb-6">
-              {{ plan.descripcion || (plan.tipoMmebresia === 2 ? 'Suscripción Recurrente' : 'Venta por única vez') }}
-            </p>
-
-            <div class="flex items-baseline gap-1 mb-8">
-              <span class="text-2xl font-black">${{ plan.precioRegular | number:'1.0-0' }}</span>
-              <span class="text-[10px] font-bold text-zinc-400">MXN</span>
-            </div>
-
-            <div class="grid grid-cols-2 border-t border-zinc-50/10 pt-6">
+            <!-- VISTA MODO GRID -->
+            @if (isGridMode()) {
               <div>
-                <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Credits</p>
-                <p class="text-sm font-black">{{ plan.creditos }} Sesiones</p>
-              </div>
-              <div>
-                <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Tipo ID</p>
-                <p class="text-sm font-black">Tipo: {{ plan.tipoMmebresia }}</p>
-              </div>
-            </div>
+                <div class="flex justify-between items-start mb-6">
+                  <span [class]="selectedId() === plan.idPaquete ? 'bg-rose-500 text-white' : 'bg-lime-400 text-zinc-950'" class="px-2 py-0.5 text-[7px] font-black rounded-md uppercase tracking-widest">
+                    {{ plan.tipoMmebresia === 2 ? 'SUSCRIPCIÓN' : 'PAQUETE' }}
+                  </span>
+                  <lucide-icon [img]="MoreVertical" class="w-4 h-4 text-zinc-300"></lucide-icon>
+                </div>
 
-            @if (selectedId() === plan.idPaquete) {
+                <h5 class="text-xl font-black mb-1 leading-tight">{{ plan.name }}</h5>
+                <p [class]="selectedId() === plan.idPaquete ? 'text-zinc-500' : 'text-zinc-400'" class="text-[9px] font-bold uppercase tracking-widest mb-6">
+                  {{ plan.descripcion || (plan.tipoMmebresia === 2 ? 'Suscripción Recurrente' : 'Venta por única vez') }}
+                </p>
+              </div>
+
+              <div>
+                <div class="flex items-baseline gap-1 mb-6">
+                  <span class="text-2xl font-black">${{ plan.precioRegular | number:'1.0-0' }}</span>
+                  <span class="text-[10px] font-bold text-zinc-400">MXN</span>
+                </div>
+
+                <div class="grid grid-cols-2 border-t border-zinc-50/10 pt-4">
+                  <div>
+                    <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Credits</p>
+                    <p class="text-sm font-black">{{ plan.creditos }} Sesiones</p>
+                  </div>
+                  <div>
+                    <p class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Tipo ID</p>
+                    <p class="text-sm font-black">Tipo: {{ plan.tipoMmebresia }}</p>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- VISTA MODO LISTA (Compacta horizontal) -->
+            @if (!isGridMode()) {
+              <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div [class]="selectedId() === plan.idPaquete ? 'bg-rose-500 text-white' : 'bg-zinc-100 text-zinc-900'" class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs shrink-0">
+                  {{ plan.tipoMmebresia === 2 ? 'S' : 'P' }}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <h5 class="text-sm font-black truncate">{{ plan.name }}</h5>
+                    <span class="text-[8px] font-bold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 uppercase">
+                      {{ plan.tipoMmebresia === 2 ? 'Suscripción' : 'Paquete' }}
+                    </span>
+                  </div>
+                  <p class="text-[10px] text-zinc-400 truncate">{{ plan.descripcion || 'Sin descripción' }}</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-6 shrink-0">
+                <div class="text-right">
+                  <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Créditos</p>
+                  <p class="text-xs font-black">{{ plan.creditos }} Sesiones</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Precio</p>
+                  <p class="text-sm font-black">${{ plan.precioRegular | number:'1.0-0' }} <span class="text-[9px] text-zinc-400">MXN</span></p>
+                </div>
+              </div>
+            }
+
+            @if (selectedId() === plan.idPaquete && isGridMode()) {
               <div class="absolute -bottom-4 -right-4 w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
                 <lucide-icon [img]="Plus" class="w-6 h-6 text-white rotate-45"></lucide-icon>
               </div>
@@ -125,48 +187,26 @@
         }
       </div>
     </div>
+
   </div>
 
-  <div class="bg-white p-8 rounded-[40px] border border-zinc-100 shadow-sm">
-    <div class="flex justify-between items-center mb-10">
-      <h3 class="text-2xl font-black uppercase tracking-tighter text-zinc-900">Recent Activations</h3>
-      <button class="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:underline">Ver Historial Completo</button>
-    </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full text-left">
-        <thead>
-          <tr class="text-[9px] font-bold text-zinc-300 uppercase tracking-widest border-b border-zinc-50">
-            <th class="pb-4">User</th>
-            <th class="pb-4">Plan</th>
-            <th class="pb-4">Amount</th>
-            <th class="pb-4">Expires</th>
-            <th class="pb-4 text-right">Status</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-zinc-50">
-          @for (item of recentActivations(); track item.user) {
-            <tr class="group">
-              <td class="py-6">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center text-[10px] font-black">
-                    {{ item.user.charAt(0) }}
-                  </div>
-                  <span class="text-xs font-black text-zinc-900">{{ item.user }}</span>
-                </div>
-              </td>
-              <td class="py-6 text-xs font-bold text-zinc-400 uppercase tracking-tighter">{{ item.plan }}</td>
-              <td class="py-6 text-xs font-black text-zinc-900">${{ item.amount | number }}</td>
-              <td class="py-6 text-xs font-bold text-zinc-400">{{ item.expires }}</td>
-              <td class="py-6 text-right">
-                <span [class]="item.status === 'PAID' ? 'bg-lime-100 text-lime-600' : 'bg-rose-100 text-rose-600'" class="px-3 py-1 rounded-full text-[8px] font-black tracking-widest">
-                  {{ item.status }}
-                </span>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </div>
 </div>
+
+<!-- Diálogo de Éxito al Guardar / Actualizar -->
+@if (showSuccessDialog()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+    <div class="bg-white rounded-[32px] p-8 max-w-sm w-full text-center space-y-4 shadow-2xl scale-100 animate-in zoom-in-95 duration-300">
+      <div class="w-16 h-16 bg-lime-100 text-lime-600 rounded-full flex items-center justify-center mx-auto">
+        <lucide-icon [img]="CheckCircle2" class="w-8 h-8"></lucide-icon>
+      </div>
+      <h3 class="text-xl font-black text-zinc-900 uppercase">¡Éxito!</h3>
+      <p class="text-xs text-zinc-500 font-medium">{{ successMessage() }}</p>
+      <button
+        (click)="showSuccessDialog.set(false)"
+        class="w-full bg-zinc-950 text-white font-black py-3 rounded-2xl uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition-all">
+        Aceptar
+      </button>
+    </div>
+  </div>
+}

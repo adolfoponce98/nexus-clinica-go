@@ -12,7 +12,7 @@
 
     <div class="flex items-center gap-4">
       <!-- Botón Nueva Alumna -->
-      <button (click)="abrirNuevaAlumna()" class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-rose-500/20 transition-all">
+      <button (click)="abrirNuevaAlumna()" class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-rose-500/20 transition-all cursor-pointer">
         <lucide-icon [img]="UserPlus" class="w-4 h-4"></lucide-icon>
         Nueva Alumna
       </button>
@@ -55,7 +55,7 @@
               </div>
             </td>
             <td class="px-8 py-4 text-right relative">
-              <button (click)="toggleActionMenu(student.id, $event)" class="p-2 hover:bg-zinc-100 rounded-lg transition-colors text-zinc-300 hover:text-zinc-600">
+              <button (click)="toggleActionMenu(student.id, $event)" class="p-2 hover:bg-zinc-100 rounded-lg transition-colors text-zinc-300 hover:text-zinc-600 cursor-pointer">
                 <lucide-icon [img]="MoreHorizontal" class="w-5 h-5"></lucide-icon>
               </button>
 
@@ -84,7 +84,7 @@
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm" (click)="showModal = false"></div>
       <div class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in slide-in-from-bottom-4 duration-300">
-        <button (click)="showModal = false" class="absolute right-6 top-6 text-zinc-300 hover:text-zinc-500">
+        <button (click)="showModal = false" class="absolute right-6 top-6 text-zinc-300 hover:text-zinc-500 cursor-pointer">
           <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
         </button>
 
@@ -95,25 +95,19 @@
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 block">Nombre completo</label>
-            <input type="text" [(ngModel)]="selectedStudent.name" class="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-800 focus:outline-none focus:border-rose-500" />
+            <input type="text" [(ngModel)]="selectedStudent.fullName" class="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-800 focus:outline-none focus:border-rose-500" />
           </div>
           <div>
             <label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 block">Teléfono</label>
             <input type="text" [(ngModel)]="selectedStudent.phone" class="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-800 focus:outline-none focus:border-rose-500" />
           </div>
-          <div>
-            <label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 block">Correo Electrónico</label>
-            <input type="email" [(ngModel)]="selectedStudent.email" class="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-800 focus:outline-none focus:border-rose-500" />
-          </div>
-          <div>
-            <label class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1 block">Contraseña</label>
-            <input type="text" [(ngModel)]="selectedStudent.password" class="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-sm font-bold text-zinc-800 focus:outline-none focus:border-rose-500" />
-          </div>
+
+
         </div>
 
         <div class="grid grid-cols-2 gap-3 w-full mt-8">
-          <button (click)="showModal = false" class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 bg-zinc-50 hover:bg-zinc-100 transition-all">Cancelar</button>
-          <button (click)="guardarAlumno()" class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all">
+          <button (click)="showModal = false" class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 bg-zinc-50 hover:bg-zinc-100 transition-all cursor-pointer">Cancelar</button>
+          <button (click)="guardarAlumno()" class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all cursor-pointer">
             {{ isEditing ? 'Guardar Cambios' : 'Registrar' }}
           </button>
         </div>
@@ -121,7 +115,7 @@
     </div>
   }
 
-  <!-- ================= MODAL DETALLE COMPLETO DE ALUMNA (USERS -> EMAIL) ================= -->
+  <!-- ================= MODAL DETALLE COMPLETO DE ALUMNA ================= -->
   @if (showDetailModal) {
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="showDetailModal = false"></div>
@@ -129,7 +123,7 @@
       <div class="relative bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in zoom-in-95 duration-200">
 
         <!-- Botón Cerrar -->
-        <button (click)="showDetailModal = false" class="absolute right-6 top-6 w-10 h-10 bg-zinc-50 hover:bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-all font-black">
+        <button (click)="showDetailModal = false" class="absolute right-6 top-6 w-10 h-10 bg-zinc-50 hover:bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-all font-black cursor-pointer">
           <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
         </button>
 
@@ -155,16 +149,50 @@
               </div>
               <p class="text-xs font-bold text-zinc-500">{{ currentStudentProfile.email }} | {{ currentStudentProfile.phone }}</p>
 
-              <div class="flex flex-wrap gap-4 mt-3 text-[10px] font-bold text-zinc-400">
-                <span>ID Socio: <strong class="text-zinc-700">{{ currentStudentProfile.idSocio || '-' }}</strong></span>
-                <span>NIP: <strong class="text-zinc-700">{{ currentStudentProfile.nipSocio || '-' }}</strong></span>
-                <span>Miembresía: <strong class="text-zinc-700">{{ currentStudentProfile.memberShipName || '-' }}</strong></span>
-              </div>
+              <div class="flex flex-wrap gap-4 mt-3 text-[10px] font-bold text-zinc-400 items-center">
+  <span>ID Socio: <strong class="text-zinc-700">{{ currentStudentProfile.idSocio || '-' }}</strong></span>
+
+  <!-- NIP y Botón Ver QR -->
+  <span class="flex items-center gap-2">
+    NIP: <strong class="text-zinc-700">{{ currentStudentProfile.nipSocio || '-' }}</strong>
+    <button (click)="abrirModalQr()" class="bg-purple-100 hover:bg-purple-200 text-purple-600 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm">
+      Ver QR
+    </button>
+  </span>
+
+  <span>Membresía: <strong class="text-zinc-700">{{ currentStudentProfile.memberShipName || '-' }}</strong></span>
+</div>
             </div>
           </div>
 
-          <!-- SECCIÓN DE PAQUETE ACTIVO (Con validación de vacío o "-") -->
-      <!-- SECCIÓN DE PAQUETE ACTIVO -->
+          <!-- ================= SECCIÓN DE RESPONSIVA / FIRMA (CORREGIDO AQUÍ) ================= -->
+          <div class="mt-6 bg-zinc-50 border border-zinc-100 rounded-3xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Carta Responsiva</p>
+              <p class="text-xs font-black text-zinc-800 mt-0.5">
+                {{ currentStudentProfile.urlDocumentResponsiva ? 'Documento firmado y registrado en el sistema' : 'Pendiente de firma por parte de la alumna' }}
+              </p>
+            </div>
+
+            @if (currentStudentProfile.urlDocumentResponsiva) {
+              <!-- CASO 1: Ya existe la URL, mostramos botón para visualizar/descargar -->
+              <a [href]="currentStudentProfile.urlDocumentResponsiva"
+                 target="_blank"
+                 class="bg-zinc-900 hover:bg-zinc-800 text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-md flex items-center gap-2 cursor-pointer shrink-0">
+                <lucide-icon [img]="Eye" class="w-4 h-4"></lucide-icon>
+                Ver Responsiva
+              </a>
+            } @else {
+              <!-- CASO 2: No hay URL, mostramos botón para desplegar la firma en pantalla -->
+              <button (click)="abrirModalFirmaResponsiva()"
+                      class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-rose-500/20 flex items-center gap-2 cursor-pointer shrink-0">
+                <lucide-icon [img]="Edit3" class="w-4 h-4"></lucide-icon>
+                Firmar Responsiva
+              </button>
+            }
+          </div>
+
+          <!-- SECCIÓN DE PAQUETE ACTIVO -->
           <div class="mt-6">
             <h4 class="text-xs font-black uppercase tracking-widest text-zinc-400 mb-3 flex items-center gap-2">
               <lucide-icon [img]="Package" class="w-4 h-4 text-rose-500"></lucide-icon> Paquete Activo
@@ -187,15 +215,14 @@
                 </button>
               </div>
 
-              <!-- ================= SECCIÓN DE ASIGNACIÓN DE MEMBRESÍAS (Abajo del layout) ================= -->
+              <!-- ================= SECCIÓN DE ASIGNACIÓN DE MEMBRESÍAS ================= -->
               @if (showAsignarPaqueteSection) {
                 <div class="mt-4 bg-zinc-50 border border-zinc-200 rounded-3xl p-6 space-y-4 animate-in fade-in duration-200">
                   <div class="flex justify-between items-center">
                     <h5 class="text-xs font-black uppercase tracking-widest text-zinc-700">Selecciona una Membresía</h5>
-                    <button (click)="showAsignarPaqueteSection = false" class="text-zinc-400 hover:text-zinc-700 text-xs font-bold">Cancelar</button>
+                    <button (click)="showAsignarPaqueteSection = false" class="text-zinc-400 hover:text-zinc-700 text-xs font-bold cursor-pointer">Cancelar</button>
                   </div>
 
-                  <!-- LOADER DE MEMBRESÍAS -->
                   @if (isLoadingMembresias) {
                     <div class="flex flex-col items-center justify-center py-8">
                       <div class="w-6 h-6 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mb-2"></div>
@@ -205,7 +232,6 @@
                     @if (listaMembresias.length === 0) {
                       <p class="text-xs text-zinc-400 text-center py-4 font-medium">No hay membresías registradas para esta sucursal.</p>
                     } @else {
-                      <!-- CUADRÍCULA DE MEMBRESÍAS -->
                       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                         @for (membresia of listaMembresias; track membresia.idPaquete) {
                           <div (click)="seleccionarMembresia(membresia.idPaquete)"
@@ -229,7 +255,6 @@
                         }
                       </div>
 
-                      <!-- BOTÓN DE ASIGNAR MEMBRESÍA -->
                       @if (selectedMembresiaId) {
                         <div class="pt-2">
                           <button (click)="confirmarAsignacionMembresia()" [disabled]="isAssigningPackage" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 disabled:opacity-50">
@@ -281,15 +306,14 @@
                   </button>
                 </div>
 
-                <!-- ================= SECCIÓN DE CAMBIO DE PAQUETE (Mismo flujo de asignar) ================= -->
+                <!-- SECCIÓN DE CAMBIO DE PAQUETE -->
                 @if (showAsignarPaqueteSection) {
                   <div class="mt-4 bg-white border border-zinc-200 rounded-3xl p-6 space-y-4 animate-in fade-in duration-200">
                     <div class="flex justify-between items-center">
                       <h5 class="text-xs font-black uppercase tracking-widest text-zinc-700">Selecciona el Nuevo Paquete</h5>
-                      <button (click)="showAsignarPaqueteSection = false" class="text-zinc-400 hover:text-zinc-700 text-xs font-bold">Cancelar</button>
+                      <button (click)="showAsignarPaqueteSection = false" class="text-zinc-400 hover:text-zinc-700 text-xs font-bold cursor-pointer">Cancelar</button>
                     </div>
 
-                    <!-- LOADER DE MEMBRESÍAS -->
                     @if (isLoadingMembresias) {
                       <div class="flex flex-col items-center justify-center py-8">
                         <div class="w-6 h-6 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mb-2"></div>
@@ -299,7 +323,6 @@
                       @if (listaMembresias.length === 0) {
                         <p class="text-xs text-zinc-400 text-center py-4 font-medium">No hay membresías registradas para esta sucursal.</p>
                       } @else {
-                        <!-- CUADRÍCULA DE MEMBRESÍAS -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                           @for (membresia of listaMembresias; track membresia.idPaquete) {
                             <div (click)="seleccionarMembresia(membresia.idPaquete)"
@@ -323,7 +346,6 @@
                           }
                         </div>
 
-                        <!-- BOTÓN DE CONFIRMAR CAMBIO -->
                         @if (selectedMembresiaId) {
                           <div class="pt-2">
                             <button (click)="confirmarAsignacionMembresia()" [disabled]="isAssigningPackage" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 disabled:opacity-50">
@@ -421,55 +443,367 @@
     </div>
   }
 </div>
+
 <!-- ================= POPUP DE ÉXITO: MEMBRESÍA ASIGNADA ================= -->
-  @if (showSuccessPopup) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="showSuccessPopup = false"></div>
+@if (showSuccessPopup) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="showSuccessPopup = false"></div>
 
-      <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in zoom-in-95 duration-200 text-center">
-        <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
-          <lucide-icon [img]="CheckCircle2" class="w-8 h-8"></lucide-icon>
-        </div>
+    <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in zoom-in-95 duration-200 text-center">
+      <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+        <lucide-icon [img]="CheckCircle2" class="w-8 h-8"></lucide-icon>
+      </div>
 
-        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">¡Membresía Asignada!</h3>
-        <p class="text-xs font-medium text-zinc-500 leading-relaxed mb-6">
-          La membresía se ha vinculado correctamente a la alumna de forma exitosa.
-        </p>
+      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">¡Membresía Asignada!</h3>
+      <p class="text-xs font-medium text-zinc-500 leading-relaxed mb-6">
+        La membresía se ha vinculado correctamente a la alumna de forma exitosa.
+      </p>
 
-        <button (click)="showSuccessPopup = false; showDetailModal = false;" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-zinc-950/20">
-          Entendido
+      <button (click)="showSuccessPopup = false; showDetailModal = false;" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-zinc-950/20">
+        Entendido
+      </button>
+    </div>
+  </div>
+}
+
+<!-- ================= POPUP DE CONFIRMACIÓN: ELIMINAR PAQUETE ================= -->
+@if (showDeleteConfirmModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="showDeleteConfirmModal = false"></div>
+
+    <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in zoom-in-95 duration-200 text-center">
+      <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+        <lucide-icon [img]="AlertCircle" class="w-8 h-8"></lucide-icon>
+      </div>
+
+      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">¿Eliminar Paquete?</h3>
+      <p class="text-xs font-medium text-zinc-500 leading-relaxed mb-6">
+        ¿Estás seguro de eliminar el paquete actual de esta alumna? Esta acción no se puede deshacer.
+      </p>
+
+      <div class="grid grid-cols-2 gap-3">
+        <button (click)="showDeleteConfirmModal = false" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition-all cursor-pointer">
+          Cancelar
+        </button>
+        <button (click)="ejecutarEliminacionPaquete()" [disabled]="isDeletingPackage" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all cursor-pointer flex items-center justify-center">
+          @if (isDeletingPackage) {
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          } @else {
+            Sí, Eliminar
+          }
         </button>
       </div>
     </div>
-  }
+  </div>
+}
 
-  <!-- ================= POPUP DE CONFIRMACIÓN: ELIMINAR PAQUETE ================= -->
-  @if (showDeleteConfirmModal) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="showDeleteConfirmModal = false"></div>
+<!-- ================= MODAL / VISTA DE CAPTURA DE FIRMA ================= -->
+@if (isOpen) {
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/70 backdrop-blur-sm overflow-y-auto">
 
-      <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 z-10 animate-in zoom-in-95 duration-200 text-center">
-        <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
-          <lucide-icon [img]="AlertCircle" class="w-8 h-8"></lucide-icon>
-        </div>
+    <!-- Contenedor general del diálogo -->
+    <div class="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] animate-in fade-in zoom-in-95">
 
-        <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">¿Eliminar Paquete?</h3>
-        <p class="text-xs font-medium text-zinc-500 leading-relaxed mb-6">
-          ¿Estás seguro de eliminar el paquete actual de esta alumna? Esta acción no se puede deshacer.
-        </p>
-
-        <div class="grid grid-cols-2 gap-3">
-          <button (click)="showDeleteConfirmModal = false" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition-all cursor-pointer">
-            Cancelar
+      <!-- Barra superior de acciones (Cerrar y Descargar) -->
+      <div class="bg-zinc-900 px-6 py-4 flex justify-between items-center text-white shrink-0">
+        <h3 class="text-xs font-black uppercase tracking-widest text-rose-400">Vista Previa - Carta Responsiva</h3>
+        <div class="flex items-center gap-3">
+          <button (click)="descargarComoPDF()" [disabled]="!signatureImage" class="bg-rose-500 hover:bg-rose-600 disabled:opacity-40 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer">
+            <lucide-icon [img]="icons.Download" class="w-4 h-4"></lucide-icon> Descargar PNG
           </button>
-          <button (click)="ejecutarEliminacionPaquete()" [disabled]="isDeletingPackage" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all cursor-pointer flex items-center justify-center">
-            @if (isDeletingPackage) {
-              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            } @else {
-              Sí, Eliminar
-            }
+          <button (click)="cerrarModal()" class="w-8 h-8 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center text-zinc-300 hover:text-white transition-all cursor-pointer">
+            <lucide-icon [img]="icons.X" class="w-4 h-4"></lucide-icon>
           </button>
         </div>
       </div>
+
+      <!-- Contenedor scrolleable del diseño exacto de la responsiva -->
+   <div class="p-8 overflow-y-auto space-y-6 bg-zinc-100 flex-1 flex justify-center w-full">
+
+        <!-- HOJA IMPRETABLE (IDÉNTICA A TU DISEÑO) -->
+   <div #documentoContainer class="bg-white w-[800px] min-w-[800px] min-h-[1300px] p-8 text-black font-sans text-xs border border-zinc-200 shadow-md relative flex flex-col justify-between">  <!-- ENCABEZADO -->
+          <div class="flex justify-between items-start border-b border-black pb-3">
+            <div>
+              <!-- Logotipo BEAST -->
+              <h1 class="text-3xl font-black italic tracking-tighter leading-none">BEAST</h1>
+              <p class="text-[9px] font-black uppercase tracking-widest text-zinc-600">INDOOR CYCLING & FITNESS</p>
+            </div>
+
+            <h2 class="text-sm font-black uppercase tracking-wider text-center mt-2">CARTA RESPONSIVA Y FICHA DE SALUD</h2>
+
+            <!-- FOLIO Y FECHA -->
+            <div class="flex flex-col gap-2">
+              <div class="border border-black rounded p-1 text-center w-28">
+                <span class="text-[8px] font-bold block uppercase border-b border-black pb-0.5 mb-1">Folio</span>
+                <input [(ngModel)]="formData.folio" type="text" class="w-full text-center font-bold text-xs outline-none bg-transparent">
+              </div>
+              <div class="border border-black rounded text-center w-36">
+                <span class="text-[8px] font-bold block uppercase border-b border-black py-0.5">Fecha</span>
+                <div class="grid grid-cols-3 text-[9px] font-bold divide-x divide-black">
+                  <div class="p-0.5"><span class="text-[6px] block text-zinc-500">DÍA</span>{{ formData.dia }}</div>
+                  <div class="p-0.5"><span class="text-[6px] block text-zinc-500">MES</span>{{ formData.mes }}</div>
+                  <div class="p-0.5"><span class="text-[6px] block text-zinc-500">AÑO</span>{{ formData.anio }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECCIÓN: DATOS DEL ALUMNO -->
+          <div class="border border-black rounded-xl p-3.5 space-y-3">
+            <h3 class="text-center font-black uppercase text-[11px] tracking-widest bg-zinc-100 py-1 rounded">Datos del Alumno</h3>
+
+            <div class="space-y-2 font-medium">
+              <div class="flex items-center gap-2">
+                <span class="font-bold whitespace-nowrap">Nombre completo:</span>
+                <input [(ngModel)]="formData.nombreCompleto" type="text" class="flex-1 border-b border-dotted border-black outline-none px-1 py-0.5 font-bold">
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold whitespace-nowrap">Fecha de nacimiento:</span>
+                  <input [(ngModel)]="formData.fechaNacimiento" type="text" placeholder="DD/MM/AAAA" class="flex-1 border-b border-dotted border-black outline-none px-1 py-0.5">
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold whitespace-nowrap">Edad:</span>
+                  <input [(ngModel)]="formData.edad" type="text" class="flex-1 border-b border-dotted border-black outline-none px-1 py-0.5">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold whitespace-nowrap">Teléfono:</span>
+                  <input [(ngModel)]="formData.telefono" type="text" class="flex-1 border-b border-dotted border-black outline-none px-1 py-0.5">
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold whitespace-nowrap">Correo electrónico:</span>
+                  <input [(ngModel)]="formData.correo" type="text" class="flex-1 border-b border-dotted border-black outline-none px-1 py-0.5">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold whitespace-nowrap">Contacto de emergencia:</span>
+                  <input [(ngModel)]="formData.contactoEmergencia" type="text" class="flex-1 border-b border-dotted border-black outline-none px-1 py-0.5">
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold whitespace-nowrap">Teléfono de emergencia:</span>
+                  <input [(ngModel)]="formData.telefonoEmergencia" type="text" class="flex-1 border-b border-dotted border-black outline-none px-1 py-0.5">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECCIÓN: INFORMACIÓN DE SALUD -->
+          <div class="border border-black rounded-xl p-3.5 space-y-3">
+            <div class="text-center">
+              <h3 class="font-black uppercase text-[11px] tracking-widest bg-zinc-100 py-1 rounded">Información de Salud</h3>
+              <p class="text-[10px] font-bold mt-1">¿Actualmente presentas alguna de las siguientes condiciones?<br><span class="font-normal italic">(Marca las que correspondan)</span></p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 text-[10px]">
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.lesionMuscular"> Lesión muscular o articular</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.hipertension"> Hipertensión</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.embarazo"> Embarazo</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.dolorEspalda"> Dolor de espalda o cuello</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.diabetes"> Diabetes</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.posparto"> Posparto</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.problemasRodilla"> Problemas de rodilla</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.asma"> Asma o enfermedad respiratoria</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.otraCondicion"> Otra condición médica importante</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.problemasCardiovasculares"> Problemas cardiovasculares</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.cirugiaReciente"> Cirugía reciente</label>
+              <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" [(ngModel)]="formData.condiciones.ninguna"> Ninguna de las anteriores</label>
+            </div>
+
+            <p class="text-[10px] font-bold text-center pt-1">En caso de haber marcado alguna opción, describe brevemente la condición y cualquier recomendación médica que debamos conocer:</p>
+            <input [(ngModel)]="formData.descripcionCondicion" type="text" class="w-full border-b border-dotted border-black outline-none px-1 py-0.5 text-xs">
+
+            <div class="grid grid-cols-2 gap-4 text-[10px] pt-1">
+              <div>
+                <span class="font-bold">¿Tu médico te ha recomendado evitar o limitar la actividad física?</span>
+                <div class="flex gap-4 mt-0.5">
+                  <label class="flex items-center gap-1"><input type="radio" name="evitar" [(ngModel)]="formData.evitarActividadFisica" value="si"> Sí</label>
+                  <label class="flex items-center gap-1"><input type="radio" name="evitar" [(ngModel)]="formData.evitarActividadFisica" value="no"> No</label>
+                </div>
+              </div>
+              <div>
+                <span class="font-bold">¿Tomas algún medicamento que pueda afectar tu desempeño durante el ejercicio?</span>
+                <div class="flex gap-4 mt-0.5">
+                  <label class="flex items-center gap-1"><input type="radio" name="medicamento" [(ngModel)]="formData.tomaMedicamento" value="si"> Sí</label>
+                  <label class="flex items-center gap-1"><input type="radio" name="medicamento" [(ngModel)]="formData.tomaMedicamento" value="no"> No</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 text-[10px]">
+              <span class="font-bold">¿Cuál?</span>
+              <input [(ngModel)]="formData.cualMedicamento" type="text" class="flex-1 border-b border-dotted border-black outline-none px-1 py-0.5">
+            </div>
+          </div>
+
+          <!-- SECCIÓN: DECLARACIÓN Y CONSENTIMIENTO -->
+          <div class="border border-black rounded-xl p-3.5 space-y-2">
+            <h3 class="text-center font-black uppercase text-[11px] tracking-widest bg-zinc-100 py-1 rounded">Declaración y Consentimiento</h3>
+            <p class="text-[9px] text-justify leading-relaxed text-zinc-800">
+              Declaro que la información proporcionada es verdadera y completa.<br>
+              Manifiesto que participo en las actividades de Beast Indoor Cycling & Fitness de manera voluntaria y que me encuentro en condiciones físicas para realizar ejercicio o, en su caso, cuento con la autorización médica correspondiente.<br>
+              Entiendo que la práctica de actividad física implica riesgos inherentes, incluyendo lesiones musculares, articulares, caídas, deshidratación y otras complicaciones derivadas del esfuerzo físico o de condiciones médicas preexistentes.<br>
+              Me comprometo a informar al instructor antes de cada clase sobre cualquier lesión, molestia, embarazo o cambio en mi estado de salud que pudiera afectar mi participación.<br>
+              Reconozco que Beast Indoor Cycling & Fitness proporciona instalaciones seguras, bicicletas en buen estado e instructores capacitados; sin embargo, acepto que mi participación es bajo mi propia responsabilidad.<br>
+              Por lo anterior, libero a Beast Indoor Cycling & Fitness, sus propietarios, colaboradores e instructores de cualquier responsabilidad por lesiones, accidentes o complicaciones derivadas de mi participación, salvo aquellas que sean consecuencia directa de dolo o negligencia grave conforme a la legislación aplicable.<br>
+              Asimismo, entiendo que Beast no es responsable del robo, pérdida o daño de objetos personales.
+            </p>
+          </div>
+
+          <!-- SECCIÓN: MENORES ACOMPAÑANTES Y FIRMA -->
+          <div class="border border-black rounded-xl p-3.5 space-y-3">
+            <h3 class="text-center font-black uppercase text-[11px] tracking-widest bg-zinc-100 py-1 rounded">Menores Acompañantes</h3>
+            <div class="flex gap-6 text-[10px]">
+              <label class="flex items-center gap-1.5"><input type="radio" name="menor" [(ngModel)]="formData.menoresAcompanantes" value="no"> No asistiré acompañado(a) de menores.</label>
+              <label class="flex items-center gap-1.5"><input type="radio" name="menor" [(ngModel)]="formData.menoresAcompanantes" value="si"> En ocasiones asistiré acompañado(a) de un menor de edad.</label>
+            </div>
+            <p class="text-[8px] text-zinc-600 leading-tight">En caso de asistir con un menor, declaro que: • Soy su padre, madre o tutor, o cuento con autorización suficiente para responsabilizarme de él. • El menor permanecerá bajo mi supervisión directa y permanente durante toda su estancia. • Comprendo que Beast no ofrece servicio de guardería ni cuidado infantil. • Asumo toda la responsabilidad por cualquier incidente, lesión o daño que pudiera sufrir u ocasionar el menor durante su permanencia en las instalaciones, salvo casos de dolo o negligencia grave atribuibles a Beast.</p>
+
+            <p class="text-center font-black text-[10px] uppercase tracking-wide bg-rose-50 text-rose-800 p-1.5 rounded border border-rose-200">
+              Al firmar este documento manifiesto haber leído, comprendido y aceptado su contenido.
+            </p>
+
+            <!-- ZONA DE FIRMA (CLICLABLE PARA ABRIR EL PAD) -->
+            <div class="grid grid-cols-2 gap-8 pt-4 items-end">
+              <div class="space-y-1">
+                <input [(ngModel)]="formData.nombreFirma" type="text" placeholder="Nombre completo del firmante" class="w-full border-b border-black text-center text-xs font-bold outline-none py-1">
+                <p class="text-[9px] text-center uppercase tracking-widest font-bold text-zinc-500">Nombre del alumno o tutor</p>
+              </div>
+
+              <!-- BOTÓN / ÁREA DE FIRMA -->
+              <div class="text-center space-y-1">
+                <div (click)="openSignPad()" class="h-20 border-b-2 border-black flex items-center justify-center cursor-pointer hover:bg-zinc-50 transition-all relative group">
+                  @if (signatureImage) {
+                    <img [src]="signatureImage" class="max-h-16 object-contain" alt="Firma digital">
+                    <span class="absolute right-2 top-2 text-[8px] bg-zinc-200 px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100">Editar firma</span>
+                  } @else {
+                    <span class="text-[10px] font-bold text-rose-500 uppercase tracking-widest flex items-center gap-1">
+                      <lucide-icon [img]="icons.Edit3" class="w-4 h-4"></lucide-icon> Clic aquí para firmar
+                    </span>
+                  }
+                </div>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-zinc-500">Firma digital</p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
-  }
+  </div>
+}
+<!-- ================= DIÁLOGO DE CHECK-IN / QR IDÉNTICO A LA REFERENCIA ================= -->
+@if (showQrModal && currentStudentProfile) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <!-- Fondo oscuro difuminado -->
+    <div class="absolute inset-0 bg-zinc-950/70 backdrop-blur-md" (click)="showQrModal = false"></div>
+
+    <!-- Contenedor general del diálogo con flex column -->
+    <div class="relative z-10 w-full max-w-sm flex flex-col items-center animate-in zoom-in-95 duration-200">
+
+      <!-- ================= TARJETA EXCLUSIVA A CAPTURAR (Con #qrCardContainer) ================= -->
+      <div #qrCardContainer class="bg-white w-full rounded-[3rem] p-8 shadow-2xl text-center flex flex-col items-center justify-between relative">
+
+        <!-- Botón cerrar superior (Se ocultará o saldrá limpio, pero puedes dejarlo estético) -->
+        <button (click)="showQrModal = false" class="absolute right-6 top-6 text-zinc-400 hover:text-zinc-700 cursor-pointer">
+          <lucide-icon [img]="X" class="w-6 h-6"></lucide-icon>
+        </button>
+
+        <!-- Encabezado -->
+        <div class="mt-2">
+          <p class="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-1">List@ para la acción?</p>
+          <h3 class="text-3xl font-black text-zinc-900 uppercase tracking-tighter italic">TU CHECK-IN</h3>
+          <p class="text-xs font-medium text-zinc-400 mt-2 px-4 leading-relaxed">
+            Escanea este qr en la entrada de tu ESTUDIO o digita tu NIP de 4 digitos.
+          </p>
+        </div>
+
+        <!-- Contenedor del Código QR con los arcos decorativos morados -->
+        <div class="relative my-6 flex items-center justify-center">
+          <div class="absolute -inset-4 border-2 border-indigo-400/40 rounded-[2.5rem] pointer-events-none border-t-transparent border-b-transparent animate-pulse"></div>
+
+          <div class="bg-white p-5 rounded-[2.5rem] shadow-xl shadow-zinc-200 border border-zinc-100 flex items-center justify-center">
+            @if (qrCodeDataUrl) {
+              <img [src]="qrCodeDataUrl" alt="QR Check-in" class="w-48 h-48 object-contain rounded-2xl" />
+            }
+          </div>
+        </div>
+
+        <!-- Sección de Entrada Manual NIP -->
+        <div class="w-full mt-2">
+          <p class="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-2">Entrada manual NIP</p>
+          <div class="bg-zinc-50 border border-zinc-100 py-4 rounded-3xl shadow-inner">
+            <span class="text-3xl font-black text-indigo-600 tracking-widest italic">{{ currentStudentProfile.nipSocio || '----' }}</span>
+          </div>
+        </div>
+
+      </div>
+      <!-- ================= FIN DE LA TARJETA A CAPTURAR ================= -->
+
+      <!-- ================= BOTONES DE ACCIÓN (Fuera del contenedor de la imagen) ================= -->
+      <div class="w-full mt-4 space-y-2">
+        <div class="grid grid-cols-2 gap-2 w-full">
+          <button (click)="descargarQrPng()" class="bg-white hover:bg-zinc-100 text-zinc-900 py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md">
+            Descargar QR
+          </button>
+          <button (click)="compartirWhatsApp()" class="bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all cursor-pointer shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-1.5">
+            WhatsApp
+          </button>
+        </div>
+
+        <!-- Botón de Cerrar general -->
+        <div class="w-full text-center">
+          <button (click)="showQrModal = false" class="text-white/80 hover:text-white font-bold text-xs uppercase tracking-wider py-1 cursor-pointer">
+            Cerrar ventana
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ================= MODAL SECUNDARIO: CANVAS DE FIRMA DIGITAL (FUERA DEL CONTENEDOR PRINCIPAL) ================= -->
+@if (showSignModal) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md">
+    <div class="bg-white w-full max-w-lg rounded-[2.5rem] p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+      <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+        <h4 class="text-sm font-black uppercase tracking-tight text-zinc-900">Dibuja tu firma digital</h4>
+        <button type="button" (click)="showSignModal = false" class="text-zinc-400 hover:text-zinc-700 cursor-pointer">
+          <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Canvas HTML5 -->
+      <div class="border-2 border-dashed border-zinc-300 rounded-2xl bg-zinc-50 overflow-hidden relative touch-none">
+        <canvas #signatureCanvas
+                (mousedown)="startDrawing($event)"
+                (mousemove)="draw($event)"
+                (mouseup)="stopDrawing()"
+                (mouseleave)="stopDrawing()"
+                (touchstart)="startDrawing($event)"
+                (touchmove)="draw($event)"
+                (touchend)="stopDrawing()"
+                class="w-full h-48 cursor-crosshair block">
+        </canvas>
+      </div>
+
+      <div class="flex gap-3">
+        <button type="button" (click)="clearCanvas()" class="w-1/3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1">
+          <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon> Limpiar
+        </button>
+        <button type="button" (click)="saveSignature()" class="w-2/3 bg-zinc-950 hover:bg-zinc-800 text-white py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer shadow-lg flex items-center justify-center gap-1">
+          <lucide-icon [img]="icons.Check" class="w-4 h-4"></lucide-icon> Guardar y Aplicar
+        </button>
+      </div>
+    </div>
+  </div>
+}
