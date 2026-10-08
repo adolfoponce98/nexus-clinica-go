@@ -1,0 +1,45 @@
+<div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] mb-4 p-6 rounded-3xl shadow-xl space-y-4 transition-colors duration-300">
+  <div class="flex justify-between items-center">
+    <h3 class="text-xs font-black uppercase tracking-wider text-[var(--text-main)]">Próximas citas</h3>
+    <button class="text-xs font-bold text-[var(--accent-color)] hover:underline flex items-center gap-1 cursor-pointer">
+      Ver todas <lucide-icon [img]="ChevronRight" class="w-3.5 h-3.5"></lucide-icon>
+    </button>
+  </div>
+
+  @if (appointments().length > 0) {
+    <div class="space-y-3">
+      @for (cita of appointments(); track cita.name) {
+        <div class="flex items-center justify-between p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-[var(--accent-color)] transition-all">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-black text-[var(--text-muted)] w-10">{{ cita.time }}</span>
+            <img [src]="cita.avatar" class="w-8 h-8 rounded-full object-cover border border-[var(--border-color)]" alt="avatar">
+            <div>
+              <h4 class="text-xs font-bold text-[var(--text-main)]">{{ cita.name }}</h4>
+              <p class="text-[10px] text-[var(--text-muted)]">{{ cita.specialty }}</p>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border"
+                [class.bg-emerald-500/15]="cita.status === 'Confirmada'"
+                [class.text-emerald-400]="cita.status === 'Confirmada'"
+                [class.border-emerald-500/30]="cita.status === 'Confirmada'"
+                [class.bg-amber-500/15]="cita.status === 'Pendiente'"
+                [class.text-amber-400]="cita.status === 'Pendiente'"
+                [class.border-amber-500/30]="cita.status === 'Pendiente'">
+            {{ cita.status }}
+          </span>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Empty State -->
+    <div class="flex flex-col items-center justify-center py-8 text-center space-y-2 bg-[var(--bg-primary)]/50 border border-dashed border-[var(--border-color)] rounded-2xl p-4">
+      <div class="w-10 h-10 rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] shadow-sm">
+        <lucide-icon [img]="ChevronRight" class="w-5 h-5 opacity-40"></lucide-icon>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-[var(--text-main)]">No hay próximas citas</p>
+        <p class="text-[10px] text-[var(--text-muted)] mt-0.5">Las citas programadas aparecerán aquí automáticamente.</p>
+      </div>
+    </div>
+  }
+</div>

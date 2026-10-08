@@ -1,0 +1,165 @@
+import { Component, computed, inject, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { LucideAngularModule, Check, CheckCircle, ChevronLeft, ChevronRight, User, FileText, Eye, ShieldAlert } from 'lucide-angular';
+
+@Component({
+  selector: 'app-oftalmologia',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: 'medical-record-oftamologic-form.component.html'
+})
+export class OftalmologiaComponent {
+  private fb = inject(FormBuilder);
+
+  icons = { Check, CheckCircle, ChevronLeft, ChevronRight, User, FileText, Eye, ShieldAlert };
+
+  activeTab = signal<number>(1);
+
+  tabs = signal([
+    { id: 1, name: 'Datos Personales', icon: User, completed: false },
+    { id: 2, name: 'Antecedentes Médicos', icon: FileText, completed: false },
+    { id: 3, name: 'Síntomas y Hábitos', icon: ShieldAlert, completed: false },
+    { id: 4, name: 'Exploración 3D', icon: Eye, completed: false }
+  ]);
+
+  recordForm: FormGroup = this.fb.group({
+    nombreCompleto: ['', Validators.required],
+    fechaNacimiento: ['', Validators.required],
+    domicilio: [''],
+    telefono: ['', [Validators.required, Validators.maxLength(10)]],
+    sexo: ['', Validators.required],
+    edad: ['', Validators.required],
+    ocupacion: [''],
+
+    usaLentes: [false],
+    tiempoLentes: [''],
+    cirugiaOcular: [false],
+    detalleCirugia: [''],
+    famGlaucoma: [false],
+    famCataratas: [false],
+    famMiopia: [false],
+    famCeguera: [false],
+    enfermedadesSistemicas: [''],
+    motivoConsulta: ['', Validators.required],
+
+    visionBorrosa: [false],
+    fatigaOcular: [false],
+    ardorOjos: [false],
+    visionDoble: [false],
+    destellosLuz: [false],
+    moscasVolantes: [false],
+    horasPantallas: [''],
+    usoGotas: [''],
+
+    est_parpados: [''],
+    est_conjuntiva: [''],
+    est_cornea: [''],
+    est_cristalino: [''],
+    est_retina: [''],
+    est_presion_intraocular: ['']
+  });
+
+  completedSectionsCount = computed(() => {
+    let count = 0;
+    if (this.recordForm.get('nombreCompleto')?.valid && this.recordForm.get('telefono')?.valid) count++;
+    if (this.recordForm.get('motivoConsulta')?.valid) count++;
+    if (this.recordForm.get('horasPantallas')?.value) count++;
+    count++; // Sección 3D lista por defecto
+    return count;
+  });
+
+  completedPercentage = computed(() => Math.round((this.completedSectionsCount() / 4) * 100));
+
+  estructuraActiva = signal<string>('');
+
+estructuras = [
+  { key: 'parpados', label: 'Párpados' },
+  { key: 'conjuntiva', label: 'Conjuntiva' },
+  { key: 'cornea', label: 'Córnea' },
+  { key: 'cristalino', label: 'Cristalino' },
+  { key: 'retina', label: 'Retina' },
+  { key: 'presion_intraocular', label: 'Presión intraocular' }
+];
+
+// Catálogo de tus 3 modelos 3D con sus respectivas URLs de imágenes miniatura (reemplaza las rutas de las miniaturas por tus assets o enlaces reales)
+  eyeModels = [
+    {
+      id: 'modelo-1',
+      name: 'Anatomía Ocular General',
+      description: 'Vista completa de estructuras externas e internas',
+      thumbnail: 'assets/ojos/ojo_model1.jpeg',
+           src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2FMeshy_AI_Human_Eye_Anatomy_1008032957_texture-v1.glb?alt=media&token=7684e696-e8d7-4fc1-b048-ae97fa60931c'
+
+   },
+    {
+     src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2FMeshy_AI_Anatomy_of_the_Human__1008033351_texture-v1.glb?alt=media&token=d6f31273-da60-4625-b31e-ed11e2f5153c',
+      id: 'modelo-2',
+      name: 'Segmento Anterior y Córnea',
+      description: 'Enfoque en párpados, córnea y cristalino',
+      thumbnail: 'assets/ojos/ojo_model2.jpeg', // Reemplaza con tu ruta PNG
+   },
+    {
+      id: 'modelo-3',
+      name: 'Retina y Fondo de Ojo',
+      description: 'Detalle de vasos retinianos y mácula',
+      thumbnail: 'assets/ojos/ojo_model3.jpeg', // Reemplaza con tu ruta PNG
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2FMeshy_AI_Exploded_Anatomy_of_t_1008031938_texture-v1.glb?alt=media&token=9c3ca7f9-9cda-443a-a1b8-db9d490328c8' // Reemplaza con tu 3ra URL de GLB si difiere
+    }
+  ];
+
+  selectedModelId = signal<string>('modelo-1');
+
+  // Computed que devuelve el objeto del modelo activo actual
+  activeEyeModel = computed(() => {
+    return this.eyeModels.find(m => m.id === this.selectedModelId()) || this.eyeModels[0];
+  });
+
+  selectModel(id: string) {
+    if (this.selectedModelId() !== id) {
+      this.isLoadingModel.set(true);
+      this.selectedModelId.set(id);
+    }
+  }
+isExpanded = signal(false);
+
+toggleExpand() {
+  this.isExpanded.update(v => !v);
+}
+seleccionarEstructura(nombre: string) {
+  this.estructuraActiva.set(nombre);
+}
+isLoadingModel = signal(true);
+
+onModelLoaded() {
+  this.isLoadingModel.set(false);
+  console.log('¡Modelo 3D cargado y renderizado con éxito!');
+}
+
+onModelError(event: any) {
+  this.isLoadingModel.set(false);
+  console.error('Error detallado de model-viewer:', event);
+}
+
+  setTab(tabId: number) {
+    this.activeTab.set(tabId);
+  }
+
+  nextTab() {
+    if (this.activeTab() < 4) {
+      this.activeTab.update(t => t + 1);
+    }
+  }
+
+  prevTab() {
+    if (this.activeTab() > 1) {
+      this.activeTab.update(t => t - 1);
+    }
+  }
+
+  saveRecord() {
+    console.log('Historia Oftalmológica con 3D Guardada:', this.recordForm.value);
+    alert('¡Historia clínica oftalmológica guardada con éxito!');
+  }
+}

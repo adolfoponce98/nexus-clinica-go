@@ -1,0 +1,377 @@
+<div class="min-h-screen font-sans p-4 sm:p-6 space-y-6 max-w-7xl mx-auto" style="background-color: var(--bg-primary); color: var(--text-main);">
+
+  <!-- CABECERA -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border px-6 py-5 rounded-3xl shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Configuración Profesional</span>
+        <span class="text-xs" style="color: var(--text-muted);">Visibilidad del perfil: <strong class="text-emerald-500">85%</strong></span>
+      </div>
+      <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main);">Mi Perfil Médico y Consultorios</h1>
+      <p class="text-xs mt-0.5" style="color: var(--text-muted);">Administra tus centros de trabajo, servicios, métodos de pago y datos profesionales.</p>
+    </div>
+
+    <button (click)="saveProfile()" class="flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition-all cursor-pointer">
+      Guardar Cambios
+    </button>
+  </div>
+
+  <!-- SISTEMA DE TABS / PESTAÑAS SUPERIORES -->
+  <div class="flex flex-wrap items-center gap-2">
+    @for (tab of profileTabs; track tab.id) {
+      <button (click)="setActiveTab(tab.id)"
+              class="flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer border shadow-sm"
+              [style.background-color]="activeTab() === tab.id ? '#2563eb' : 'var(--bg-secondary)'"
+              [style.color]="activeTab() === tab.id ? '#ffffff' : 'var(--text-muted)'"
+              [style.border-color]="activeTab() === tab.id ? '#3b82f6' : 'var(--border-color)'">
+        <lucide-icon [img]="tab.icon" class="w-4 h-4"></lucide-icon>
+        <span>{{ tab.name }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- CONTENEDOR DE LA PESTAÑA ACTIVA -->
+  <div class="border p-6 sm:p-8 rounded-3xl shadow-xl min-h-[480px]" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+
+    @switch (activeTab()) {
+
+      <!-- ================= 1. INFORMACIÓN BÁSICA ================= -->
+      @case ('basic') {
+        <div class="space-y-6 animate-in fade-in duration-300">
+          <div class="border-b pb-4 flex justify-between items-center" style="border-color: var(--border-color);">
+            <div>
+              <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Información Básica e Introducción</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">+10 puntos de visibilidad. Añade tu información principal y foto con tu cara identificable.</p>
+            </div>
+            <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-[10px] font-black">+10 pts</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Tratamiento / Título</label>
+              <input type="text" value="Dr." class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Nombre</label>
+              <input type="text" value="Adolfo" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Apellidos</label>
+              <input type="text" value="Ponce" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Género</label>
+              <select class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+                <option selected>Masculino</option>
+                <option>Femenino</option>
+                <option>Otro</option>
+              </select>
+            </div>
+
+            <div class="space-y-1.5 sm:col-span-2">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Foto de perfil (Rostro visible)</label>
+              <input type="file" class="w-full border rounded-2xl px-4 py-2 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-muted);">
+            </div>
+
+            <div class="space-y-1.5 sm:col-span-3">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">+10 puntos: Introducción / Sobre mí (Lenguaje sencillo y acogedor)</label>
+              <textarea rows="4" class="w-full border rounded-2xl p-4 text-xs outline-none focus:border-blue-500 resize-none shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">Especialista dedicado a brindar la mejor atención médica con un enfoque humano y profesional.</textarea>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ================= 2. DATOS Y ESPECIALIDADES ================= -->
+      @case ('legal') {
+        <div class="space-y-6 animate-in fade-in duration-300">
+          <div class="border-b pb-4 flex justify-between items-center" style="border-color: var(--border-color);">
+            <div>
+              <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Datos Legales y Especialidades</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">Licencia profesional y áreas de especialización.</p>
+            </div>
+            <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-[10px] font-black">+27 pts disp.</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Datos Legales (Licencia / Cédula Profesional)</label>
+              <input type="text" placeholder="Ej. Cédula Profesional #12345678" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">+10 puntos: Especialidades</label>
+              <input type="text" value="1. Acupuntor" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+
+            <div class="space-y-1.5 sm:col-span-2">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">+17 puntos: Principales enfermedades tratadas</label>
+              <textarea rows="3" placeholder="Muestra a tus pacientes que puedes ayudarles..." class="w-full border rounded-2xl p-4 text-xs outline-none focus:border-blue-500 resize-none shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            </div>
+
+            <div class="space-y-1.5 sm:col-span-2">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Otras enfermedades tratadas</label>
+              <textarea rows="3" placeholder="Otras condiciones médicas secundarias que atiendes..." class="w-full border rounded-2xl p-4 text-xs outline-none focus:border-blue-500 resize-none shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ================= 3. CONSULTORIOS ================= -->
+      @case ('clinics') {
+        <div class="space-y-8 animate-in fade-in duration-300">
+          <div class="border-b pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4" style="border-color: var(--border-color);">
+            <div>
+              <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Edición de Consultorios Físicos (¿Dónde trabaja?)</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">Puedes dar de alta uno o varios consultorios con su dirección, servicios, precios y accesibilidad.</p>
+            </div>
+            <button (click)="addConsultorio()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md transition-all cursor-pointer">
+              <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
+              Agregar Otro Consultorio
+            </button>
+          </div>
+
+          <!-- Listado de Consultorios -->
+          @for (c of consultorios(); track c.id; let idx = $index) {
+            <div class="border p-6 rounded-3xl space-y-6 relative shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+
+              <!-- Cabecera del consultorio -->
+              <div class="flex justify-between items-center border-b pb-3" style="border-color: var(--border-color);">
+                <h4 class="text-xs font-black uppercase tracking-wider text-blue-500 flex items-center gap-2">
+                  <lucide-icon [img]="icons.Building2" class="w-4 h-4"></lucide-icon>
+                  Consultorio #{{ idx + 1 }}: {{ c.name || 'Sin Nombre' }}
+                </h4>
+                @if (consultorios().length > 1) {
+                  <button (click)="removeConsultorio(c.id)" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg bg-rose-500/10 cursor-pointer">
+                    <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
+                  </button>
+                }
+              </div>
+
+              <!-- Datos Generales -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="space-y-1.5">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Nombre del consultorio</label>
+                  <input [(ngModel)]="c.name" type="text" placeholder="Ej. Clínica Médica Sur" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Ciudad *</label>
+                  <input [(ngModel)]="c.city" type="text" placeholder="Ej. Zapopan, Jalisco" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Calle y número *</label>
+                  <input [(ngModel)]="c.address" type="text" placeholder="Ej. Av. Patria #450" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Código postal *</label>
+                  <input [(ngModel)]="c.postalCode" type="text" placeholder="Ej. 45030" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+                </div>
+
+                <div class="space-y-1.5 sm:col-span-2">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Información adicional (opcional)</label>
+                  <input [(ngModel)]="c.additionalInfo" type="text" placeholder="Ej. Consultorio 302, Torre B" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Sitio web</label>
+                  <input [(ngModel)]="c.website" type="text" placeholder="https://miweb.com" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Teléfono principal</label>
+                  <input [(ngModel)]="c.phoneMain" type="text" placeholder="Ej. 33 1234 5678" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Teléfono secundario</label>
+                  <input [(ngModel)]="c.phoneSecondary" type="text" placeholder="Ej. 33 8765 4321" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+                </div>
+              </div>
+
+              <!-- Accesibilidad -->
+              <div class="space-y-2 pt-2">
+                <label class="text-[11px] font-black uppercase tracking-wider block" style="color: var(--text-main);">Accesibilidad para pacientes</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <input [(ngModel)]="c.accessibility.wheelchair" type="checkbox" class="accent-blue-600 w-4 h-4">
+                    <span>Con silla de ruedas o muletas</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <input [(ngModel)]="c.accessibility.pregnantOrKids" type="checkbox" class="accent-blue-600 w-4 h-4">
+                    <span>Mujeres embarazadas o padres con niños pequeños</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <input [(ngModel)]="c.accessibility.visualDisability" type="checkbox" class="accent-blue-600 w-4 h-4">
+                    <span>Con discapacidad visual</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <input [(ngModel)]="c.accessibility.hearingDisability" type="checkbox" class="accent-blue-600 w-4 h-4">
+                    <span>Con discapacidad auditiva</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Indicaciones para llegar -->
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Indicaciones para llegar</label>
+                <textarea rows="3" [(ngModel)]="c.directions" placeholder="Cómo acceder al edificio, referencias de transporte público, etc..." class="w-full border rounded-2xl p-4 text-xs outline-none focus:border-blue-500 resize-none shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+              </div>
+
+              <!-- Métodos de pago -->
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase tracking-wider block" style="color: var(--text-main);">Métodos de pago aceptados</label>
+                <div class="flex flex-wrap gap-3 text-xs">
+                  <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <input [(ngModel)]="c.paymentMethods.creditCard" type="checkbox" class="accent-blue-600 w-3.5 h-3.5"> Tarjeta de crédito
+                  </label>
+                  <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <input [(ngModel)]="c.paymentMethods.cash" type="checkbox" class="accent-blue-600 w-3.5 h-3.5"> Efectivo
+                  </label>
+                  <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <input [(ngModel)]="c.paymentMethods.paypal" type="checkbox" class="accent-blue-600 w-3.5 h-3.5"> Paypal
+                  </label>
+                  <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <input [(ngModel)]="c.paymentMethods.debitCard" type="checkbox" class="accent-blue-600 w-3.5 h-3.5"> Tarjeta de débito
+                  </label>
+                  <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <input [(ngModel)]="c.paymentMethods.transfer" type="checkbox" class="accent-blue-600 w-3.5 h-3.5"> Transferencia
+                  </label>
+                </div>
+              </div>
+
+              <!-- Servicios y Precios -->
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <label class="text-[11px] font-black uppercase tracking-wider" style="color: var(--text-main);">Servicios y Precios (60% de los pacientes los consultan)</label>
+                  <button (click)="addService(c)" class="text-[10px] font-bold text-blue-500 hover:underline cursor-pointer">+ Agregar servicio</button>
+                </div>
+
+                <div class="space-y-2">
+                  @for (srv of c.services; track $index; let sIdx = $index) {
+                    <div class="flex items-center gap-3 p-3 rounded-2xl border shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                      <input [(ngModel)]="srv.name" type="text" placeholder="Nombre del servicio (Ej. Primera Consulta)" class="flex-1 border rounded-xl px-3 py-2 text-xs outline-none shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+                      <div class="flex items-center gap-1.5 border rounded-xl px-3 py-2 text-xs shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                        <span style="color: var(--text-muted);">Desde $</span>
+                        <input [(ngModel)]="srv.price" type="number" class="w-20 bg-transparent outline-none" style="color: var(--text-main);">
+                      </div>
+                      <button (click)="removeService(c, sIdx)" class="text-rose-400 hover:text-rose-300 cursor-pointer p-1">
+                        <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Otra información -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t" style="border-color: var(--border-color);">
+                <div class="space-y-2">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Política de Aseguradoras</label>
+                  <select [(ngModel)]="c.insurancePolicy" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+                    <option value="privateOnly">No acepto aseguradoras (solo pacientes privados)</option>
+                    <option value="both">Acepto ambos (pacientes de aseguradoras y privados)</option>
+                  </select>
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">En esta dirección atiendo:</label>
+                  <div class="flex items-center gap-4 pt-2 text-xs" style="color: var(--text-main);">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input [(ngModel)]="c.patientTypes.adults" type="checkbox" class="accent-blue-600 w-4 h-4"> Adultos
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input [(ngModel)]="c.patientTypes.children" type="checkbox" class="accent-blue-600 w-4 h-4"> Niños
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ================= 4. EXPERIENCIA Y TRAYECTORIA ================= -->
+      @case ('experience') {
+        <div class="space-y-6 animate-in fade-in duration-300">
+          <div class="border-b pb-4 flex justify-between items-center" style="border-color: var(--border-color);">
+            <div>
+              <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Experiencia, Educación y Logros</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">Construye confianza describiendo tu trayectoria profesional.</p>
+            </div>
+            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-black uppercase">Plan de pago requerido</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Experiencia Profesional</label>
+              <textarea rows="3" class="w-full border rounded-2xl p-4 text-xs outline-none focus:border-blue-500 resize-none shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Educación</label>
+              <textarea rows="3" class="w-full border rounded-2xl p-4 text-xs outline-none focus:border-blue-500 resize-none shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ================= 5. FOTOS Y VIDEOS ================= -->
+      @case ('media') {
+        <div class="space-y-6 animate-in fade-in duration-300">
+          <div class="border-b pb-4 flex justify-between items-center" style="border-color: var(--border-color);">
+            <div>
+              <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Fotos y Videos de la Clínica</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">Causa una gran impresión y convierte visitas en agendamientos.</p>
+            </div>
+            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-black uppercase">Plan de pago requerido</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <input type="file" multiple class="w-full border rounded-2xl px-4 py-2 text-xs cursor-pointer shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-muted);">
+          </div>
+        </div>
+      }
+
+      <!-- ================= 6. REDES SOCIALES ================= -->
+      @case ('social') {
+        <div class="space-y-6 animate-in fade-in duration-300">
+          <div class="border-b pb-4 flex justify-between items-center" style="border-color: var(--border-color);">
+            <div>
+              <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Presencia Online y Redes Sociales</h3>
+              <p class="text-xs mt-0.5" style="color: var(--text-muted);">La mayoría de pacientes toman decisiones basándose en tu presencia digital.</p>
+            </div>
+            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-black uppercase">Plan de pago requerido</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase flex items-center gap-2" style="color: var(--text-muted);">
+                <lucide-icon [img]="icons.Facebook" class="w-4 h-4 text-blue-500"></lucide-icon> Facebook
+              </label>
+              <input type="text" placeholder="https://facebook.com/tucentral" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase flex items-center gap-2" style="color: var(--text-muted);">
+                <lucide-icon [img]="icons.Instagram" class="w-4 h-4 text-pink-500"></lucide-icon> Instagram
+              </label>
+              <input type="text" placeholder="https://instagram.com/tuusuario" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-[11px] font-bold uppercase flex items-center gap-2" style="color: var(--text-muted);">
+                <lucide-icon [img]="icons.Linkedin" class="w-4 h-4 text-blue-400"></lucide-icon> LinkedIn
+              </label>
+              <input type="text" placeholder="https://linkedin.com/in/tuusuario" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+          </div>
+        </div>
+      }
+
+    }
+
+  </div>
+</div>

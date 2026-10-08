@@ -1,61 +1,22 @@
-import { Component, OnInit, signal, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 import { LucideAngularModule, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, User, Plus, X, CheckCircle2 } from 'lucide-angular';
-import { collection, getDocs, getFirestore, updateDoc, doc } from 'firebase/firestore';
 import { AuthService } from '../auth/auth.service';
-import { TypeClassModel } from '../home/home.model';
-import { CalendarCacheService } from './calendar-cache.service';
+import * as CryptoJS from 'crypto-js';
 
-interface ClassSchedule {
-  time: string;
-  coach: string;
-  name: string;
-  date: string; // YYYY-MM-DD
-  colorHex?: string;
-  level: number;
-  cancelada?: boolean;
-}
-
-interface TeacherResponse {
-  idDocumentFirebase: string;
-  branchId: string;
-  id: string;
-  name: string;
+interface PatientAppointment {
+  time: string; // Hora de inicio (Ej. "09:00")
+  endTime: string; // Hora de fin (Ej. "10:00")
+  durationMinutes: number;
+  durationLabel: string;
+  patientName: string;
   phone: string;
-  email?: string;
-  birthDate?: string;
-  hireDate?: string;
-  colorHex: string;
-  photoUrl?: string;
-  description?: string;
-  skills: string[];
-}
-
-interface InfoClase {
-  id?: number;
-  coach: string;
-  idCoach: string;
-  name: string;
-  time: string;
-  duration: number;
-  level: number;
-  aggended: number;
-  total: number;
-  photo: string;
-  color: string;
-}
-
-interface InfoClassItem {
-  horario: string;
-  infoClase: InfoClase;
-}
-
-interface SelectedBatchSlot {
-  horario: string;
-  coach: TeacherResponse;
-  isDelete?: boolean;
+  email: string;
+  reason: string;
+  date: string; // YYYY-MM-DD
+  syncId?: string;
 }
 
 @Component({
@@ -64,115 +25,105 @@ interface SelectedBatchSlot {
   imports: [CommonModule, FormsModule, HttpClientModule, LucideAngularModule],
   templateUrl: './calendar.component.html'
 })
-export class CalendarComponent implements OnInit {
-private cacheService = inject(CalendarCacheService);
-  constructor(private cdr: ChangeDetectorRef) {}
-
-  private http = inject(HttpClient);
+export class CalendarComponent implements OnInit, OnDestroy {
+  private cdr = inject(ChangeDetectorRef);
   private authService = inject(AuthService);
   readonly icons = { ChevronLeft, ChevronRight, CalendarIcon, Clock, User, Plus, X, CheckCircle2 };
+
+  private readonly SAVE_APPOINTMENT_URL = 'https://saveappointment-o7vmreizjq-uc.a.run.app';
+  private readonly GET_FOLLOWING_APPOINTMENTS_URL = 'https://syncfollowingappointments-o7vmreizjq-uc.a.run.app';
+  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
+  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
 
   currentView = signal<'month' | 'week' | 'day'>('month');
   selectedDate = new Date();
 
-  // Modales
-  showClassTypeModal = false;
-  showSuccessModal = false; // <--- Nuevo diálogo de éxito
-  selectedScheduleTarget: { dateStr: string, time: string } | null = null;
-  selectedClassTypeItem: TypeClassModel | null = null;
+  // Modales y Estados de Carga
+  showAppointmentModal = false;
+  showSuccessModal = false;
+  isSaving = false; // 🔄 Loader al guardar
+  targetDate = '';
+  targetHour = '09:00';
+  selectedDurationMinutes: number = 60;
 
-  monthClasses = signal<ClassSchedule[]>([]);
-  coachesList: TeacherResponse[] = [];
+  patientForm = {
+    name: '',
+    phone: '',
+    email: '',
+    reason: ''
+  };
+
+  appointmentsList = signal<PatientAppointment[]>([]);
   isLoading = false;
-  idBranch = 'BEAST-TESISTAN';
-  weekScrollOffset = 0;
 
-  showBatchModal = false;
-  showIndividualModal = false;
+  hoursList = [
+    '6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
+    '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
+    '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM'
+  ];
 
-  batchTargetDate = '';
-  selectedCoachForBatch: TeacherResponse | null = null;
-  selectedBatchSlots = signal<SelectedBatchSlot[]>([]);
+  // 🕒 Control de la hora actual en tiempo real
+  currentTimeTopPx = signal<number>(0);
+  private timeInterval: any;
+
+  ngOnInit() {
+    this.loadAppointments();
+    this.updateCurrentTimeIndicator();
+
+    // Actualizar la línea cada minuto
+    this.timeInterval = setInterval(() => {
+      this.updateCurrentTimeIndicator();
+    }, 60000);
+  }
+
+  ngOnDestroy() {
+    if (this.timeInterval) {
+      clearInterval(this.timeInterval);
+    }
+  }
+
+  updateCurrentTimeIndicator() {
+    const now = new Date();
+    const totalMinutes = now.getHours() * 60 + now.getMinutes();
+    const PIXELS_PER_MINUTE = 64 / 60;
+    // 6:00 AM es el inicio de la grilla (360 minutos)
+    const GRID_START_MINUTES = 6 * 60;
+    const adjustedMinutes = Math.max(0, totalMinutes - GRID_START_MINUTES);
+    this.currentTimeTopPx.set(adjustedMinutes * PIXELS_PER_MINUTE);
+    this.cdr.detectChanges();
+  }
+
+  isToday(dateStr: string): boolean {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    return dateStr === `${year}-${month}-${day}`;
+  }
+
+  selectedAppointment = signal<any | null>(null);
+  isAppointmentDetailModalOpen = signal(false);
+
+  openAppointmentDetail(appointment: any) {
+    this.selectedAppointment.set(appointment);
+    this.isAppointmentDetailModalOpen.set(true);
+  }
+
+  closeAppointmentDetailModal() {
+    this.selectedAppointment.set(null);
+    this.isAppointmentDetailModalOpen.set(false);
+  }
 
   get availableHoursCatalog(): string[] {
     const sucursal = this.authService.getSucursal();
     if (sucursal && sucursal.branchInfo && sucursal.branchInfo.schedulersStudio) {
       return sucursal.branchInfo.schedulersStudio;
     }
-    return [];
-  }
-
-  individualTargetDate = '';
-  individualTargetHour = '';
-  selectedCoachForIndividual: TeacherResponse | null = null;
-
-  ngOnInit() {
-    this.loadData();
+    return ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '16:00', '17:00', '18:00', '19:00'];
   }
 
   get currentMonthYearLabel(): string {
     return this.selectedDate.toLocaleString('es-MX', { month: 'long', year: 'numeric' }).toUpperCase();
-  }
-
-  get availableClassTypes(): TypeClassModel[] {
-    const sucursal = this.authService.getSucursal();
-    if (sucursal && sucursal.branchInfo && sucursal.branchInfo.typeClasses) {
-      return sucursal.branchInfo.typeClasses;
-    }
-    return [];
-  }
-
-
-
-  // Confirmar y actualizar nivel y nombre de clase en Firestore y localmente
-  async confirmAndUpdateClassLevel() {
-    if (!this.selectedScheduleTarget || !this.selectedClassTypeItem) return;
-
-    const { dateStr, time } = this.selectedScheduleTarget;
-    const anioMes = dateStr.substring(0, 7);
-    const nuevoNivel = Number(this.selectedClassTypeItem.dificultad);
-    const nuevoNombre = this.selectedClassTypeItem.name;
-
-    try {
-      const db = getFirestore();
-      const scheduleDocRef = doc(db, `classes/studios/${this.idBranch}/${anioMes}/dias/${dateStr}/SCHEDULES/${time}`);
-
-      await updateDoc(scheduleDocRef, {
-        level: nuevoNivel,
-        name: nuevoNombre,
-        updatedAt: new Date().toISOString()
-      });
-
-      // 🌟 Actualización local inmediata en memoria sin volver a consultar el servidor
-      this.monthClasses.update(currentList =>
-        currentList.map(item => {
-          if (item.date === dateStr && item.time === time) {
-            return { ...item, level: nuevoNivel, name: nuevoNombre };
-          }
-          return item;
-        })
-      );
-
-      // Ocultar modal de selección y mostrar el diálogo de éxito
-      this.showClassTypeModal = false;
-      this.showSuccessModal = true;
-      this.cdr.detectChanges();
-
-    } catch (error: any) {
-      console.error('Error al actualizar el nivel de la clase:', error);
-      alert('Hubo un error al actualizar el tipo de clase.');
-    }
-  }
-
-  scrollWeekDays(direction: number) {
-    const maxOffset = this.weekDaysGrid.length - 5;
-    this.weekScrollOffset += direction * 2;
-    if (this.weekScrollOffset < 0) this.weekScrollOffset = 0;
-    if (this.weekScrollOffset > maxOffset) this.weekScrollOffset = maxOffset;
-  }
-
-  get visibleWeekDays() {
-    return this.weekDaysGrid.slice(this.weekScrollOffset, this.weekScrollOffset + 5);
   }
 
   navigate(direction: number) {
@@ -185,399 +136,160 @@ private cacheService = inject(CalendarCacheService);
       d.setDate(d.getDate() + direction);
     }
     this.selectedDate = d;
-    this.loadMonthSchedules();
+    this.loadAppointments();
   }
 
-  async loadData() {
+  /**
+   * Carga híbrida: Muestra datos locales y consulta solo los nuevos agregados en otras computadoras
+   */
+  async loadAppointments() {
     this.isLoading = true;
     this.cdr.detectChanges();
-       console.log('loadCoaches');
-    await this.loadCoaches();
-      console.log('loadMonthSchedules');
-    await this.loadMonthSchedules();
-    this.isLoading = false;
-    this.cdr.detectChanges();
-  }
 
-  async loadCoaches() {
-    const url = 'https://getemployesbybranch-rdotx3vmaq-uc.a.run.app';
-    const body = { branchId: this.idBranch };
-
-    this.http.post<any>(url, body).subscribe({
-      next: (response) => {
-        if (response && response.success) {
-          this.coachesList = response.teachers || [];
-          if (this.coachesList.length > 0) {
-            this.selectedCoachForBatch = this.coachesList[0];
-            this.selectedCoachForIndividual = this.coachesList[0];
-          }
-        }
-      },
-      error: (err) => {
-        console.error('Error al cargar coaches desde API:', err);
+    try {
+      // 1️⃣ Cargar instantáneamente del caché local
+      const cachedApps = this.authService.getCachedAppointments();
+      if (cachedApps.length > 0) {
+        this.appointmentsList.set(cachedApps);
       }
-    });
-  }
 
+      const sessionData = this.authService.getSession();
+      const jwtToken = sessionData?.sessionToken;
+      if (!jwtToken) {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        return;
+      }
 
-async loadMonthSchedules() {
-   console.log('loadMonthSchedules');
-  const year = this.selectedDate.getFullYear();
-  const month = (this.selectedDate.getMonth() + 1).toString().padStart(2, '0');
-  const yearMonthKey = `${year}-${month}`; // 👈 CORREGIDO: Se calcula del mes seleccionado en pantalla, no de batchTargetDate
+      const activeSucursal = this.authService.getSucursal();
+      const consultorioId = activeSucursal?.idConsultorio || 'default_consultorio';
+      const lastSync = this.authService.getLastSyncDateAppointments();
 
-  this.isLoading = true;
-  this.cdr.detectChanges();
+      // 2️⃣ Consultar al servidor solo los registros nuevos (sincronización incremental)
+      const payload = {
+        idConsultorio: consultorioId,
+        client_last_update: lastSync
+      };
 
-  try {
-    // 1. Consultar el metadato remoto de última actualización
-    console.log('getRemoteUltimaActualizacion');
-    const remoteTimestamp = await this.cacheService.getRemoteUltimaActualizacion(this.idBranch, yearMonthKey);
+      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
 
-    // 2. Revisar si tenemos datos locales en IndexedDB
-     console.log('getLocalMonth');
-    const localData = await this.cacheService.getLocalMonth(yearMonthKey);
+      const response = await fetch(this.GET_FOLLOWING_APPOINTMENTS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-app-signature': this.APP_SECRET_HEADER,
+          'x-client-source': 'angular',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({ encryptedData: ciphertext })
+      });
 
-    // 3. Validar si la caché local es válida (si el timestamp remoto es menor o igual al local)
-       console.log(`comparacion ${localData?.ultimaActualizacion} (${remoteTimestamp}) `);
+      const jsonRes = await response.json();
+      if (response.ok) {
+        const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
+        const decryptedResponse = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
-    if (localData && localData.ultimaActualizacion >= remoteTimestamp) {
-      // 🌟 Recorrer y asegurar que todas tengan colorHex
-  const clasesValidadas = localData.classes.map(clase => {
-    const tieneColor = !!clase.colorHex;
-   // console.log(`Clase ${clase.time} (${clase.date}) - ¿Tiene color?: ${tieneColor ? clase.colorHex : 'NO (asignando default)'}`);
-
-    return {
-      ...clase,
-      colorHex: clase.colorHex || '#71717a' // Color de respaldo si viniera vacío
-    };
-  });
-      // ¡Caché válida! Cargamos desde IndexedDB sin gastar lecturas masivas en Firestore
-      this.monthClasses.set(localData.classes);
-
+        if (decryptedResponse && decryptedResponse.success && Array.isArray(decryptedResponse.appointments) && decryptedResponse.appointments.length > 0) {
+          // Guardar en caché y combinar localmente
+          this.authService.saveCachedAppointments(decryptedResponse.appointments);
+          this.appointmentsList.set(this.authService.getCachedAppointments());
+        }
+      }
+    } catch (error) {
+      console.error('Error al sincronizar citas:', error);
+    } finally {
       this.isLoading = false;
       this.cdr.detectChanges();
+    }
+  }
+
+  async saveAppointment() {
+    if (!this.patientForm.name || !this.patientForm.phone) {
+      alert('Por favor ingresa al menos el nombre y teléfono del paciente.');
       return;
     }
 
-    // 4. Si no hay caché o el servidor tiene una versión más reciente, descargamos de Firestore
-    const db = getFirestore();
-    const diasRef = collection(db, `classes/studios/${this.idBranch}/${yearMonthKey}/dias`);
-    const diasSnap = await getDocs(diasRef);
-    let loadedClasses: ClassSchedule[] = [];
+    try {
+      this.isSaving = true; // Activar loader
+      this.cdr.detectChanges();
 
-    for (const diaDoc of diasSnap.docs) {
-      const fechaDia = diaDoc.id;
-      const schedulesRef = collection(diasRef, fechaDia, 'SCHEDULES');
-      const schedulesSnap = await getDocs(schedulesRef);
+      const sessionData = this.authService.getSession();
+      const jwtToken = sessionData?.sessionToken;
 
-      schedulesSnap.forEach(schDoc => {
-        const data = schDoc.data();
-        const coachName = data['coach'] || 'Sin coach';
+      if (!jwtToken) {
+        alert('No se encontró una sesión activa o token JWT. Inicie sesión nuevamente.');
+        this.isSaving = false;
+        return;
+      }
 
-        loadedClasses.push({
-          time: schDoc.id,
-          coach: coachName,
-          name: data['name'] || 'Clase General',
-          date: fechaDia,
-          colorHex: data['color'],
-          level: data['level'] || 0,
-          cancelada: data['cancelada'] || false
-        });
+      const normalizedStartTime = this.convertTo24Hour(this.targetHour);
+      const { endTime, durationLabel } = this.calculateEndTimeAndLabel(normalizedStartTime, Number(this.selectedDurationMinutes));
+      const activeSucursal = this.authService.getSucursal();
+      const idConsultorio = activeSucursal?.idConsultorio || 'default_consultorio';
+
+      const newAppointmentData: PatientAppointment = {
+        time: normalizedStartTime,
+        endTime: endTime,
+        durationMinutes: Number(this.selectedDurationMinutes),
+        durationLabel: durationLabel,
+        patientName: this.patientForm.name,
+        phone: this.patientForm.phone,
+        email: this.patientForm.email,
+        reason: this.patientForm.reason,
+        date: this.targetDate,
+        syncId: new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+      };
+
+      const payload = {
+        idConsultorio: idConsultorio,
+        appointmentData: newAppointmentData
+      };
+
+      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+
+      const response = await fetch(this.SAVE_APPOINTMENT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-app-signature': this.APP_SECRET_HEADER,
+          'x-client-source': 'angular',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({ encryptedData: ciphertext })
       });
-    }
 
-    // Actualizamos la señal en memoria
-    this.monthClasses.set(loadedClasses);
-
-    // Guardamos la nueva copia en IndexedDB junto con el timestamp actual o remoto
-    await this.cacheService.saveLocalMonth(yearMonthKey, remoteTimestamp, loadedClasses);
-
-  } catch (error) {
-    console.error('Error al sincronizar horarios con caché:', error);
-  } finally {
-    this.isLoading = false;
-    this.cdr.detectChanges();
-  }
-}
-  openBatchModal(dateStr: string) {
-    this.batchTargetDate = dateStr;
-    this.selectedBatchSlots.set([]);
-    if (this.coachesList.length > 0) {
-      this.selectedCoachForBatch = this.coachesList[0];
-    }
-    this.showBatchModal = true;
-  }
-
-  getSlotCoach(hora: string): TeacherResponse | undefined {
-    const found = this.selectedBatchSlots().find(s => s.horario === hora);
-    return found ? found.coach : undefined;
-  }
-
-toggleBatchHour(hora: string) {
-    if (!this.selectedCoachForBatch) return;
-
-    const fechaActual = this.batchTargetDate;
-    const currentSlots = this.selectedBatchSlots();
-
-    // Verificamos si ya estaba en la base de datos
-    const claseEnBD = this.monthClasses().find(c => c.date === fechaActual && c.time === hora);
-
-    // Verificamos si ya está en nuestra lista temporal de lote actual
-    const indexEnLote = currentSlots.findIndex(s => s.horario === hora);
-
-    if (claseEnBD) {
-      if (claseEnBD.coach === this.selectedCoachForBatch.name) {
-        // El usuario hizo clic con EL MISMO maestro propietario -> Quiere DESELECCIONARLA / QUITARLA
-        if (indexEnLote > -1) {
-          this.selectedBatchSlots.set(currentSlots.filter(s => s.horario !== hora));
-        } else {
-          this.selectedBatchSlots.set([...currentSlots, { horario: hora, coach: null as any, isDelete: true }]);
-        }
-      } else {
-        alert(`Este horario ya está asignado al maestro: "${claseEnBD.coach}". Debes seleccionar a ese maestro para poder liberarlo.`);
+      const jsonRes = await response.json();
+      if (!response.ok) {
+        throw new Error(jsonRes.error || 'Error al registrar la cita en el servidor.');
       }
-    } else {
-      if (indexEnLote > -1) {
-        this.selectedBatchSlots.set(currentSlots.filter(s => s.horario !== hora));
-      } else {
-        this.selectedBatchSlots.set([...currentSlots, { horario: hora, coach: this.selectedCoachForBatch, isDelete: false }]);
-      }
+
+      // 💾 Guardado local inmediato sin requerir recarga de servidor
+      this.authService.saveCachedAppointments([newAppointmentData]);
+      this.appointmentsList.set(this.authService.getCachedAppointments());
+
+      this.showAppointmentModal = false;
+      this.showSuccessModal = true;
+    } catch (error: any) {
+      console.error('Error al guardar la cita:', error);
+      alert(error.message || 'Hubo un error al registrar la cita.');
+    } finally {
+      this.isSaving = false;
+      this.cdr.detectChanges();
     }
   }
 
-  // 2. Estado visual para saber si está pintado
-  getSlotVisualState(hora: string): { color: string, coachName: string, isAssigned: boolean } {
-    const fechaActual = this.batchTargetDate;
-
-    const slotEnLote = this.selectedBatchSlots().find(s => s.horario === hora);
-    if (slotEnLote) {
-      if (slotEnLote.isDelete) {
-        // Si el usuario acaba de deseleccionar la que estaba en BD
-        return { color: '#f4f4f5', coachName: '', isAssigned: false };
-      }
-      return { color: slotEnLote.coach.colorHex, coachName: slotEnLote.coach.name, isAssigned: true };
-    }
-
-    const claseEnBD = this.monthClasses().find(c => c.date === fechaActual && c.time === hora);
-    if (claseEnBD) {
-      return { color: claseEnBD.colorHex || '#71717a', coachName: claseEnBD.coach, isAssigned: true };
-    }
-
-    return { color: '#f4f4f5', coachName: '', isAssigned: false };
+  private convertTo24Hour(timeStr: string): string {
+    const totalMins = this.parseTimeToMinutes(timeStr);
+    return this.formatMinutesToTime(totalMins);
   }
 
-  // 3. Conteo dinámico real para el botón inferior
-  get totalActiveBatchSlotsCount(): number {
-    const fechaActual = this.batchTargetDate;
-    // Todas las de la BD para este día
-    const clasesBD = this.monthClasses().filter(c => c.date === fechaActual);
-    let horariosActivosSet = new Set(clasesBD.map(c => c.time));
-
-    // Aplicar modificaciones del lote actual
-    this.selectedBatchSlots().forEach(slot => {
-      if (slot.isDelete) {
-        horariosActivosSet.delete(slot.horario);
-      } else {
-        horariosActivosSet.add(slot.horario);
-      }
-    });
-
-    return horariosActivosSet.size;
+  openAppointmentModal(dateStr: string, hour?: string) {
+    this.targetDate = dateStr;
+    this.targetHour = hour || (this.availableHoursCatalog.length > 0 ? this.availableHoursCatalog[0] : '09:00');
+    this.selectedDurationMinutes = 60;
+    this.patientForm = { name: '', phone: '', email: '', reason: '' };
+    this.showAppointmentModal = true;
   }
-
-
-  // 3. Abrir el modal de tipo de clase asegurando la captura correcta desde cualquier vista (Mes, Semana, Día)
-  openClassTypeModal(dateStr: string, time: string) {
-    this.selectedScheduleTarget = { dateStr, time };
-    this.selectedClassTypeItem = null;
-    this.showClassTypeModal = true;
-  }
-
-async saveBatchSchedule() {
-    const sucursal = this.authService.getSucursal();
-    const fechaActual = this.batchTargetDate;
-
-    // 1. Obtenemos todas las clases que ya existían en la BD para este día
-    const clasesExistentesBD = this.monthClasses().filter(c => c.date === fechaActual);
-
-    // Creamos un mapa o listado base con lo que hay actualmente en la BD
-    // Estructura temporal: Map<hora, coachName>
-    const mapaHorariosActivos = new Map<string, { coachName: string, idCoach: string, color: string, photo: string }>();
-
-    clasesExistentesBD.forEach(c => {
-      // Buscamos los datos completos del coach en la lista general
-      const coachObj = this.coachesList.find(tc => tc.name === c.coach);
-      mapaHorariosActivos.set(c.time, {
-        coachName: c.coach,
-        idCoach: coachObj?.id || coachObj?.idDocumentFirebase || '',
-        color: c.colorHex || '#71717a',
-        photo: coachObj?.photoUrl || ''
-      });
-    });
-
-    // 2. Aplicamos las modificaciones que hizo el usuario en la sesión actual de este lote (selectedBatchSlots)
-    this.selectedBatchSlots().forEach(slot => {
-      if (slot.isDelete) {
-        // Si el usuario lo deseleccionó, lo borramos del mapa final
-        mapaHorariosActivos.delete(slot.horario);
-      } else if (slot.coach) {
-        // Si el usuario lo seleccionó o cambió de maestro, lo agregamos/actualizamos
-        mapaHorariosActivos.set(slot.horario, {
-          coachName: slot.coach.name,
-          idCoach: slot.coach.id || slot.coach.idDocumentFirebase,
-          color: slot.coach.colorHex,
-          photo: slot.coach.photoUrl || ''
-        });
-      }
-    });
-
-    // 3. Convertimos el mapa final consolidado al formato que exige tu API (horariosArray)
-    const horariosArray: InfoClassItem[] = [];
-    mapaHorariosActivos.forEach((val, hora) => {
-      horariosArray.push({
-        horario: hora,
-        infoClase: {
-          id: 0,
-          coach: val.coachName,
-          idCoach: val.idCoach,
-          name: 'Por definir',
-          time: hora,
-          duration: 50,
-          level: 1,
-          aggended: 0,
-          total: sucursal?.branchInfo?.myBikes?.length || 0,
-          photo: val.photo,
-          color: val.color
-        }
-      });
-    });
-
-    if (horariosArray.length === 0) {
-      alert('No hay horarios seleccionados para guardar.');
-      return;
-    }
-
-    const payload = {
-      idSucursal: this.idBranch,
-      dia: this.batchTargetDate,
-      horarios: horariosArray // <--- ¡Aquí ya viajarán llenos con todos los horarios activos!
-    };
-
-    const apiUrl = 'https://registerstudioschedules-rdotx3vmaq-uc.a.run.app';
-    this.http.post(apiUrl, payload).subscribe({
-      next: async () => {
-        // Actualización local inmediata en la señal
-        const nuevasClasesFinales: ClassSchedule[] = horariosArray.map(item => ({
-          time: item.horario,
-          coach: item.infoClase.coach,
-          name: item.infoClase.name,
-          date: this.batchTargetDate,
-          colorHex: item.infoClase.color,
-          level: item.infoClase.level
-        }));
-
-        this.monthClasses.update(currentList => {
-          const filtrados = currentList.filter(item => item.date !== this.batchTargetDate);
-          return [...filtrados, ...nuevasClasesFinales];
-        });
-
-        this.showBatchModal = false;
-        this.selectedBatchSlots.set([]); // Limpiamos la selección temporal
-
-        // Persistir en IndexedDB
-        try {
-          const yearMonthKey = this.batchTargetDate.substring(0, 7);
-          await this.cacheService.saveLocalMonth(yearMonthKey, Date.now(), this.monthClasses());
-        } catch (e) {
-          console.error('Error al guardar en caché local:', e);
-        }
-
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Error al guardar horarios en lote:', err);
-        alert('Error al registrar los horarios.');
-      }
-    });
-  }
-  async saveIndividualSchedule() {
-    const sucursal = this.authService.getSucursal();
-    if (!this.selectedCoachForIndividual) {
-      alert('Selecciona un maestro.');
-      return;
-    }
-
-    const horarioItem: InfoClassItem = {
-      horario: this.individualTargetHour,
-      infoClase: {
-        id: 0,
-        coach: this.selectedCoachForIndividual.name,
-        idCoach: this.selectedCoachForIndividual.id || this.selectedCoachForIndividual.idDocumentFirebase,
-        name: 'Por definir',
-        time: this.individualTargetHour,
-        duration: 50,
-        level: 1,
-        aggended: 0,
-        total: sucursal.branchInfo.myBikes.length,
-        photo: this.selectedCoachForIndividual.photoUrl || '',
-        color: this.selectedCoachForIndividual.colorHex
-      }
-    };
-
-    const payload = {
-      idSucursal: this.idBranch,
-      dia: this.individualTargetDate,
-      horarios: [horarioItem]
-    };
-
-    const apiUrl = 'https://registerstudioschedules-rdotx3vmaq-uc.a.run.app';
-    this.http.post(apiUrl, payload).subscribe({
-      next: async () => {
-        // 🌟 Actualización local inmediata para la clase individual
-        const nuevaClase: ClassSchedule = {
-          time: this.individualTargetHour,
-          coach: this.selectedCoachForIndividual!.name,
-          name: 'Por definir',
-          date: this.individualTargetDate,
-          colorHex: this.selectedCoachForIndividual!.colorHex,
-          level: 1
-        };
-
-        this.monthClasses.update(currentList => {
-          const filtrados = currentList.filter(item =>
-            !(item.date === this.individualTargetDate && item.time === this.individualTargetHour)
-          );
-          return [...filtrados, nuevaClase];
-        });
-
-        this.showIndividualModal = false;
-
-        // 🌟 Persistir de inmediato en IndexedDB la caché local actualizada
-        try {
-          const yearMonthKey = this.individualTargetDate.substring(0, 7);
-          await this.cacheService.saveLocalMonth(yearMonthKey, Date.now(), this.monthClasses());
-        } catch (e) {
-          console.error('Error al guardar en caché local:', e);
-        }
-
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Error al guardar clase individual:', err);
-        alert('Error al registrar la clase.');
-      }
-    });
-  }
-  openIndividualModal(dateStr: string, hour: string) {
-    this.individualTargetDate = dateStr;
-    this.individualTargetHour = hour;
-    if (this.coachesList.length > 0) {
-      this.selectedCoachForIndividual = this.coachesList[0];
-    }
-    this.showIndividualModal = true;
-  }
-
 
   get daysInMonthGrid() {
     const year = this.selectedDate.getFullYear();
@@ -587,15 +299,15 @@ async saveBatchSchedule() {
 
     let days = [];
     for (let i = 0; i < firstDayIndex; i++) {
-      days.push({ dayNumber: '', dateStr: '', classes: [] });
+      days.push({ dayNumber: '', dateStr: '', appointments: [] });
     }
     for (let i = 1; i <= totalDays; i++) {
       const dayStr = i.toString().padStart(2, '0');
       const monthStr = (month + 1).toString().padStart(2, '0');
       const dateStr = `${year}-${monthStr}-${dayStr}`;
 
-      const classesForDay = this.monthClasses().filter(c => c.date === dateStr);
-      days.push({ dayNumber: i, dateStr, classes: classesForDay });
+      const appsForDay = this.appointmentsList().filter(a => a.date === dateStr);
+      days.push({ dayNumber: i, dateStr, appointments: appsForDay });
     }
     return days;
   }
@@ -603,65 +315,115 @@ async saveBatchSchedule() {
   get weekDaysGrid() {
     const current = new Date(this.selectedDate);
     const day = current.getDay();
-    const diff = current.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(current.setDate(diff));
+    const diff = current.getDate() - day;
+    const sunday = new Date(current.setDate(diff));
 
     let week = [];
     for (let i = 0; i < 7; i++) {
-      const nextDay = new Date(monday);
-      nextDay.setDate(monday.getDate() + i);
+      const nextDay = new Date(sunday);
+      nextDay.setDate(sunday.getDate() + i);
       const year = nextDay.getFullYear();
       const month = (nextDay.getMonth() + 1).toString().padStart(2, '0');
       const dayStr = nextDay.getDate().toString().padStart(2, '0');
       const dateStr = `${year}-${month}-${dayStr}`;
 
-      const existingClasses = this.monthClasses().filter(c => c.date === dateStr);
-      let unifiedItems: Array<{ time: string, isAssigned: boolean, classData?: ClassSchedule }> = [];
-
-      this.availableHoursCatalog.forEach(hora => {
-        const foundClass = existingClasses.find(c => c.time === hora);
-        if (foundClass) {
-          unifiedItems.push({ time: hora, isAssigned: true, classData: foundClass });
-        } else {
-          unifiedItems.push({ time: hora, isAssigned: false });
-        }
+      const existingApps = this.appointmentsList().filter(a => a.date === dateStr);
+      const mappedApps = existingApps.map(app => {
+        const pos = this.calculateAppointmentPosition(app.time, app.endTime);
+        return { ...app, topPx: pos.topPx, heightPx: pos.heightPx };
       });
 
-      unifiedItems.sort((a, b) => a.time.localeCompare(b.time));
-
       week.push({
-        name: nextDay.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' }),
+        name: nextDay.toLocaleDateString('es-MX', { weekday: 'short' }).toUpperCase(),
+        dayNumber: nextDay.getDate(),
         dateStr,
-        items: unifiedItems
+        appointments: mappedApps
       });
     }
     return week;
   }
 
-  get currentDayUnifiedData() {
+  get currentDayData() {
     const year = this.selectedDate.getFullYear();
     const month = (this.selectedDate.getMonth() + 1).toString().padStart(2, '0');
     const day = this.selectedDate.getDate().toString().padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
 
-    const existingClasses = this.monthClasses().filter(c => c.date === dateStr);
-    let unifiedItems: Array<{ time: string, isAssigned: boolean, classData?: ClassSchedule }> = [];
-
-    this.availableHoursCatalog.forEach(hora => {
-      const foundClass = existingClasses.find(c => c.time === hora);
-      if (foundClass) {
-        unifiedItems.push({ time: hora, isAssigned: true, classData: foundClass });
-      } else {
-        unifiedItems.push({ time: hora, isAssigned: false });
-      }
+    const existingApps = this.appointmentsList().filter(a => a.date === dateStr);
+    const mappedApps = existingApps.map(app => {
+      const pos = this.calculateAppointmentPosition(app.time, app.endTime);
+      return { ...app, topPx: pos.topPx, heightPx: pos.heightPx };
     });
 
-    unifiedItems.sort((a, b) => a.time.localeCompare(b.time));
-
-    return { dateStr, items: unifiedItems };
+    return { dateStr, appointments: mappedApps };
   }
 
   formatDateHeader(): string {
     return this.selectedDate.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  formatTo12Hour(time24: string): string {
+    if (!time24) return '';
+    const [hStr, mStr] = time24.split(':');
+    let h = parseInt(hStr, 10);
+    const m = mStr || '00';
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12;
+    return `${h}:${m} ${ampm}`;
+  }
+
+  private parseTimeToMinutes(timeStr: string): number {
+    if (!timeStr) return 0;
+    const cleanStr = timeStr.trim().toUpperCase();
+    const isPM = cleanStr.includes('PM');
+    const isAM = cleanStr.includes('AM');
+    const timeOnly = cleanStr.replace(/AM|PM/g, '').trim();
+    const parts = timeOnly.split(':');
+    if (parts.length < 2) return 0;
+    let hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+    if (isNaN(hours) || isNaN(minutes)) return 0;
+    if (isPM && hours < 12) hours += 12;
+    else if (isAM && hours === 12) hours = 0;
+    return (hours * 60) + minutes;
+  }
+
+  private formatMinutesToTime(totalMins: number): string {
+    const normalizedMins = (totalMins + 1440) % 1440;
+    const h = Math.floor(normalizedMins / 60) % 24;
+    const m = normalizedMins % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  }
+
+  private calculateEndTimeAndLabel(startTime: string, durationMinutes: number) {
+    const startTotalMins = this.parseTimeToMinutes(startTime);
+    const endTotalMins = startTotalMins + durationMinutes;
+    const endTime = this.formatMinutesToTime(endTotalMins);
+    let durationLabel = `${durationMinutes} min`;
+    if (durationMinutes === 60) durationLabel = '1 hr';
+    else if (durationMinutes === 90) durationLabel = '1:30 hr';
+    else if (durationMinutes === 120) durationLabel = '2 hrs';
+    return { endTime, durationLabel };
+  }
+
+  calculateAppointmentPosition(startTime: string, endTime?: string) {
+    const startTotalMinutes = this.parseTimeToMinutes(startTime || '09:00');
+    let endTotalMinutes = startTotalMinutes + 60;
+    if (endTime) {
+      endTotalMinutes = this.parseTimeToMinutes(endTime);
+      if (endTotalMinutes <= startTotalMinutes) {
+        endTotalMinutes = startTotalMinutes + 30;
+      }
+    }
+    const durationMinutes = Math.max(endTotalMinutes - startTotalMinutes, 30);
+    const PIXELS_PER_MINUTE = 64 / 60;
+    const GRID_START_MINUTES = 6 * 60;
+    const adjustedTopMinutes = Math.max(0, startTotalMinutes - GRID_START_MINUTES);
+
+    return {
+      topPx: adjustedTopMinutes * PIXELS_PER_MINUTE,
+      heightPx: durationMinutes * PIXELS_PER_MINUTE
+    };
   }
 }

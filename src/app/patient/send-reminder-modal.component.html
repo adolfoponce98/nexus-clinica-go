@@ -1,0 +1,117 @@
+<div class="relative p-6 rounded-3xl" style="background-color: var(--bg-secondary); color: var(--text-main);">
+
+  <!-- Cabecera -->
+  <div class="mb-5">
+    <h2 class="text-xl font-black tracking-tight">Recordatorios manuales</h2>
+    <p class="text-xs mt-1" style="color: var(--text-muted);">Elije el tipo de recordatorio para el usuario</p>
+  </div>
+
+  <!-- Check "Todos" -->
+  <div class="flex items-center gap-2 mb-4 px-1">
+    <input type="checkbox" id="selectAll" [checked]="allSelected" (change)="toggleSelectAll($event)"
+           class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+           [disabled]="isLoading()">
+    <label for="selectAll" class="text-xs font-bold cursor-pointer select-none" style="color: var(--text-main);">
+      Seleccionar todos
+    </label>
+  </div>
+
+  <!-- 3 Cards de Canales -->
+  <div class="grid grid-cols-1 gap-3 mb-6">
+
+    <!-- WhatsApp -->
+    <div (click)="!isLoading() && (channels.whatsapp = !channels.whatsapp)"
+         class="flex items-center justify-between p-4 rounded-2xl border transition-all select-none"
+         [ngClass]="[
+           channels.whatsapp ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700/40 hover:border-slate-600',
+           isLoading() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+         ]"
+         style="border-color: var(--border-color);">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
+          <lucide-icon [img]="icons.MessageSquare" class="w-5 h-5"></lucide-icon>
+        </div>
+        <div>
+          <h4 class="text-xs font-black">WhatsApp</h4>
+          <p class="text-[10px]" style="color: var(--text-muted);">Enviar notificación directa al celular</p>
+        </div>
+      </div>
+      <input type="checkbox" [(ngModel)]="channels.whatsapp" [disabled]="isLoading()" class="w-4 h-4 rounded text-emerald-600 cursor-pointer">
+    </div>
+
+    <!-- Correo -->
+    <div (click)="!isLoading() && (channels.email = !channels.email)"
+         class="flex items-center justify-between p-4 rounded-2xl border transition-all select-none"
+         [ngClass]="[
+           channels.email ? 'border-blue-500 bg-blue-500/10' : 'border-slate-700/40 hover:border-slate-600',
+           isLoading() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+         ]"
+         style="border-color: var(--border-color);">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-xl bg-blue-500/10 text-blue-500">
+          <lucide-icon [img]="icons.Mail" class="w-5 h-5"></lucide-icon>
+        </div>
+        <div>
+          <h4 class="text-xs font-black">Correo electrónico</h4>
+          <p class="text-[10px]" style="color: var(--text-muted);">Enviar detalles por email</p>
+        </div>
+      </div>
+      <input type="checkbox" [(ngModel)]="channels.email" [disabled]="isLoading()" class="w-4 h-4 rounded text-blue-600 cursor-pointer">
+    </div>
+
+    <!-- Por Aplicación -->
+    <div (click)="!isLoading() && (channels.app = !channels.app)"
+         class="flex items-center justify-between p-4 rounded-2xl border transition-all select-none"
+         [ngClass]="[
+           channels.app ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-700/40 hover:border-slate-600',
+           isLoading() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+         ]"
+         style="border-color: var(--border-color);">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-500">
+          <lucide-icon [img]="icons.Bell" class="w-5 h-5"></lucide-icon>
+        </div>
+        <div>
+          <h4 class="text-xs font-black">Por aplicación</h4>
+          <p class="text-[10px]" style="color: var(--text-muted);">Notificación push in-app</p>
+        </div>
+      </div>
+      <input type="checkbox" [(ngModel)]="channels.app" [disabled]="isLoading()" class="w-4 h-4 rounded text-indigo-600 cursor-pointer">
+    </div>
+
+  </div>
+
+  <!-- Botones de Acción -->
+  <div class="flex items-center justify-end gap-3">
+    <button (click)="onClose()" [disabled]="isLoading()"
+            class="px-4 py-2.5 rounded-xl text-xs font-black transition-all hover:bg-slate-500/10 disabled:opacity-50 cursor-pointer" style="color: var(--text-muted);">
+      Cancelar
+    </button>
+
+    <button (click)="onConfirm()" [disabled]="isLoading()"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer">
+      <lucide-icon *ngIf="isLoading()" [img]="icons.Loader2" class="w-4 h-4 animate-spin"></lucide-icon>
+      <span>{{ isLoading() ? 'Enviando...' : 'Confirmar envío' }}</span>
+    </button>
+  </div>
+
+  <!-- DIÁLOGO MODAL DE ERROR ESTILIZADO -->
+  @if (showErrorModal()) {
+    <div class="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/60 animate-in fade-in duration-300 p-4 rounded-3xl">
+      <div class="bg-[var(--bg-secondary)] border border-rose-500/40 p-6 sm:p-8 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-sm text-center">
+        <div class="w-14 h-14 rounded-2xl bg-rose-500/15 text-rose-500 border border-rose-500/30 flex items-center justify-center">
+          <lucide-icon [img]="icons.AlertCircle" class="w-8 h-8"></lucide-icon>
+        </div>
+        <div class="space-y-1">
+          <h3 class="text-base font-black text-[var(--text-main)] uppercase tracking-wider">¡Atención!</h3>
+          <p class="text-xs text-[var(--text-muted)] leading-relaxed">{{ errorMessage() }}</p>
+        </div>
+        <button (click)="cerrarError()"
+                class="w-full mt-2 py-3 px-6 rounded-2xl text-xs font-black bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/25 transition-all cursor-pointer">
+          Entendido
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

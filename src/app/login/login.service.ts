@@ -11,11 +11,13 @@ export interface UserDataModelAuth {
   typeCreation?: number;
   idSucursal?: string;
   tokenFirebase?: string;
+  typeUser:number;
 }
 
 export interface LoginUserResponse {
   success: boolean;
   error?: string;
+    typeUser:number;
 }
 export interface LoginUserRequest {
   email: String;

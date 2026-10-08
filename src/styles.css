@@ -1,11 +1,85 @@
 @import "tailwindcss";
 
-/* Esto fuerza que el fondo sea oscuro incluso si Tailwind falla un segundo */
+/* Esto fuerza que el fondo inicial no parpadee antes de cargar el tema */
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #09090b; /* zinc-950 */
-  color: white;
   min-height: 100vh;
   font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+/* --- Tema por defecto (Light Mode) --- */
+:root {
+  --bg-primary: #f8fafc;       /* Fondo general limpio (Slate muy claro) */
+  --bg-secondary: #ffffff;     /* Fondo de tarjetas / contenedores */
+  --text-main: #0f172a;        /* Texto principal muy oscuro (Slate 900) */
+  --text-muted: #64748b;       /* Texto secundario (Slate 500) */
+  --border-color: #e2e8f0;     /* Bordes sutiles (Slate 200) */
+  --accent-color: #2563eb;     /* Azul corporativo principal */
+}
+
+/* --- Tema Oscuro (Dark Mode) --- */
+/* Cuando el body tenga la clase 'dark', se aplicarán estos colores basados en tu marca */
+body.dark {
+  --bg-primary: #070b14;       /* Fondo general oscuro profundo corporativo */
+  --bg-secondary: #0f172a;     /* Fondo de tarjetas / contenedores (Slate 900) */
+  --text-main: #f8fafc;        /* Texto principal blanco/claro */
+  --text-muted: #94a3b8;       /* Texto secundario gris claro (Slate 400) */
+  --border-color: #1e293b;     /* Bordes oscuros sutiles (Slate 800) */
+  --accent-color: #3b82f6;     /* Azul brillante de acento */
+}
+
+/* Aplicar las variables de forma global al body con transición suave */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+}
+@keyframes nexusWave1 {
+  0% {
+    d: path("M 25,5 C 130,1 310,19 415,5 C 433,5 455,20 455,30 C 455,40 433,55 415,55 C 310,41 130,59 25,55 C 7,55 -5,40 -5,30 C -5,20 7,5 25,5 Z");
+  }
+  33% {
+    d: path("M 25,7 C 130,3 310,16 415,7 C 433,7 455,19 455,30 C 455,41 433,53 415,53 C 310,43 130,57 25,53 C 7,53 -5,41 -5,30 C -5,19 7,7 25,7 Z");
+  }
+  66% {
+    d: path("M 25,3 C 130,6 310,12 415,3 C 433,3 455,21 455,30 C 455,39 433,57 415,57 C 310,45 130,56 25,57 C 7,57 -5,39 -5,30 C -5,21 7,3 25,3 Z");
+  }
+  100% {
+    d: path("M 25,5 C 130,1 310,19 415,5 C 433,5 455,20 455,30 C 455,40 433,55 415,55 C 310,41 130,59 25,55 C 7,55 -5,40 -5,30 C -5,20 7,5 25,5 Z");
+  }
+}
+
+@keyframes nexusWave2 {
+  0% {
+    d: path("M 25,7 C 130,12 310,6 415,8 C 433,8 455,19 455,30 C 455,41 433,54 415,54 C 310,45 130,55 25,54 C 7,54 -5,41 -5,30 C -5,19 7,8 25,7 Z");
+  }
+  50% {
+    d: path("M 25,4 C 130,4 310,15 415,4 C 433,4 455,22 455,30 C 455,38 433,52 415,52 C 310,42 130,58 25,56 C 7,56 -5,38 -5,30 C -5,22 7,4 25,4 Z");
+  }
+  100% {
+    d: path("M 25,7 C 130,12 310,6 415,8 C 433,8 455,19 455,30 C 455,41 433,54 415,54 C 310,45 130,55 25,54 C 7,54 -5,41 -5,30 C -5,19 7,8 25,7 Z");
+  }
+}
+
+/* --- CLASES DE VELOCIDAD --- */
+.animate-nexus-1 {
+  animation: nexusWave1 7.5s ease-in-out infinite;
+}
+
+.animate-nexus-2 {
+  animation: nexusWave2 6.2s ease-in-out infinite reverse;
+}
+
+.animate-nexus-3 {
+  animation: nexusWave1 5.4s ease-in-out infinite;
+}
+
+.animate-nexus-4 {
+  animation: nexusWave2 4.8s ease-in-out infinite reverse;
+}
+
+.animate-nexus-5 {
+  animation: nexusWave1 4.1s ease-in-out infinite;
 }

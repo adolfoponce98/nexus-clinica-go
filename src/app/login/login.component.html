@@ -1,105 +1,307 @@
-<div class="relative min-h-screen flex items-center justify-center bg-zinc-950 text-white font-sans overflow-hidden">
+<div class="relative min-h-screen flex items-center justify-center font-sans overflow-hidden" style="background-color: var(--bg-primary); color: var(--text-main);">
+
+  <!-- Fondo con efectos lumínicos corporativos -->
   <div class="absolute inset-0 z-0">
-    <img
-      src="assets/image.jpg"
-      class="w-full h-full object-cover opacity-30 grayscale"
-      alt="Gym Background"
-    >
-    <div class="absolute inset-0 bg-gradient-to-r from-zinc-950 via-transparent to-zinc-950"></div>
+    <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 50%, var(--bg-secondary), var(--bg-primary));"></div>
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-pink-600/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/2 -right-40 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-40 left-1/3 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
   </div>
 
-  <main class="relative z-10 w-full max-w-6xl px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+  <!-- ☀️🌙 SWITCH DE TEMA FLOTANTE EN LA ESQUINITA SUPERIOR -->
+  <div class="absolute top-6 right-6 z-20">
+    <button (click)="themeService.toggleTheme()"
+            class="px-3.5 py-2.5 rounded-2xl shadow-md flex items-center gap-2 cursor-pointer transition-all text-xs font-black border"
+            style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);"
+            [title]="themeService.isDarkMode() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+      @if (themeService.isDarkMode()) {
+        <span>☀️</span>
+        <span class="text-[10px] uppercase tracking-wider">Claro</span>
+      } @else {
+        <span>🌙</span>
+        <span class="text-[10px] uppercase tracking-wider">Oscuro</span>
+      }
+    </button>
+  </div>
 
-    <section>
-      <div class="flex items-center gap-2 mb-8">
-     <img src="assets/logoh.png" class="h-8 object-contain grayscale" alt="Logo">
+  <main class="relative z-10 w-full max-w-6xl px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-12">
+
+    <!-- Sección Izquierda: Identidad de Marca y Propuesta de Valor -->
+    <section class="space-y-8">
+      <div class="flex items-center gap-4">
+        <div>
+             <div class="overflow-hidden flex flex-col justify-center">
+      <div class="flex items-center gap-2">
+        <img [src]="themeService.isDarkMode() ? 'assets/logo_dark.png' : 'assets/logo_light.png'" alt="Logo" class="h-30 w-60 w-auto object-contain">
+      </div>
+    </div>
+          <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--text-muted);">
+            <span>AGENDA</span>
+            <span class="w-1 h-1 rounded-full bg-pink-500"></span>
+            <span>EXPEDIENTES</span>
+            <span class="w-1 h-1 rounded-full bg-purple-500"></span>
+            <span>TU SALUD</span>
+          </div>
+        </div>
       </div>
 
-      <h2 class="text-6xl font-black uppercase leading-tight mb-4">
-        Mantente <br>
-        <span class="text-amber-400 italic">en Movimiento.</span>
-      </h2>
+      <!-- Título Principal -->
+      <div class="space-y-3">
+        <h2 class="text-4xl lg:text-5xl font-black tracking-tight leading-tight" style="color: var(--text-main);">
+          Conecta con tu salud, <br>
+          <span class="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent italic font-light">siempre.</span>
+        </h2>
+        <p class="max-w-md text-sm leading-relaxed" style="color: var(--text-muted);">
+          Plataforma médica centralizada para la gestión inteligente de clínicas, expedientes clínicos electrónicos y control de especialistas.
+        </p>
+      </div>
 
-      <p class="text-zinc-400 max-w-md text-lg mb-8">
-       Administra tu studio de Indoor o Gym y toma el control en todo un sistema completo de administración
-      </p>
+      <!-- Características en Mini Tarjetas -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+        <div class="border p-3.5 rounded-2xl backdrop-blur-md space-y-2 shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+          <div class="w-8 h-8 rounded-xl bg-pink-500/10 text-pink-500 flex items-center justify-center border border-pink-500/20">
+            <lucide-icon [img]="CalendarIcon" class="w-4 h-4"></lucide-icon>
+          </div>
+          <p class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Agenda</p>
+        </div>
 
-      <div class="flex gap-8 border-l-2 border-cyan-400 pl-6">
-        <div>
-          <p class="text-cyan-400 font-bold uppercase text-sm tracking-widest">En Línea</p>
-          <p class="text-xs text-zinc-500 uppercase">Estatus</p>
+        <div class="border p-3.5 rounded-2xl backdrop-blur-md space-y-2 shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+          <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center border border-purple-500/20">
+            <lucide-icon [img]="FileText" class="w-4 h-4"></lucide-icon>
+          </div>
+          <p class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Expedientes</p>
+        </div>
+
+        <div class="border p-3.5 rounded-2xl backdrop-blur-md space-y-2 shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center border border-blue-500/20">
+            <lucide-icon [img]="UserCheck" class="w-4 h-4"></lucide-icon>
+          </div>
+          <p class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Doctores</p>
+        </div>
+
+        <div class="border p-3.5 rounded-2xl backdrop-blur-md space-y-2 shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+          <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center border border-indigo-500/20">
+            <lucide-icon [img]="ShieldCheck" class="w-4 h-4"></lucide-icon>
+          </div>
+          <p class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Seguridad</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Derecha: Tarjeta de Acceso al Sistema -->
+    <section class="flex justify-center lg:justify-end">
+      <div class="w-full max-w-md backdrop-blur-2xl p-8 sm:p-10 rounded-[2.5rem] border shadow-2xl space-y-6" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+
+        <div class="flex justify-between items-start">
+          <div>
+            <h3 class="text-xl font-black tracking-tight mb-1 uppercase" style="color: var(--text-main);">Portal Clínico</h3>
+            <p class="text-xs" style="color: var(--text-muted);">Ingrese sus credenciales para acceder al sistema.</p>
+          </div>
+          <!-- Botón de Soporte Flotante Superior -->
+          <button (click)="openSupportModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-bold transition-all cursor-pointer shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <lucide-icon [img]="HelpCircle" class="w-3.5 h-3.5 text-pink-500"></lucide-icon>
+            Soporte
+          </button>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
+
+          <!-- Campo de Correo -->
+          <div class="space-y-1.5">
+            <label class="text-[10px] uppercase font-black tracking-widest text-pink-500">Correo Electrónico</label>
+            <div class="relative">
+              <lucide-icon [img]="User" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="dr.nombre@nexosalud.com"
+                class="w-full border rounded-2xl py-3.5 pl-12 pr-4 text-sm outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500/50 transition-all shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+              >
+            </div>
+          </div>
+
+          <!-- Campo de Contraseña -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center">
+              <label class="text-[10px] uppercase font-black tracking-widest text-purple-500">Contraseña</label>
+              <button type="button" (click)="openForgotPasswordModal()" class="text-[10px] font-bold hover:text-pink-500 transition-colors cursor-pointer" style="color: var(--text-muted);">
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+            <div class="relative">
+              <lucide-icon [img]="Lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
+
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="••••••••"
+                class="w-full border rounded-2xl py-3.5 pl-12 pr-12 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition-all shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+              >
+
+              <button
+                type="button"
+                (click)="togglePasswordVisibility()"
+                class="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-none" style="color: var(--text-muted);"
+              >
+                @if (showPassword()) {
+                  <lucide-icon [img]="EyeOff" class="w-4 h-4"></lucide-icon>
+                } @else {
+                  <lucide-icon [img]="Eye" class="w-4 h-4"></lucide-icon>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- Botón de Envío -->
+          <button
+            type="submit"
+            [disabled]="isLoading() || loginForm.invalid"
+            class="w-full mt-2 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 hover:from-pink-500 hover:via-purple-500 hover:to-blue-500 disabled:from-zinc-800 disabled:to-zinc-800 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all uppercase tracking-wider text-xs cursor-pointer disabled:cursor-not-allowed shadow-xl shadow-purple-900/25"
+          >
+            @if (!isLoading()) {
+              Iniciar Sesión <lucide-icon [img]="Zap" class="w-3.5 h-3.5 fill-current text-pink-200"></lucide-icon>
+            } @else {
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Validando acceso...
+              </div>
+            }
+          </button>
+
+        </form>
+
+        <!-- Opción de Registro -->
+        <div class="text-center pt-2 border-t" style="border-color: var(--border-color);">
+          <p class="text-xs" style="color: var(--text-muted);">
+            ¿Tu clínica aún no está registrada?
+            <button (click)="openRegisterModal()" class="text-pink-500 font-bold hover:underline cursor-pointer ml-1">
+              Crear cuenta nueva
+            </button>
+          </p>
         </div>
 
       </div>
     </section>
 
-    <section class="flex justify-center lg:justify-end">
-      <div class="w-full max-w-md bg-zinc-900/80 backdrop-blur-xl p-10 rounded-2xl border border-zinc-800 shadow-2xl">
-        <h3 class="text-2xl font-bold mb-1">Credenciales de accesso</h3>
-        <p class="text-zinc-500 text-sm mb-8">Ingresa las credenciales de tu Estudio.</p>
-
-<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
-
-  <div class="space-y-2">
-    <label class="text-[10px] uppercase font-bold tracking-widest text-amber-400">Correo</label>
-    <div class="relative">
-      <lucide-icon [img]="User" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></lucide-icon>
-      <input
-        type="email"
-        formControlName="email"
-        placeholder="admin@spinpro.com"
-        class="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-3 pl-10 pr-4 text-white focus:ring-1 focus:ring-amber-400 outline-none"
-      >
-    </div>
-  </div>
-
-  <div class="space-y-2">
-    <label class="text-[10px] uppercase font-bold tracking-widest text-rose-400">Contraseña</label>
-    <div class="relative">
-      <lucide-icon [img]="Lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></lucide-icon>
-      <input
-        type="password"
-        formControlName="password"
-        placeholder="••••••••"
-        class="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-3 pl-10 pr-4 text-white focus:ring-1 focus:ring-amber-400 outline-none"
-      >
-    </div>
-  </div>
-
-<button
-  type="submit"
-  [disabled]="isLoading() || loginForm.invalid"
-  class="w-full bg-amber-400 hover:bg-amber-500 disabled:bg-zinc-700 text-zinc-950 font-black py-4 rounded-lg flex items-center justify-center gap-2 transition-all uppercase tracking-tighter cursor-pointer disabled:cursor-not-allowed"
->
-  @if (!isLoading()) {
-    Entrar <lucide-icon [img]="Zap" class="w-4 h-4 fill-current"></lucide-icon>
-  } @else {
-    <div class="flex items-center gap-2">
-      <div class="w-5 h-5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></div>
-      Cargando...
-    </div>
-  }
-</button>
-  <ng-template #loader>
-    <div class="flex items-center gap-2">
-      <div class="w-5 h-5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></div>
-      Cargando...
-    </div>
-  </ng-template>
-
-</form>
-      </div>
-    </section>
   </main>
 
-  <footer class="absolute bottom-6 w-full px-8 flex justify-between items-end text-[10px] font-bold tracking-widest text-zinc-700 uppercase">
+  <!-- Footer Institucional -->
+  <footer class="absolute bottom-6 w-full px-8 flex justify-between items-end text-[10px] font-bold tracking-[0.2em] uppercase" style="color: var(--text-muted);">
     <div>
-      <p class="text-cyan-950">Powered by Nexus Ecosystem</p>
-      <p>v1.0.0</p>
+      <p class="text-pink-500 font-semibold">Tu salud, en un solo lugar.</p>
+      <p class="mt-0.5 opacity-60">NexoSalud Clinical Suite v2.0</p>
     </div>
-    <div class="flex gap-4">
-      <lucide-icon name="ShieldCheck" class="w-4 h-4"></lucide-icon>
-      <lucide-icon name="Rss" class="w-4 h-4 text-rose-900"></lucide-icon>
+    <div class="flex gap-4 items-center">
+      <div class="flex gap-1.5 items-center">
+        <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+        <span class="w-2 h-2 rounded-full bg-indigo-300"></span>
+      </div>
     </div>
   </footer>
 </div>
+
+<!-- ================= MODALES ================= -->
+@if (showErrorModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+    <div class="border w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative space-y-6 text-center" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+      <div class="w-16 h-16 bg-rose-500/10 text-rose-500 rounded-3xl flex items-center justify-center mx-auto border border-rose-500/20">
+        <lucide-icon [img]="ShieldCheck" class="w-8 h-8"></lucide-icon>
+      </div>
+      <div>
+        <h3 class="text-xl font-black uppercase tracking-tight mb-1" style="color: var(--text-main);">Acceso Restringido</h3>
+        <p class="text-xs font-medium leading-relaxed" style="color: var(--text-muted);">{{ errorMessage() }}</p>
+      </div>
+      <button (click)="cerrarModalError()" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-purple-600/20">
+        Entendido
+      </button>
+    </div>
+  </div>
+}
+
+@if (showForgotPasswordModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+    <div class="border w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative space-y-5" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+      <button (click)="showForgotPasswordModal.set(false)" class="absolute right-6 top-6 cursor-pointer" style="color: var(--text-muted);">
+        <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+      </button>
+
+      <div>
+        <h3 class="text-xl font-black uppercase tracking-tight" style="color: var(--text-main);">Recuperar Contraseña</h3>
+        <p class="text-xs mt-1" style="color: var(--text-muted);">Ingresa tu correo electrónico registrado y te enviaremos las instrucciones de restablecimiento.</p>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-[10px] uppercase font-black tracking-widest text-pink-500">Correo Electrónico</label>
+        <input type="email" placeholder="ejemplo@nexosalud.com" class="w-full border rounded-2xl py-3.5 px-4 text-xs outline-none focus:border-pink-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+      </div>
+
+      <button (click)="submitForgotPassword()" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-purple-600/20">
+        Enviar Instrucciones
+      </button>
+    </div>
+  </div>
+}
+
+@if (showRegisterModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+    <div class="border w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative space-y-5" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+      <button (click)="showRegisterModal.set(false)" class="absolute right-6 top-6 cursor-pointer" style="color: var(--text-muted);">
+        <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+      </button>
+
+      <div>
+        <h3 class="text-xl font-black uppercase tracking-tight" style="color: var(--text-main);">Registro de Clínica o Especialista</h3>
+        <p class="text-xs mt-1" style="color: var(--text-muted);">Comienza a administrar tu agenda y expedientes en minutos.</p>
+      </div>
+
+      <div class="space-y-3">
+        <div class="space-y-1">
+          <label class="text-[10px] uppercase font-black tracking-widest text-pink-500">Nombre del Doctor / Clínica</label>
+          <input type="text" placeholder="Dr. Juan Pérez" class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-pink-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] uppercase font-black tracking-widest text-purple-500">Correo Electrónico</label>
+          <input type="email" placeholder="correo@clinica.com" class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-purple-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] uppercase font-black tracking-widest text-blue-500">Teléfono de Contacto</label>
+          <input type="text" placeholder="33 1234 5678" class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+        </div>
+      </div>
+
+      <button (click)="submitRegister()" class="w-full bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 hover:opacity-90 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-purple-600/20">
+        Solicitar Registro
+      </button>
+    </div>
+  </div>
+}
+
+@if (showSupportModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+    <div class="border w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative space-y-5" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+      <button (click)="showSupportModal.set(false)" class="absolute right-6 top-6 cursor-pointer" style="color: var(--text-muted);">
+        <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+      </button>
+
+      <div>
+        <h3 class="text-xl font-black uppercase tracking-tight flex items-center gap-2" style="color: var(--text-main);">
+          <lucide-icon [img]="HelpCircle" class="w-5 h-5 text-pink-500"></lucide-icon>
+          Soporte Técnico Clinica Go
+        </h3>
+        <p class="text-xs mt-1" style="color: var(--text-muted);">¿Tienes problemas para iniciar sesión o necesitas ayuda con tu cuenta corporativa?</p>
+      </div>
+
+      <div class="p-4 rounded-2xl border space-y-2 text-xs shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-muted);">
+        <p>📧 Correo: <strong style="color: var(--text-main);">soporte@nexosalud.com</strong></p>
+        <p>📞 WhatsApp / Teléfono: <strong style="color: var(--text-main);">+52 (33) 9876-5432</strong></p>
+        <p>🕒 Horario: Lunes a Viernes de 8:00 AM a 8:00 PM</p>
+      </div>
+
+      <button (click)="showSupportModal.set(false)" class="w-full border py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+        Cerrar
+      </button>
+    </div>
+  </div>
+}

@@ -1,0 +1,60 @@
+<div class="p-6 rounded-3xl shadow-xl space-y-4 border mb-6 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+  <div class="flex justify-between items-center">
+    <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Últimos pacientes</h3>
+    <button class="text-xs font-bold text-blue-500 hover:underline flex items-center gap-1 cursor-pointer">
+      Ver todos <lucide-icon [img]="ChevronRight" class="w-3.5 h-3.5"></lucide-icon>
+    </button>
+  </div>
+
+  @if (patients().length > 0) {
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b font-bold uppercase text-[10px]" style="border-color: var(--border-color); color: var(--text-muted);">
+            <th class="pb-3">Paciente</th>
+            <th class="pb-3">Motivo de consulta</th>
+            <th class="pb-3">Última consulta</th>
+            <th class="pb-3 text-right">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y" style="border-color: var(--border-color);">
+          @for (patient of patients(); track patient.name) {
+            <tr class="transition-colors hover:opacity-90" style="background-color: transparent;">
+              <td class="py-3 font-bold flex items-center gap-2.5" style="color: var(--text-main);">
+                <img [src]="patient.avatar" class="w-7 h-7 rounded-full object-cover border" style="border-color: var(--border-color);" alt="avatar">
+                <span>{{ patient.name }}</span>
+              </td>
+              <td class="py-3" style="color: var(--text-muted);">{{ patient.specialty }}</td>
+              <td class="py-3 text-[10px]" style="color: var(--text-muted);">{{ patient.lastConsult }}</td>
+              <td class="py-3 text-right">
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-black border"
+                      [class.bg-emerald-500/10]="patient.status === 'Completada' || patient.status === 'Tomada'"
+                      [class.text-emerald-500]="patient.status === 'Completada' || patient.status === 'Tomada'"
+                      [class.border-emerald-500/20]="patient.status === 'Completada' || patient.status === 'Tomada'"
+                      [class.bg-rose-500/10]="patient.status === 'Cancelada'"
+                      [class.text-rose-500]="patient.status === 'Cancelada'"
+                      [class.border-rose-500/20]="patient.status === 'Cancelada'"
+                      [class.bg-amber-500/10]="patient.status === 'En seguimiento'"
+                      [class.text-amber-500]="patient.status === 'En seguimiento'"
+                      [class.border-amber-500/20]="patient.status === 'En seguimiento'">
+                  {{ patient.status }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <!-- Empty State -->
+    <div class="flex flex-col items-center justify-center py-8 text-center space-y-2 bg-[var(--bg-primary)]/50 border border-dashed border-[var(--border-color)] rounded-2xl p-4">
+      <div class="w-10 h-10 rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] shadow-sm">
+        <lucide-icon [img]="ChevronRight" class="w-5 h-5 opacity-40"></lucide-icon>
+      </div>
+      <div>
+        <p class="text-xs font-bold" style="color: var(--text-main);">No hay pacientes recientes</p>
+        <p class="text-[10px]" style="color: var(--text-muted);">Las consultas finalizadas aparecerán aquí automáticamente.</p>
+      </div>
+    </div>
+  }
+</div>

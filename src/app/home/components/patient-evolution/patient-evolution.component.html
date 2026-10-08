@@ -1,0 +1,60 @@
+<div class="p-6 rounded-3xl shadow-xl space-y-6 border" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <div>
+      <div class="flex items-center gap-2">
+        <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Evolución de pacientes</h3>
+        <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+          {{ totalYearPatients() }} pacientes en total
+        </span>
+      </div>
+      <p class="text-[10px]" style="color: var(--text-muted);">Registro mensual acumulado</p>
+    </div>
+
+    <select (change)="onFilterChange($event)" class="text-[10px] font-bold rounded-xl px-2.5 py-1.5 outline-none cursor-pointer border shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+      <option value="6">Últimos 6 meses</option>
+      <option value="12">Último año</option>
+    </select>
+  </div>
+
+  <div class="h-44 relative flex items-end justify-between pt-8 px-2 border-b" style="border-color: var(--border-color);">
+    <div class="absolute inset-x-0 bottom-8 h-24 bg-gradient-to-t from-emerald-500/10 to-transparent pointer-events-none rounded-t-xl"></div>
+
+    @for (item of displayedData(); track item.monthIndex) {
+      <div class="flex flex-col items-center gap-2 z-10 relative">
+
+        <!-- Línea roja vertical destacando el mes actual -->
+        @if (item.isCurrentMonth) {
+          <div class="absolute -top-8 bottom-0 w-0.5 bg-rose-500 z-0 shadow-sm" title="Mes Actual"></div>
+          <span class="absolute -top-11 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-20">En curso</span>
+        }
+
+        <!-- Número de pacientes visible permanentemente -->
+        <span class="text-[10px] font-black text-emerald-500 z-10">{{ item.total }}</span>
+
+        @if (item.total > 0) {
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20 z-10" [style.margin-bottom]="item.spacing"></div>
+        } @else {
+          <!-- Mes sin valor (círculo inactivo) -->
+          <div class="w-2 h-2 rounded-full bg-zinc-600/30 mb-2 z-10"></div>
+        }
+
+        <span class="text-[10px] font-bold z-10" [style.color]="item.isCurrentMonth ? 'var(--text-main)' : 'var(--text-muted)'">{{ item.month }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Botones de navegación (flechas) centrados abajo de la gráfica -->
+  <div class="flex items-center justify-center gap-2 pt-1">
+    <div class="flex items-center gap-1 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl p-1 shadow-sm">
+      <button (click)="prevPage()" [disabled]="page() === 0" class="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1 text-[10px] font-bold px-2" title="Meses anteriores">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Anterior
+      </button>
+      <span class="text-[10px] font-bold px-2 text-[var(--text-muted)] border-x border-[var(--border-color)]">{{ page() === 0 ? 'Semestre 1' : 'Semestre 2' }}</span>
+      <button (click)="nextPage()" [disabled]="page() === 1" class="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1 text-[10px] font-bold px-2" title="Meses siguientes">
+        Siguiente
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+</div>

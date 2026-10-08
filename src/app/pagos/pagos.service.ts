@@ -10,6 +10,7 @@ export interface RegistrarPagoRequest {
   metodoPago: string;
   concepto: string;
   conceptoPagoId: string;
+  clasesAdicionales:number
 }
 
 export interface RegistrarPagoResponse {

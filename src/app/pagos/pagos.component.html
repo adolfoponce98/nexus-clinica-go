@@ -148,12 +148,22 @@
       <option value="Pago extraordinario">Pago extraordinario</option>
       <option value="PREPAGO">PREPAGO</option>
       <option value="ABONO">ABONO</option>
+      <option value="CLASES ADICIONALES">CLASES ADICIONALES</option>
       <option value="OTRO">OTRO</option>
     </select>
     <lucide-icon [img]="icons.ChevronDown" class="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"></lucide-icon>
   </div>
 </div>
+@if(isClasesExtra){
+<div class="space-y-2">
+  <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">NUMERO DE CLASES</label>
+  <div class="flex items-center bg-zinc-50 rounded-2xl px-8 py-5 border-2 border-transparent focus-within:border-zinc-100 transition-all">
 
+    <input formControlName="numeroClases" type="number"
+           class="bg-transparent border-none w-full text-3xl font-black outline-none text-zinc-900" placeholder="1">
+  </div>
+</div>
+}
 <!-- Monto (Precargado si es plan, editable si es manual) -->
 <div class="space-y-2">
   <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-4">Monto del Pago</label>

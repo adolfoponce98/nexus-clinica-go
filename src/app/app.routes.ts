@@ -3,15 +3,28 @@ import { LoginComponent } from './login/login.component';
 import { MainLayoutComponent } from './main/main-layout.component'; // El componente contenedor que creamos
 import { HomeComponent } from './home/home.component';
 import { GastosComponent } from './gastos/gastos.component';
-import { StudentsComponent } from './alumnas/alumnas.component';
+import { AlumnosComponent } from './alumnas/alumnas.component';
 import { StudentDetailComponent } from './alumnas/detalle_alumna.component';
 import { StaffComponent } from './staff/maestras.component';
 import { PlansComponent } from './planes/planes.component';
 import { PagosComponent } from './pagos/pagos.component';
 import { SucursalComponent } from './miEstudio/studio.component';
 import { CalendarComponent } from './calendar/calendar.component';
-import { HeartMonitorComponent } from './monitor/heart-monitor.component';
-import { PermisosComponent } from './permisos/permisos.component';
+import { ServiciosConsultorioComponent } from './services/doctor_services.component';
+import { ServiciosComponent } from './services/servicios.component';
+import { UsersSystemComponent } from './usuariosSistema/usuarios_sistema.component';
+import { MedicalRecordFormComponent } from './expediente/traumatologic/medical-record-form.component';
+import { ClinicalHistoryComponent } from './patient/clinical-history.component';
+import { MedicalFollowupComponent } from './expediente/traumatologic/follow/new//medical-followup.component';
+import { DoctorProfileContainerComponent } from './profile/doctor-profile-container.component';
+import { DoctorRegisterComponent } from './register/doctor-register.component';
+import { RecetaMedicaComponent } from './recipes/receta-medica.component';
+import { ListaPacientesComponent } from './patient/patient-list/lista-pacientes.component';
+import { ClinicsComponent } from './consultorios/clinics-tab.component';
+import { MedicalFollowupContainerComponent } from './expediente/baseFollow/medical-followup-container.component';
+import { MedicalRecordContainerComponent } from './expediente/medical-record-container.component';
+import { MedicalFollowupReadonlyComponent } from './expediente/traumatologic/follow/detail/medical-followup-detail.component';
+
 import { AuthService } from './auth/auth.service';
 import { inject } from '@angular/core';
 // Protege rutas privadas
@@ -34,6 +47,9 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent ,
      canActivate: [guestGuard] // Solo entra si NO hay sesión
   },
+   { path: 'register', component: DoctorRegisterComponent ,
+
+  },
 
   // Rutas protegidas que se renderizan DENTRO del MainLayoutComponent (Con sidebar)
   {
@@ -42,16 +58,23 @@ export const routes: Routes = [
      canActivate: [authGuard], // Solo entra si HAY sesión
     children: [
       { path: 'home', component: HomeComponent },
-      { path: 'permisos', component: PermisosComponent },
-      { path: 'gastos', component: GastosComponent },
-      { path: 'students', component: StudentsComponent },
-      { path: 'students/:id', component: StudentDetailComponent },
-      { path: 'monitor', component: HeartMonitorComponent },
-      { path: 'staff', component: StaffComponent },
+      { path: 'expediente/nuevo', component: MedicalRecordContainerComponent },
+      { path: 'usuarios_sistema', component: UsersSystemComponent },
+      { path: 'expediente/:id', component: ClinicalHistoryComponent },
+      { path: 'expediente/nuevaRevision/:id', component: MedicalFollowupContainerComponent },
+      { path: 'seguimiento', component: MedicalFollowupComponent },
+      { path: 'pacientes', component: ListaPacientesComponent },
+      { path: 'register', component: DoctorRegisterComponent },
+      { path: 'recetas', component: RecetaMedicaComponent },
       { path: 'planes', component: PlansComponent },
       { path: 'calendario', component: CalendarComponent },
-      { path: 'pagos', component: PagosComponent },
+      { path: 'profile', component: DoctorProfileContainerComponent },
       { path: 'sucursales', component: SucursalComponent },
+        { path: 'services', component: ServiciosConsultorioComponent },
+
+       { path: 'consultorios', component: ClinicsComponent },
+        { path: 'expediente/detail/:id', component: MedicalFollowupReadonlyComponent },
+
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },

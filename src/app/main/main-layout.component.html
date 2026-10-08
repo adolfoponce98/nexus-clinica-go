@@ -1,332 +1,744 @@
-<div class="flex min-h-screen bg-zinc-50 font-sans text-zinc-900">
-<!-- SIDEBAR COLAPSIBLE -->
-  <aside [class.w-64]="!isSidebarCollapsed" [class.w-20]="isSidebarCollapsed" class="bg-zinc-950 flex flex-col p-4 text-zinc-400 shrink-0 transition-all duration-300 relative">
+<div class="min-h-screen font-sans" style="background-color: var(--bg-primary); color: var(--text-main);">
+  <div class="flex min-h-screen">
 
-    <!-- Botón para colapsar/expandir -->
-    <button (click)="toggleSidebar()" class="absolute -right-3 top-6 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer z-20 shadow-md" title="Colapsar menú">
-      <lucide-icon [img]="isSidebarCollapsed ? PanelLeftClose : PanelLeftClose" class="w-3.5 h-3.5 transition-transform duration-300" [class.rotate-180]="isSidebarCollapsed"></lucide-icon>
-    </button>
+    <!-- SIDEBAR COLAPSIBLE -->
+ <aside [class.w-72]="!isSidebarCollapsed" [class.w-20]="isSidebarCollapsed" class="border-r flex flex-col justify-between p-4 shrink-0 transition-all duration-300 relative h-screen sticky top-0 overflow-visible" style="background-color: var(--bg-secondary); border-color: var(--border-color); z-index: 40;">
 
-    <!-- Logo / Imagen -->
-    <div class="flex items-center justify-center mb-8 px-2 overflow-hidden">
-      @if (!isSidebarCollapsed) {
-        <img src="assets/logoh.png" class="h-8 object-contain grayscale" alt="Logo">
-      } @else {
-        <span class="text-white font-black text-lg">B</span>
-      }
+  <!-- Botón para colapsar/expandir (Corregido con z-index alto y visible) -->
+  <button (click)="toggleSidebar()" class="absolute -right-3 top-6 border w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-muted); z-index: 50;" title="Colapsar menú">
+    <lucide-icon [img]="PanelLeftClose" class="w-3.5 h-3.5 transition-transform duration-300" [class.rotate-180]="isSidebarCollapsed"></lucide-icon>
+  </button>
+
+      <!-- CONTENIDO SUPERIOR: LOGO Y MENÚ -->
+      <div class="space-y-6 overflow-y-auto overflow-x-hidden pr-1">
+
+<div class="flex items-center gap-3 px-2">
+  @if (isSidebarCollapsed) {
+    <!-- Logo pequeño cuando la barra lateral está colapsada -->
+    <div class="overflow-hidden flex flex-col justify-center">
+      <img src="assets/logo_nexus.png" alt="Logo Nexus" class="h-8 w-auto object-contain">
     </div>
+  } @else {
+    <!-- Logo extendido según el tema (light o dark) -->
+    <div class="overflow-hidden flex flex-col justify-center">
+      <div class="flex items-center gap-2">
+        <img [src]="themeService.isDarkMode() ? 'assets/logo_dark.png' : 'assets/logo_light.png'" alt="Logo" class="h-30 w-auto object-contain">
+      </div>
+    </div>
+  }
+</div>
 
-
-
-    <!-- Navegación -->
-    <nav class="flex-1 space-y-1.5 overflow-y-auto overflow-x-hidden pr-1">
-
-      @if (hasPermission('home')) {
-        <a routerLink="/home" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Home' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-          <lucide-icon [img]="LayoutDashboard" class="w-5 h-5 shrink-0"></lucide-icon>
+        <!-- Navegación -->
+        <div class="space-y-3">
           @if (!isSidebarCollapsed) {
-            <span class="font-bold text-sm truncate">Home</span>
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] px-3" style="color: var(--text-muted);">Menú Principal</p>
           }
-        </a>
-      }
 
-      @if (hasPermission('calendario')) {
-        <a routerLink="/calendario" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Calendario' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-          <lucide-icon [img]="Calendar" class="w-5 h-5 shrink-0"></lucide-icon>
-          @if (!isSidebarCollapsed) {
-            <span class="font-bold text-sm truncate">Calendario</span>
-          }
-        </a>
-      }
+   <nav class="space-y-1.5">
 
-      <a routerLink="/monitor" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Monitor Cardíaco' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-        <lucide-icon [img]="Activity" class="w-5 h-5 shrink-0"></lucide-icon>
+  <!-- Dashboard / Inicio -->
+  <a routerLink="/home"
+     routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+     [routerLinkActiveOptions]="{ exact: true }"
+     [title]="isSidebarCollapsed ? 'Dashboard' : ''"
+     class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
+     [style.color]="router.url === '/home' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="LayoutDashboard" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+    @if (!isSidebarCollapsed) {
+      <span class="text-xs uppercase tracking-wider truncate">Home</span>
+    }
+  </a>
+
+  <!-- Calendario -->
+  <a routerLink="/calendario"
+     routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+     [title]="isSidebarCollapsed ? 'Calendario' : ''"
+     class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
+     [style.color]="router.url === '/calendario' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="Calendar" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+    @if (!isSidebarCollapsed) {
+      <span class="text-xs uppercase tracking-wider truncate">Calendario</span>
+    }
+  </a>
+
+  <!-- Seguimiento -->
+  @if (hasPermission('sucursal')) {
+    <a routerLink="/seguimiento"
+       routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+       [title]="isSidebarCollapsed ? 'Agenda' : ''"
+       class="flex items-center justify-between px-3.5 py-3 rounded-2xl transition-all group"
+       [style.color]="router.url === '/seguimiento' ? '#ffffff' : 'var(--text-muted)'">
+      <div class="flex items-center gap-3.5">
+        <lucide-icon [img]="Calendar" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
         @if (!isSidebarCollapsed) {
-          <span class="font-bold text-sm truncate">Monitor Cardíaco</span>
+          <span class="text-xs uppercase tracking-wider truncate">Seguimiento</span>
         }
-      </a>
+      </div>
+      @if (!isSidebarCollapsed) {
+        <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-[9px] font-black shrink-0">Hoy: 8</span>
+      }
+    </a>
+  }
 
-      @if (hasPermission('alumnas')) {
-        <a routerLink="/students" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Alumnas' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-          <lucide-icon [img]="Users" class="w-5 h-5 shrink-0"></lucide-icon>
-          @if (!isSidebarCollapsed) {
-            <span class="font-bold text-sm truncate">Alumnas</span>
-          }
-        </a>
+
+  <!--<a routerLink="/seguimiento"
+     routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+     [title]="isSidebarCollapsed ? 'Servicios' : ''"
+     class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
+     [style.color]="router.url === '/seguimiento' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="Layers" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+    @if (!isSidebarCollapsed) {
+      <span class="text-xs uppercase tracking-wider truncate">Historial Clinico</span>
+    }
+  </a>-->
+
+  <!-- Pacientes -->
+  <a routerLink="/pacientes"
+     routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+     [title]="isSidebarCollapsed ? 'Usuarios Sistema' : ''"
+     class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
+     [style.color]="router.url === '/pacientes' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="Users" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+    @if (!isSidebarCollapsed) {
+      <span class="text-xs uppercase tracking-wider truncate">Pascientes</span>
+    }
+  </a>
+
+  <!-- Consultorios -->
+  <a routerLink="/consultorios"
+     routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+     [title]="isSidebarCollapsed ? 'Configuracion' : ''"
+     class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
+     [style.color]="router.url === '/consultorios' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="Store" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+    @if (!isSidebarCollapsed) {
+      <span class="text-xs uppercase tracking-wider truncate">CONSULTORIOS</span>
+    }
+  </a>
+  <!-- Consultorios -->
+  <a routerLink="/services"
+     routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+     [title]="isSidebarCollapsed ? 'Configuracion' : ''"
+     class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
+     [style.color]="router.url === '/consultorios' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="Store" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+    @if (!isSidebarCollapsed) {
+      <span class="text-xs uppercase tracking-wider truncate">SERVICIOS</span>
+    }
+  </a>
+
+  <!-- Planes -->
+  <a routerLink="/planes"
+     routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+     [title]="isSidebarCollapsed ? 'Usuarios Sistema' : ''"
+     class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
+     [style.color]="router.url === '/planes' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="CreditCard" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+    @if (!isSidebarCollapsed) {
+      <span class="text-xs uppercase tracking-wider truncate">Planes</span>
+    }
+  </a>
+
+  <!-- Configuración -->
+  <a routerLink="/profile"
+     routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+     [title]="isSidebarCollapsed ? 'Configuracion' : ''"
+     class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
+     [style.color]="router.url === '/profile' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="Settings" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+    @if (!isSidebarCollapsed) {
+      <span class="text-xs uppercase tracking-wider truncate">Configuracion</span>
+    }
+  </a>
+<!-- Asistente IA con Badge de Chats -->
+<a routerLink="/recetas"
+   routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/20 font-black"
+   [title]="isSidebarCollapsed ? 'Nexus IA' : ''"
+   class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group relative overflow-hidden"
+   [style.color]="router.url === '/recetas' ? '#ffffff' : 'var(--text-muted)'">
+
+  @if (isSidebarCollapsed) {
+    <!-- 🤖 Icono de Robot cuando la barra está colapsada -->
+    <div class="w-5 h-5 shrink-0 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform text-blue-500">
+      <lucide-icon [img]="Bot" class="w-5 h-5"></lucide-icon>
+    </div>
+  } @else {
+    <!-- Contenido completo cuando la barra está expandida (Con tus efectos SVG) -->
+    <div class="relative inline-block py-2 px-1 w-full">
+
+      <!-- CAPAS DE CUERDAS SVG -->
+      <svg class="absolute inset-0 w-full h-full overflow-visible pointer-events-none" viewBox="0 0 440 60" preserveAspectRatio="none">
+        <defs>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="5" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <path class="animate-nexus-1" fill="none" stroke="rgba(20, 110, 255, 1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.15" />
+        <path class="animate-nexus-2" fill="none" stroke="rgba(10, 194, 255, 1)" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.25" />
+        <path class="animate-nexus-3" fill="none" stroke="rgba(71, 158, 255, 1)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.40" />
+        <path class="animate-nexus-4" fill="none" stroke="rgba(10, 194, 255, 1)" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.70" />
+        <path class="animate-nexus-5" fill="none" stroke="rgba(20, 110, 255, 1)" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.90" />
+      </svg>
+
+      <!-- CONTENEDOR PRINCIPAL EXPANDIDO -->
+      <div class="relative z-10 px-3 py-1.5 flex items-center gap-3">
+        <div class="w-10 h-10 flex items-center justify-center shrink-0 relative p-0.5">
+          <img src="assets/logo_nexus.png" alt="Logo IA" class="w-full h-full object-contain">
+          <div class="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[7px] font-black px-1 py-0.2 rounded border border-white shadow-sm">
+            ✨IA
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xs font-black tracking-tight leading-tight" style="color: var(--text-main);">Nexus IA</h3>
+          <p class="text-[10px] font-medium leading-tight" style="color: var(--text-muted);">Identificación inteligente</p>
+        </div>
+      </div>
+
+    </div>
+  }
+</a>
+
+</nav>
+        </div>
+
+      </div>
+
+      <!-- CONTENIDO INFERIOR: WIDGET DE BOT WHATSAPP Y AYUDA -->
+      @if (!isSidebarCollapsed) {
+        <div class="space-y-3 pt-3 border-t" style="border-color: var(--border-color);">
+
+          <!-- Tarjeta del Bot de WhatsApp Conectado -->
+          <div class="p-3.5 rounded-3xl space-y-2.5 shadow-xl backdrop-blur-md border" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[11px] font-black" style="color: var(--text-main);">WhatsApp<br> Recordatorios</span>
+              </div>
+              <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[8px] font-black uppercase tracking-wider">Conectado</span>
+            </div>
+
+
+
+            <div class="pt-2 border-t flex items-center justify-between text-[10px]" style="border-color: var(--border-color);">
+              <span style="color: var(--text-muted);">Auto-respuestas</span>
+              <span class="text-emerald-400 font-black flex items-center gap-1">
+                <lucide-icon [img]="CheckCircle2" class="w-3 h-3"></lucide-icon> 24/7 Activo
+              </span>
+            </div>
+          </div>
+
+          <!-- Centro de Ayuda -->
+          <button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all border cursor-pointer group" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-muted);">
+            <div class="flex items-center gap-2.5">
+              <lucide-icon [img]="HelpCircle" class="w-4 h-4 transition-colors"></lucide-icon>
+              <span class="text-xs font-bold" style="color: var(--text-main);">Centro de Ayuda</span>
+            </div>
+            <lucide-icon [img]="ChevronRight" class="w-3.5 h-3.5 transition-transform"></lucide-icon>
+          </button>
+
+        </div>
       }
 
-      @if (hasPermission('maestras')) {
-        <a routerLink="/staff" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Maestras' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-          <lucide-icon [img]="Briefcase" class="w-5 h-5 shrink-0"></lucide-icon>
-          @if (!isSidebarCollapsed) {
-            <span class="font-bold text-sm truncate">Maestras</span>
-          }
-        </a>
-      }
+    </aside>
 
-      @if (hasPermission('planes')) {
-        <a routerLink="/planes" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Planes' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-          <lucide-icon [img]="CreditCard" class="w-5 h-5 shrink-0"></lucide-icon>
-          @if (!isSidebarCollapsed) {
-            <span class="font-bold text-sm truncate">Planes</span>
-          }
-        </a>
-      }
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden" style="background-color: var(--bg-primary);">
 
-      @if (hasPermission('pagos')) {
-        <a routerLink="/pagos" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Pagos' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-          <lucide-icon [img]="DollarSign" class="w-5 h-5 shrink-0"></lucide-icon>
-          @if (!isSidebarCollapsed) {
-            <span class="font-bold text-sm truncate">Pagos</span>
-          }
-        </a>
-      }
+      <!-- HEADER -->
+      <header class="h-20 backdrop-blur-md border-b px-8 flex items-center justify-between shrink-0 relative gap-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
 
-      @if (hasPermission('gastos')) {
-        <a routerLink="/gastos" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Gastos' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-          <lucide-icon [img]="Receipt" class="w-5 h-5 shrink-0"></lucide-icon>
-          @if (!isSidebarCollapsed) {
-            <span class="font-bold text-sm truncate">Gastos</span>
-          }
-        </a>
-      }
+     <!-- BLOQUE IZQUIERDA: Selector de Sucursal y Especialidad -->
+<div class="flex items-center gap-4 flex-1 max-w-2xl">
 
-      @if (hasPermission('sucursal')) {
-        <a routerLink="/sucursales" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Mi Sucursal' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-          <lucide-icon [img]="Store" class="w-5 h-5 shrink-0"></lucide-icon>
-          @if (!isSidebarCollapsed) {
-            <span class="font-bold text-sm truncate">Mi Sucursal</span>
-          }
-        </a>
-      }
+  <!-- Selector de Sucursal (Ahora con evento click para abrir el diálogo) -->
+  <div class="relative">
+    <div (click)="openBranchModal()" class="px-4 py-2.5 rounded-2xl flex items-center gap-2.5 cursor-pointer transition-all shadow-sm border hover:border-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+      <lucide-icon [img]="Store" class="w-4 h-4 text-blue-500 shrink-0"></lucide-icon>
+      <span class="text-xs font-bold truncate max-w-[160px]" style="color: var(--text-main);">{{ selectedBranch || userData?.brancheInUser?.[0] || 'CONSULTORIO GENERAL' }}</span>
+      <lucide-icon [img]="ChevronRight" class="w-3.5 h-3.5 rotate-90 shrink-0" style="color: var(--text-muted);"></lucide-icon>
+    </div>
+  </div>
 
-      <a routerLink="/usuarios_sistema" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Usuarios Sistema' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-        <lucide-icon [img]="UserCog" class="w-5 h-5 shrink-0"></lucide-icon>
-        @if (!isSidebarCollapsed) {
-          <span class="font-bold text-sm truncate">Usuarios Sistema</span>
-        }
-      </a>
+<!-- Indicador de Especialidad del Doctor (Dinámico) -->
+  <div class="px-4 py-2.5 rounded-2xl flex items-center gap-2.5 border shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+    <lucide-icon [img]="getSpecialtyIcon(userData?.especialidades?.[0] || userData?.especialidad)" class="w-4 h-4 text-indigo-500 shrink-0"></lucide-icon>
+    <span class="text-xs font-bold truncate" style="color: var(--text-main);">
+      {{ getSpecialtyLabel(userData?.especialidades?.[0] || userData?.especialidad) }}
+    </span>
+  </div>
 
-      @if (hasPermission('permisos')) {
-        <a routerLink="/permisos" routerLinkActive="bg-zinc-900 text-white" [title]="isSidebarCollapsed ? 'Permisos' : ''" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all group">
-          <lucide-icon [img]="Shield" class="w-5 h-5 shrink-0"></lucide-icon>
-          @if (!isSidebarCollapsed) {
-            <span class="font-bold text-sm truncate">Permisos</span>
-          }
-        </a>
-      }
+</div>
 
-    </nav>
-  </aside>
+     <!-- BLOQUE DERECHA: Buscador de Próximas Citas, Switch de Tema, Nueva Cita, Notificaciones y Perfil -->
+        <div class="flex items-center gap-4">
 
-  <!-- MAIN CONTENT WRAPPER -->
-  <main class="flex-1 flex flex-col h-screen overflow-hidden">
+          <div class="hidden xl:flex items-center gap-3">
 
-    <!-- HEADER -->
-    <header class="h-20 bg-white/80 backdrop-blur-md border-b border-zinc-200 px-8 flex items-center justify-between shrink-0 relative">
+            <!-- 🔍 BUSCADOR DE PRÓXIMAS CITAS (Reemplaza al Bot de WhatsApp en el Header) -->
+            <div class="relative w-64">
+              <div class="flex items-center gap-2 px-3 py-2 rounded-2xl shadow-sm border transition-all" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                <lucide-icon [img]="Search" class="w-4 h-4 text-blue-500 shrink-0"></lucide-icon>
+                <input type="text"
+                       [ngModel]="appointmentSearchQuery()"
+                       (ngModelChange)="appointmentSearchQuery.set($event)"
+                       placeholder="Buscar próxima cita..."
+                       class="w-full bg-transparent text-xs outline-none"
+                       style="color: var(--text-main);">
+              </div>
 
-      <!-- BLOQUE IZQUIERDA: Campana, Ayuda y Estado de Impresora -->
-      <div class="flex items-center gap-6">
-        <div class="flex gap-4 text-zinc-400 relative">
-          <!-- BOTÓN DE NOTIFICACIONES / CAMPANA -->
-          <div (click)="toggleNotifications()" class="cursor-pointer hover:text-zinc-900 transition-colors relative flex items-center">
-            <lucide-icon [img]="Bell" class="w-5 h-5"></lucide-icon>
-            @if (notificationsList.length > 0) {
-              <span class="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full"></span>
+          @if (filteredAppointments().length > 0) {
+                <div class="absolute left-0 top-full mt-1.5 w-80 sm:w-96 max-h-60 overflow-y-auto rounded-2xl border shadow-2xl z-50 p-1.5 space-y-1 backdrop-blur-md"
+                     style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                  @for (app of filteredAppointments(); track app.id) {
+                    <div (click)="selectAppointment(app)"
+                         class="p-2.5 rounded-xl transition-all cursor-pointer hover:bg-blue-500/10 flex flex-col gap-1 border border-transparent hover:border-blue-500/30 text-left">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-black truncate max-w-[200px]" style="color: var(--text-main);">{{ app.patientName }}</span>
+                        <div class="flex items-center gap-1 text-[9px] font-semibold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-lg shrink-0">
+                          <span>{{ app.date }}</span> • <span>{{ app.hour }}</span>
+                        </div>
+                      </div>
+                      <div class="text-[10px] truncate" style="color: var(--text-muted);">
+                        <span>Motivo: {{ app.reason }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- ☀️🌙 SWITCH DE TEMA -->
+            <button (click)="themeService.toggleTheme()"
+                    class="px-3.5 py-2 rounded-2xl shadow-sm flex items-center gap-2 cursor-pointer transition-all text-xs font-black border"
+                    style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+                    [title]="themeService.isDarkMode() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+              @if (themeService.isDarkMode()) {
+                <span>☀️</span>
+                <span class="text-[10px] uppercase tracking-wider hidden 2xl:inline">Claro</span>
+              } @else {
+                <span>🌙</span>
+                <span class="text-[10px] uppercase tracking-wider hidden 2xl:inline">Oscuro</span>
+              }
+            </button>
+
+          </div>
+
+     <button (click)="openNewAppointmentModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-blue-600/20 cursor-pointer flex items-center gap-2">
+  <lucide-icon [img]="Plus" class="w-4 h-4"></lucide-icon> Nueva Cita
+</button>
+
+          <!-- Campana de Notificaciones -->
+          <div class="relative">
+            <div (click)="toggleNotifications()" class="w-10 h-10 border rounded-2xl flex items-center justify-center cursor-pointer transition-all relative shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-muted);">
+              <lucide-icon [img]="Bell" class="w-4 h-4"></lucide-icon>
+              @if (notificationsList.length > 0 || true) {
+                <span class="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white rounded-full text-[9px] font-black flex items-center justify-center border-2" style="border-color: var(--bg-secondary);">
+                  {{ notificationsList.length || 3 }}
+                </span>
+              }
+            </div>
+
+            <!-- POPUP DE NOTIFICACIONES -->
+            @if (showNotificationsPopup) {
+              <div class="absolute right-0 top-12 w-80 sm:w-96 rounded-3xl shadow-2xl p-5 z-50 border" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                <div class="flex items-center justify-between pb-3 border-b mb-3" style="border-color: var(--border-color);">
+                  <h4 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Notificaciones</h4>
+                  <button (click)="showNotificationsPopup = false" style="color: var(--text-muted);">
+                    <lucide-icon [img]="X" class="w-4 h-4"></lucide-icon>
+                  </button>
+                </div>
+
+                @if (isLoadingNotifications) {
+                  <div class="flex flex-col items-center justify-center py-8">
+                    <div class="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <p class="text-[11px] font-bold uppercase tracking-tight" style="color: var(--text-muted);">Cargando...</p>
+                  </div>
+                } @else {
+                  <div class="max-h-72 overflow-y-auto space-y-2 pr-1">
+                    @if (notificationsList.length === 0) {
+                      <p class="text-center text-xs py-6 font-medium" style="color: var(--text-muted);">No hay notificaciones nuevas</p>
+                    } @else {
+                      @for (item of notificationsList; track item.id) {
+                        <div class="p-3 rounded-2xl border transition-all text-left" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                          <div class="flex items-start justify-between gap-2 mb-1">
+                            <h5 class="text-xs font-black leading-snug" style="color: var(--text-main);">{{ item.title }}</h5>
+                            <span class="text-[9px] font-bold whitespace-nowrap" style="color: var(--text-muted);">{{ item.timestamp }}</span>
+                          </div>
+                          <p class="text-[11px] leading-relaxed font-medium" style="color: var(--text-muted);">{{ item.body }}</p>
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+              </div>
             }
           </div>
 
-          <lucide-icon [img]="HelpCircle" class="w-5 h-5 hover:text-zinc-900 cursor-pointer"></lucide-icon>
+          <!-- Perfil de Usuario -->
+          <div class="relative">
+            <div (click)="toggleMenu()"
+                 class="flex items-center gap-3 pl-4 border-l cursor-pointer transition-all" style="border-color: var(--border-color);">
+              <div class="relative">
+                <img [src]="userData?.fotoPerfil || 'https://ui-avatars.com/api/?name=' + (userData?.fullName || 'Marcela+Silva') + '&background=1e1b4b&color=93c5fd'"
+                     class="w-10 h-10 rounded-2xl object-cover shadow-sm border" style="border-color: var(--border-color);" alt="Avatar">
+                <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2" style="border-color: var(--bg-secondary);"></span>
+              </div>
+              <div class="hidden sm:block text-left">
+                <p class="text-xs font-black" style="color: var(--text-main);">{{ userData?.fullName || 'Dra. Marcela Silva' }}</p>
+                <p class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">
+                  {{ userData?.role || 'Administradora' }}
+                </p>
+              </div>
+              <lucide-icon [img]="ChevronRight" class="w-3.5 h-3.5 rotate-90 shrink-0" style="color: var(--text-muted);"></lucide-icon>
+            </div>
 
-          <!-- POPUP DE NOTIFICACIONES -->
-          @if (showNotificationsPopup) {
-            <div class="absolute left-0 top-12 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl shadow-zinc-200 border border-zinc-100 p-4 z-50 animate-in fade-in zoom-in duration-200">
-              <div class="flex items-center justify-between pb-3 border-b border-zinc-100 mb-3">
-                <h4 class="text-xs font-black uppercase tracking-wider text-zinc-900">Notificaciones</h4>
-                <button (click)="showNotificationsPopup = false" class="text-zinc-400 hover:text-zinc-600">
-                  <lucide-icon [img]="X" class="w-4 h-4"></lucide-icon>
-                </button>
+            <!-- Menú Desplegable de Usuario -->
+            @if (showUserMenu){
+             <div class="absolute right-0 mt-3 w-48 rounded-2xl shadow-2xl p-2 z-50 border" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+              <button (click)="confirmLogout()"
+                      class="w-full flex items-center gap-3 px-4 py-3 text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors text-xs font-bold cursor-pointer">
+                <lucide-icon [img]="LogOut" class="w-4 h-4"></lucide-icon>
+                Cerrar Sesión
+              </button>
+             </div>
+            }
+          </div>
+
+        </div>
+
+      </header>
+
+      <!-- ROUTER OUTLET -->
+      <div class="flex-1 overflow-y-auto p-8">
+        <router-outlet></router-outlet>
+      </div>
+<app-floating-chat></app-floating-chat>
+    </main>
+  </div>
+</div>
+<!-- DIÁLOGO DE SELECCIÓN DE SUCURSAL / CONSULTORIO -->
+@if (showBranchModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in duration-200">
+
+      <!-- Cabecera del Modal -->
+      <div class="flex items-center justify-between pb-3 border-b" style="border-color: var(--border-color);">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+            <lucide-icon [img]="Store" class="w-5 h-5"></lucide-icon>
+          </div>
+          <div>
+            <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Cambiar Consultorio</h3>
+            <p class="text-[10px] font-medium" style="color: var(--text-muted);">Selecciona la sucursal de destino</p>
+          </div>
+        </div>
+        <button (click)="closeBranchModal()" class="text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer">
+          <lucide-icon [img]="X" class="w-4 h-4"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Lista de Sucursales o Estado Vacío -->
+      <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+        @if (isLoadingBranches) {
+          <p class="text-center text-xs py-4" style="color: var(--text-muted);">Cargando consultorios...</p>
+        } @else if (availableBranches.length === 0) {
+          <!-- 🚨 Estado cuando no hay consultorios registrados -->
+          <div class="border border-dashed p-6 rounded-2xl text-center space-y-2.5 my-2" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+            <lucide-icon [img]="Store" class="w-8 h-8 mx-auto text-amber-500/60"></lucide-icon>
+            <p class="text-xs font-bold" style="color: var(--text-main);">Aún no tienes consultorios registrados</p>
+            <p class="text-[11px] leading-relaxed" style="color: var(--text-muted);">
+              Organiza tus pacientes, métricas y citas creando tu primera sucursal profesional.
+            </p>
+          </div>
+        } @else {
+          @for (branch of availableBranches; track branch.idConsultorio) {
+            <div (click)="tempSelectedBranch = branch"
+                 class="flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer"
+                 [style.background-color]="tempSelectedBranch?.idConsultorio === branch.idConsultorio ? '#2563eb' : 'var(--bg-primary)'"
+                 [style.border-color]="tempSelectedBranch?.idConsultorio === branch.idConsultorio ? '#2563eb' : 'var(--border-color)'"
+                 [style.color]="tempSelectedBranch?.idConsultorio === branch.idConsultorio ? '#ffffff' : 'var(--text-main)'">
+
+              <div class="flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full" [class.bg-white]="tempSelectedBranch?.idConsultorio === branch.idConsultorio" [class.bg-blue-500]="tempSelectedBranch?.idConsultorio !== branch.idConsultorio"></span>
+                <div>
+                  <span class="text-xs font-bold block">{{ branch.name }}</span>
+                  <span class="text-[10px] opacity-80 block">{{ branch.city || 'Sin ciudad' }}</span>
+                </div>
               </div>
 
-              <!-- LOADER -->
-              @if (isLoadingNotifications) {
-                <div class="flex flex-col items-center justify-center py-8">
-                  <div class="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-                  <p class="text-[11px] text-zinc-400 font-bold uppercase tracking-tight">Cargando...</p>
-                </div>
-              } @else {
-                <div class="max-h-72 overflow-y-auto space-y-2 pr-1">
-                  @if (notificationsList.length === 0) {
-                    <p class="text-center text-xs text-zinc-400 py-6 font-medium">No hay notificaciones nuevas</p>
-                  } @else {
-                    @for (item of notificationsList; track item.id) {
-                      <div class="p-3 rounded-xl bg-zinc-50 hover:bg-zinc-100/80 transition-all border border-zinc-100/60 text-left">
-                        <div class="flex items-start justify-between gap-2 mb-1">
-                          <h5 class="text-xs font-black text-zinc-900 leading-snug">{{ item.title }}</h5>
-                          <span class="text-[9px] text-zinc-400 font-bold whitespace-nowrap">{{ item.timestamp }}</span>
-                        </div>
-                        <p class="text-[11px] text-zinc-600 leading-relaxed font-medium">{{ item.body }}</p>
-                      </div>
-                    }
-                  }
+              @if (tempSelectedBranch?.idConsultorio === branch.idConsultorio) {
+                <lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-white"></lucide-icon>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Botones de Acción Condicionales -->
+      <div class="flex items-center gap-3 pt-2">
+        @if (availableBranches.length === 0) {
+          <!-- Botón único cuando no hay consultorios -->
+          <button (click)="closeBranchModal()" class="w-1/2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            Cancelar
+          </button>
+          <button (click)="irACrearConsultorioDESDEModal()" class="w-1/2 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
+            Crear Primer Consultorio
+          </button>
+        } @else {
+          <!-- Botones normales de selección -->
+          <button (click)="closeBranchModal()" class="w-1/2 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            Cancelar
+          </button>
+          <button (click)="confirmBranchChange()" class="w-1/2 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
+            Confirmar
+          </button>
+        }
+      </div>
+
+    </div>
+  </div>
+}
+<!-- ================= MODAL DE CONFIRMACIÓN DE CIERRE DE SESIÓN ================= -->
+@if (showLogoutConfirm) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+    <div class="border w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative space-y-6 text-center" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+
+      <!-- Icono de advertencia o salida -->
+      <div class="w-16 h-16 bg-pink-500/10 text-pink-500 rounded-3xl flex items-center justify-center mx-auto border border-pink-500/20">
+        <lucide-icon [img]="LogOutIcon" class="w-8 h-8"></lucide-icon>
+      </div>
+
+      <!-- Textos -->
+      <div>
+        <h3 class="text-xl font-black uppercase tracking-tight mb-1" style="color: var(--text-main);">¿Cerrar Sesión?</h3>
+        <p class="text-xs font-medium leading-relaxed" style="color: var(--text-muted);">¿Estás seguro de que deseas salir del sistema? Tendrás que ingresar tus credenciales nuevamente.</p>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <button
+          type="button"
+          (click)="showLogoutConfirm = false"
+          class="w-full sm:w-1/2 border py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-sm hover:opacity-80"
+          style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          (click)="logout()"
+          class="w-full sm:w-1/2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-purple-600/20"
+        >
+          Sí, Salir
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+<!-- ================= MODAL DE AGENDAR CITA ================= -->
+@if (showAppointmentModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+    <div class="border w-full max-w-md rounded-[2.5rem] p-7 shadow-2xl relative space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+      <button (click)="showAppointmentModal = false" class="absolute right-6 top-6 cursor-pointer" style="color: var(--text-muted);">
+        <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+      </button>
+
+      <div>
+        <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main);">Agendar Cita de Paciente</h3>
+        <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted);">Fecha: {{ targetDate }}</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Hora de Inicio (Fija)</label>
+          <input type="text" [value]="targetHour" disabled class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold opacity-70 cursor-not-allowed shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Duración</label>
+          <select [(ngModel)]="selectedDurationMinutes" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <option [value]="30">30 min</option>
+            <option [value]="60">1 hr</option>
+            <option [value]="90">1:30 hr</option>
+            <option [value]="120">2 hrs</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="space-y-3 pt-1">
+        <!-- BUSCADOR HÍBRIDO DE PACIENTE -->
+        <div class="space-y-1 relative">
+          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Nombre Completo del Paciente</label>
+          <input
+            [ngModel]="patientForm.name"
+            (input)="onPatientInput($event)"
+            type="text"
+            placeholder="Escribe para buscar o ingresar nuevo..."
+            class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+            style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+          >
+          @if (showPatientDropdown && filteredPatients.length > 0) {
+            <div class="absolute left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto border rounded-2xl shadow-xl py-1" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+              @for (p of filteredPatients; track p.id) {
+                <div (click)="selectPatient(p)" class="px-4 py-2.5 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center" style="color: var(--text-main);">
+                  <span>{{ p.nombre }}</span>
+                  <span class="text-[10px]" style="color: var(--text-muted);">{{ p.telefono }}</span>
                 </div>
               }
             </div>
           }
         </div>
 
-        <!-- BOTÓN DINÁMICO DE CONFIGURACIÓN DE IMPRESORA -->
-        <button (click)="openPrinterModal()" class="flex items-center gap-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-zinc-200 cursor-pointer shadow-sm">
-          <lucide-icon [img]="Printer" class="w-4 h-4 text-zinc-600"></lucide-icon>
-          @if (printerStatus === 'unconfigured') {
-            <span>Configurar Impresora</span>
-          } @else if (printerStatus === 'connected') {
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span class="truncate max-w-[120px]">{{ printerName }}</span>
-              <span class="text-[9px] uppercase font-black px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded">Online</span>
-            </div>
-          } @else {
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-              <span class="truncate max-w-[120px]">{{ printerName }}</span>
-              <span class="text-[9px] uppercase font-black px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Offline</span>
-            </div>
-          }
-        </button>
-      </div>
-    <!-- Sucursal (Oculto si está colapsado) -->
-
-
-      <!-- BLOQUE DERECHA: Perfil de usuario y menús -->
-      <div class="flex items-center gap-6">
-        <div class="relative">
-          <div (click)="toggleMenu()"
-               class="flex items-center gap-3 pl-6 border-l border-zinc-200 cursor-pointer hover:opacity-80 transition-all">
-            <div class="text-right">
-              <p class="text-xs font-bold text-zinc-900">{{ userData?.fullName || 'Beast' }}</p>
-              <p class="text-[10px] text-zinc-500 uppercase font-bold tracking-tighter">
-                {{ userData?.brancheInUser?.[0] || 'SUCURSAL' }}
-              </p>
-            </div>
-            <img [src]="userData?.fotoPerfil || 'https://ui-avatars.com/api/?name=' + (userData?.fullName || 'Admin') + '&background=09090b&color=fff'"
-                 class="w-10 h-10 rounded-xl object-cover shadow-sm border border-zinc-100" alt="Avatar">
-          </div>
-
-          @if (showUserMenu){
-           <div class="absolute right-0 mt-4 w-48 bg-white rounded-2xl shadow-2xl shadow-zinc-200 border border-zinc-100 p-2 z-50 animate-in fade-in zoom-in duration-200">
-            <button (click)="confirmLogout()"
-                    class="w-full flex items-center gap-3 px-4 py-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors text-sm font-bold cursor-pointer">
-              <lucide-icon [img]="LogOut" class="w-4 h-4"></lucide-icon>
-              Cerrar Sesión
-            </button>
-           </div>
-          }
+        <div class="space-y-1">
+          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Teléfono</label>
+          <input [(ngModel)]="patientForm.phone" type="text" placeholder="Ej. 33 1234 5678" class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
         </div>
 
+        <div class="space-y-1">
+          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Correo Electrónico</label>
+          <input [(ngModel)]="patientForm.email" type="email" placeholder="Ej. correo@email.com" class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+        </div>
 
-      </div>
-    </header>
-
-    <!-- ROUTER OUTLET -->
-    <div class="flex-1 overflow-y-auto p-8">
-      <router-outlet></router-outlet>
-    </div>
-
-  </main>
-</div>
-
-<!-- MODAL DE CONFIGURACIÓN DE IMPRESORA BLUETOOTH -->
-@if (showPrinterModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm" (click)="closePrinterModal()"></div>
-
-    <div class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 animate-in zoom-in-95 duration-200 space-y-6">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
-            <lucide-icon [img]="Printer" class="w-6 h-6"></lucide-icon>
-          </div>
-          <div>
-            <h3 class="text-lg font-black text-zinc-900 uppercase">Impresora Bluetooth</h3>
-            <p class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Gestión de dispositivos térmicos</p>
+        <!-- MOTIVO DE LA CONSULTA HÍBRIDO (Escrito o Seleccionable) -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Motivo de la Consulta</label>
+          <div class="grid grid-cols-3 gap-2">
+            <input [(ngModel)]="patientForm.reason" type="text" placeholder="Ej. Dolor agudo" class="col-span-2 border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <select (change)="patientForm.reason = $any($event.target).value" class="col-span-1 border rounded-2xl px-2 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+              <option value="" disabled selected>Opciones...</option>
+              <option value="Seguimiento consulta">Seguimiento consulta</option>
+            </select>
           </div>
         </div>
-        <button (click)="closePrinterModal()" class="text-zinc-300 hover:text-zinc-600 cursor-pointer">
-          <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
-        </button>
       </div>
 
-      <!-- Estado actual -->
-      <div class="bg-zinc-50 p-4 rounded-2xl border border-zinc-100 flex items-center justify-between">
-        <div>
-          <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Estado actual</p>
-          <p class="text-xs font-black text-zinc-800 mt-0.5">
-            {{ printerStatus === 'connected' ? printerName : (printerName ? printerName + ' (Guardada)' : 'Ninguna impresora vinculada') }}
-          </p>
-        </div>
-        <span [class]="printerStatus === 'connected' ? 'bg-emerald-100 text-emerald-700' : (printerStatus === 'disconnected' ? 'bg-amber-100 text-amber-700' : 'bg-zinc-200 text-zinc-600')" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-          {{ printerStatus === 'connected' ? 'ONLINE' : (printerStatus === 'disconnected' ? 'OFFLINE' : 'NO CONFIGURADA') }}
-        </span>
-      </div>
-
-      <!-- Acciones -->
-      <div class="space-y-3">
-        <button (click)="scanBluetoothDevices()" [disabled]="isScanning"
-                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20 disabled:opacity-50">
-          @if (isScanning) {
-            <lucide-icon [img]="RefreshCw" class="w-4 h-4 animate-spin"></lucide-icon>
-            <span>Buscando dispositivos...</span>
-          } @else {
-            <lucide-icon [img]="Bluetooth" class="w-4 h-4"></lucide-icon>
-            <span>Vincular Nueva Impresora</span>
-          }
-        </button>
-
-        @if (printerStatus !== 'unconfigured') {
-          <button (click)="disconnectPrinter()"
-                  class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-pointer">
-            Desvincular Impresora Actual
-          </button>
-        }
-      </div>
-
-      <button (click)="closePrinterModal()" class="w-full py-3 text-xs font-bold text-zinc-400 hover:text-zinc-600 uppercase tracking-wider cursor-pointer">
-        Cerrar
+      <button (click)="saveAppointment()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+        Guardar Cita
       </button>
     </div>
   </div>
 }
-  @if (showLogoutConfirm){
-          <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm" (click)="showLogoutConfirm = false"></div>
+<!-- ================= MODAL DE ADVERTENCIA: SIN CONSULTORIOS ================= -->
+@if (showNoConsultoriosModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+    <div class="border w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl relative space-y-6 text-left" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
 
-            <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl shadow-zinc-950/20 animate-in slide-in-from-bottom-4 duration-300">
-              <button (click)="showLogoutConfirm = false" class="absolute right-6 top-6 text-zinc-300 hover:text-zinc-500 cursor-pointer">
-                <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
-              </button>
+      <!-- Cabecera -->
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center border border-amber-500/20 shrink-0">
+          <lucide-icon [img]="Store" class="w-6 h-6"></lucide-icon>
+        </div>
+        <div>
+          <h3 class="text-base font-black uppercase tracking-tight" style="color: var(--text-main);">Crea tu primer consultorio</h3>
+          <p class="text-xs font-medium" style="color: var(--text-muted);">Estructura tu práctica médica profesional</p>
+        </div>
+      </div>
 
-              <div class="flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mb-6">
-                  <lucide-icon [img]="LogOut" class="w-8 h-8"></lucide-icon>
-                </div>
+      <!-- Cuerpo / Explicación de Ventajas -->
+      <div class="space-y-3 text-xs font-medium leading-relaxed" style="color: var(--text-muted);">
+        <p>
+          Para comenzar con el registro de pacientes y la operación diaria, es necesario que crees al menos un consultorio. Organizar tu práctica por sucursales te ofrece grandes ventajas:
+        </p>
 
-                <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-2">¿Cerrar Sesión?</h3>
-                <p class="text-sm text-zinc-500 font-medium leading-relaxed mb-8">
-                  Estás a punto de salir de tu cuenta. Deberás ingresar tus credenciales nuevamente para acceder.
-                </p>
+        <ul class="space-y-2 pl-2">
+          <li class="flex items-start gap-2">
+            <span class="text-blue-500 font-bold">✓</span>
+            <span><strong style="color: var(--text-main);">Pacientes segmentados:</strong> Mantén los expedientes y seguimientos ordenados por ubicación o clínica.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-500 font-bold">✓</span>
+            <span><strong style="color: var(--text-main);">Métricas y reportes independientes:</strong> Evalúa el rendimiento financiero y de citas de cada sucursal por separado.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-500 font-bold">✓</span>
+            <span><strong style="color: var(--text-main);">Agendas claras:</strong> Evita cruces de horarios controlando las citas de forma descentralizada.</span>
+          </li>
+        </ul>
 
-                <div class="grid grid-cols-2 gap-3 w-full">
-                  <button (click)="showLogoutConfirm = false"
-                          class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 bg-zinc-50 hover:bg-zinc-100 transition-all cursor-pointer">
-                    Cancelar
-                  </button>
-                  <button (click)="logout()"
-                          class="py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all cursor-pointer">
-                    Sí, Salir
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
+        <div class="p-3.5 rounded-2xl border bg-amber-500/5 border-amber-500/20 text-amber-500 text-[11px] font-bold">
+          ⚠️ De lo contrario, si omites este paso, todas las citas y pacientes nuevos se registrarán automáticamente en un consultorio por defecto ("Consultorio General").
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <button
+          type="button"
+          (click)="showNoConsultoriosModal.set(false)"
+          class="w-full sm:w-1/2 border py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-sm hover:opacity-80"
+          style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+        >
+          Continuar con Consultorio General
+        </button>
+
+        <button
+          type="button"
+          (click)="irACrearConsultorio()"
+          class="w-full sm:w-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20"
+        >
+          Crear Consultorio
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+<!-- ================= MODAL DE DETALLE DE CITA ================= -->
+@if (isAppointmentDetailModalOpen() && selectedAppointment()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+    <div class="border w-full max-w-md rounded-[2.5rem] p-7 shadow-2xl relative space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+      <button (click)="closeAppointmentDetailModal()" class="absolute right-6 top-6 cursor-pointer" style="color: var(--text-muted);">
+        <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+      </button>
+
+      <div>
+        <h3 class="text-lg font-black uppercase tracking-tight text-blue-500">Detalles de la Cita</h3>
+        <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted);">Fecha: {{ selectedAppointment().date }}</p>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Paciente</span>
+          <p class="font-black text-sm" style="color: var(--text-main);">{{ selectedAppointment().patientName }}</p>
+        </div>
+
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Horario Reservado</span>
+          <p class="font-bold text-blue-400">
+            {{ selectedAppointment().time }} hrs
+            @if (selectedAppointment().endTime) {
+              – {{ selectedAppointment().endTime }} hrs
+            }
+            @if (selectedAppointment().durationLabel) {
+              ({{ selectedAppointment().durationLabel }})
+            }
+          </p>
+        </div>
+
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Teléfono de Contacto</span>
+          <p class="font-medium" style="color: var(--text-main);">{{ selectedAppointment().phone || 'No registrado' }}</p>
+        </div>
+
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Correo Electrónico</span>
+          <p class="font-medium" style="color: var(--text-main);">{{ selectedAppointment().email || 'No registrado' }}</p>
+        </div>
+
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Motivo de Consulta</span>
+          <p class="font-medium" style="color: var(--text-main);">{{ selectedAppointment().reason || 'Sin motivo especificado' }}</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button (click)="closeAppointmentDetailModal()" class="w-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+}

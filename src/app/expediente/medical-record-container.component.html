@@ -1,0 +1,23 @@
+<div class="w-full h-full">
+  @switch (currentSpecialtyCode) {
+    <!-- Dentista -->
+    @case ('DENT') {
+      <app-medical-record-form></app-medical-record-form>
+    }
+
+    <!-- Oftalmología -->
+    @case ('OFTAL') {
+      <app-oftalmologia></app-oftalmologia>
+    }
+
+    <!-- Traumatología y Ortopedia -->
+    @case ('TRAUM') {
+      <app-medical-record-form></app-medical-record-form>
+    }
+
+    <!-- Resto del catálogo o por defecto (GEN, PED, CAR, DER, GINE) -->
+    @default {
+      <app-medical-record-form></app-medical-record-form>
+    }
+  }
+</div>

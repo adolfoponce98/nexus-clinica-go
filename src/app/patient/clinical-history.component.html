@@ -1,0 +1,275 @@
+<div class="min-h-screen font-sans p-4 sm:p-6 space-y-6 max-w-7xl mx-auto" style="background-color: var(--bg-primary); color: var(--text-main);">
+
+  <!-- SPINNER DE CARGA GLOBAL -->
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+      <lucide-icon [img]="icons.Loader2" class="w-10 h-10 text-blue-500 animate-spin"></lucide-icon>
+      <p class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-muted);">Cargando expediente clínico seguro...</p>
+    </div>
+  } @else {
+
+    <!-- BARRA DE NAVEGACIÓN SUPERIOR (BOTÓN DE REGRESO AL LISTADO) -->
+    <div class="flex items-center justify-between">
+      <button (click)="volverAlListado()"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+        <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-blue-500"></lucide-icon>
+        Regresar al listado de pacientes
+      </button>
+    </div>
+
+    <!-- ENCABEZADO SUPERIOR CON BOTONES -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border px-6 py-5 rounded-3xl shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Historial Clínico Activo</span>
+          <span class="text-xs" style="color: var(--text-muted);">ID: {{ patientId() }}</span>
+        </div>
+        <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main);">{{ patientData().fullName }}</h1>
+        <p class="text-xs mt-0.5" style="color: var(--text-muted);">Consulta de información general y seguimiento cronológico de atenciones.</p>
+      </div>
+
+      <!-- Contenedor agrupado para acercar los botones -->
+      <div class="flex items-center gap-3 shrink-0">
+        <button (click)="openSendReminderModal()"
+                class="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/20 transition-all cursor-pointer">
+          <lucide-icon [img]="icons.Bell" class="w-4 h-4"></lucide-icon>
+          Enviar recordatorio
+        </button>
+
+        <button (click)="openNewRecordModal()"
+                class="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/20 transition-all cursor-pointer">
+          <lucide-icon [img]="icons.FilePlus" class="w-4 h-4"></lucide-icon>
+          Nuevo Expediente
+        </button>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 1: INFORMACIÓN DE CONTACTO RELEVANTE FIJA -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="border p-4 rounded-2xl flex items-center gap-3 shadow-md" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+        <div class="w-10 h-10 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-xl flex items-center justify-center shrink-0">
+          <lucide-icon [img]="icons.Phone" class="w-5 h-5"></lucide-icon>
+        </div>
+        <div class="overflow-hidden">
+          <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--text-muted);">Teléfono</p>
+          <p class="text-xs font-bold truncate" style="color: var(--text-main);">{{ patientData().phone }}</p>
+        </div>
+      </div>
+
+      <div class="border p-4 rounded-2xl flex items-center gap-3 shadow-md" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+        <div class="w-10 h-10 bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 rounded-xl flex items-center justify-center shrink-0">
+          <lucide-icon [img]="icons.Mail" class="w-5 h-5"></lucide-icon>
+        </div>
+        <div class="overflow-hidden">
+          <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--text-muted);">Correo Electrónico</p>
+          <p class="text-xs font-bold truncate" style="color: var(--text-main);">{{ patientData().email }}</p>
+        </div>
+      </div>
+
+      <div class="border p-4 rounded-2xl flex items-center gap-3 shadow-md" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+        <div class="w-10 h-10 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-xl flex items-center justify-center shrink-0">
+          <lucide-icon [img]="icons.MapPin" class="w-5 h-5"></lucide-icon>
+        </div>
+        <div class="overflow-hidden">
+          <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--text-muted);">Domicilio</p>
+          <p class="text-xs font-bold truncate" style="color: var(--text-main);">{{ patientData().address }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: CATEGORÍAS DE INFORMACIÓN DEL PERFIL -->
+    <div class="border p-5 rounded-3xl shadow-xl space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+      <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-muted);">Información Detallada del Paciente (Seleccione una categoría)</h3>
+
+      <!-- Botones de categorías -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        @for (cat of profileCategories; track cat.id) {
+          <button (click)="selectCategory(cat.id)"
+                  class="flex items-center justify-between p-3.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border shadow-sm"
+                  [style.background-color]="selectedCategory() === cat.id ? '#2563eb' : 'var(--bg-primary)'"
+                  [style.color]="selectedCategory() === cat.id ? '#ffffff' : 'var(--text-main)'"
+                  [style.border-color]="selectedCategory() === cat.id ? '#3b82f6' : 'var(--border-color)'">
+            <div class="flex items-center gap-2.5">
+              <lucide-icon [img]="cat.icon" class="w-4 h-4"></lucide-icon>
+              <span class="truncate">{{ cat.name }}</span>
+            </div>
+            <lucide-icon [img]="icons.ChevronRight" class="w-3.5 h-3.5 transition-transform" [class.rotate-90]="selectedCategory() === cat.id"></lucide-icon>
+          </button>
+        }
+      </div>
+
+      <!-- Panel de visualización de la categoría seleccionada -->
+      @if (selectedCategory()) {
+        <div class="border p-5 rounded-2xl mt-4 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+          @switch (selectedCategory()) {
+            @case ('general') {
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <span class="block text-[10px] font-bold uppercase" style="color: var(--text-muted);">Edad</span>
+                  <span class="font-bold" style="color: var(--text-main);">{{ patientData().age }} años</span>
+                </div>
+                <div>
+                  <span class="block text-[10px] font-bold uppercase" style="color: var(--text-muted);">Fecha de Nacimiento</span>
+                  <span class="font-bold" style="color: var(--text-main);">{{ patientData().birthDate }}</span>
+                </div>
+                <div>
+                  <span class="block text-[10px] font-bold uppercase" style="color: var(--text-muted);">Sexo</span>
+                  <span class="font-bold" style="color: var(--text-main);">{{ patientData().gender }}</span>
+                </div>
+                <div>
+                  <span class="block text-[10px] font-bold uppercase" style="color: var(--text-muted);">Emergencia</span>
+                  <span class="font-bold" style="color: var(--text-main);">{{ patientData().emergencyContact }}</span>
+                </div>
+              </div>
+            }
+            @case ('pathological') {
+              <div class="text-xs space-y-1">
+                <span class="block text-[10px] font-bold uppercase" style="color: var(--text-muted);">Antecedentes Clínicos Relevantes</span>
+                <p class="font-medium" style="color: var(--text-main);">{{ patientData().pathologicalHistory }}</p>
+              </div>
+            }
+            @case ('lifestyle') {
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                  <span class="block text-[10px] font-bold uppercase" style="color: var(--text-muted);">Ocupación</span>
+                  <span class="font-bold" style="color: var(--text-main);">{{ patientData().occupation }}</span>
+                </div>
+                <div>
+                  <span class="block text-[10px] font-bold uppercase" style="color: var(--text-muted);">Actividad Deportiva</span>
+                  <span class="font-bold" style="color: var(--text-main);">{{ patientData().sport }}</span>
+                </div>
+                <div>
+                  <span class="block text-[10px] font-bold uppercase" style="color: var(--text-muted);">Hábitos de Salud</span>
+                  <span class="font-bold" style="color: var(--text-main);">{{ patientData().lifestyle }}</span>
+                </div>
+              </div>
+            }
+            @case ('fiscal') {
+              <div class="text-xs space-y-1">
+                <span class="block text-[10px] font-bold uppercase" style="color: var(--text-muted);">Datos de Facturación / Aseguradora</span>
+                <p class="font-medium" style="color: var(--text-main);">{{ patientData().fiscalData }}</p>
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <!-- SECCIÓN 3: HISTORY BOARD (VERTICAL) -->
+    <div class="border p-6 rounded-3xl shadow-xl space-y-6" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">History Board de Citas y Evolución</h3>
+          <p class="text-xs mt-0.5" style="color: var(--text-muted);">Línea de tiempo cronológica ordenada de la atención más reciente a la más antigua.</p>
+        </div>
+        <span class="px-2.5 py-1 text-[10px] font-bold rounded-xl border shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+          {{ historyBoard().length }} Registros totales
+        </span>
+      </div>
+
+      <!-- Contenedor de la línea de tiempo vertical o Empty State -->
+      @if (historyBoard().length === 0) {
+        <div class="border border-dashed p-8 rounded-2xl text-center space-y-2" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+          <lucide-icon [img]="icons.FileText" class="w-8 h-8 mx-auto text-blue-500/50"></lucide-icon>
+          <p class="text-xs font-bold" style="color: var(--text-main);">Sin seguimientos registrados</p>
+          <p class="text-[11px]" style="color: var(--text-muted);">Este paciente aún no cuenta con consultas o follow-ups guardados en su expediente.</p>
+        </div>
+      } @else {
+        <div class="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5">
+          <div class="absolute left-2.5 top-2 bottom-2 w-0.5" style="background-color: var(--border-color);"></div>
+
+          @for (item of historyBoard(); track item.id; let first = $first) {
+            <div class="relative group">
+
+              <!-- Indicador de punto en la línea de tiempo -->
+              <div class="absolute -left-6 top-1.5 w-3.5 h-3.5 rounded-full border-2 transition-transform group-hover:scale-125"
+                   style="background-color: var(--bg-secondary); border-color: var(--border-color);"
+                   [class.bg-blue-500]="first"
+                   [class.ring-4]="first"
+                   [class.ring-blue-500/20]="first"></div>
+
+              <!-- Card de la Cita / Expediente -->
+              <div class="border p-5 rounded-2xl shadow-lg space-y-3 transition-all" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+
+                <!-- Cabecera de la Card -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">
+                      {{ item.doctor }}
+                    </span>
+                    @if (first) {
+                      <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-[9px] font-black uppercase">Más reciente</span>
+                    }
+                  </div>
+
+                  <div class="flex items-center gap-3 text-xs font-bold" style="color: var(--text-muted);">
+                    <div class="flex items-center gap-1">
+                      <lucide-icon [img]="icons.Calendar" class="w-3.5 h-3.5 text-blue-500"></lucide-icon>
+                      <span>{{ item.date }}</span>
+                    </div>
+                    <span>•</span>
+                    <div class="flex items-center gap-1">
+                      <lucide-icon [img]="icons.Clock" class="w-3.5 h-3.5" style="color: var(--text-muted);"></lucide-icon>
+                      <span>{{ item.time }}</span>
+                    </div>
+                  </div>
+                </div>
+
+             <!-- Título y Resumen del proceso -->
+<div>
+  <h4 class="text-sm font-black flex items-center justify-between" style="color: var(--text-main);">
+    <span>{{ item.title }}</span>
+
+    <!-- Indicador de Fotografías capturadas -->
+    @if (item.hasPhotos) {
+      <span class="flex items-center gap-1 px-2.5 py-1 bg-purple-500/10 text-purple-500 border border-purple-500/20 rounded-xl text-[10px] font-bold">
+        <lucide-icon [img]="icons.ImageIcon" class="w-3.5 h-3.5"></lucide-icon>
+        Con fotografías adjuntas
+      </span>
+    } @else {
+      <span class="flex items-center gap-1 px-2.5 py-1 border rounded-xl text-[10px] font-bold shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-muted);">
+        <lucide-icon [img]="icons.ImageIcon" class="w-3.5 h-3.5"></lucide-icon>
+        Sin fotografías
+      </span>
+    }
+  </h4>
+  <p class="text-xs font-medium leading-relaxed mt-2" style="color: var(--text-muted);">
+    {{ item.summary }}
+  </p>
+</div>
+
+<!-- 🖼️️ NUEVO: Contenedor de Miniaturas de Fotografías -->
+<!-- 🖼 Contenedor de Miniaturas de Fotografías -->
+@if (item.hasPhotos && item.images.length > 0) {
+  <div class="mt-3 pt-3 border-t flex flex-wrap gap-2.5 items-center" style="border-color: var(--border-color);">
+    <span class="text-[10px] font-bold uppercase tracking-wider w-full mb-0.5" style="color: var(--text-muted);">
+      Fotografías clínicas adjuntas ({{ item.images.length }})
+    </span>
+    @for (img of item.images; track img.url) {
+      <a [href]="img.url" target="_blank"
+         class="block w-16 h-16 rounded-xl overflow-hidden border transition-all hover:scale-105 shadow-sm shrink-0"
+         style="border-color: var(--border-color);">
+        <img [src]="img.url" alt="Evidencia clínica" class="w-full h-full object-cover">
+      </a>
+    }
+  </div>
+}
+
+                <!-- Pie de la Card (Acciones) -->
+                <div class="flex justify-end pt-2 border-t" style="border-color: var(--border-color);">
+                  <button (click)="verExpedienteCompleto()"
+                          class="text-xs font-bold text-blue-500 hover:underline flex items-center gap-1 cursor-pointer">
+                    Ver expediente completo <lucide-icon [img]="icons.ChevronRight" class="w-3.5 h-3.5"></lucide-icon>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+  }
+</div>

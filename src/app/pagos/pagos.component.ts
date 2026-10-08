@@ -48,6 +48,7 @@ export class PagosComponent implements OnInit, OnDestroy {
   totalPages = 0;
   userData: any = null;
   isManualConcept = false;
+  isClasesExtra = false;
   // Sucursal actual e historial de suscriptores
   idBranch: string = 'BEAST-TESISTAN';
   allStudents: StudentSuggestion[] = [];
@@ -71,6 +72,7 @@ export class PagosComponent implements OnInit, OnDestroy {
     this.paymentForm = this.fb.group({
       alumna: ['', Validators.required],
       monto: [0, [Validators.required, Validators.min(1)]],
+      numeroClases: [0, [, Validators.min(1)]],
       metodo: ['Efectivo', Validators.required],
       plan: ['Mensualidad (Ilimitada)', Validators.required]
     });
@@ -96,10 +98,14 @@ export class PagosComponent implements OnInit, OnDestroy {
     // Es un plan del catálogo: Precargamos precio y bloqueamos edición (opcional)
     this.paymentForm.patchValue({ monto: selectedPlan.precioRegular }, { emitEvent: false });
     this.isManualConcept = false;
-  } else if (['Pago extraordinario', 'PREPAGO', 'ABONO', 'OTRO'].includes(planName)) {
-    // Es opción manual: Permitimos editar el monto
+  } else if (['Pago extraordinario', 'PREPAGO', 'ABONO', 'OTRO','CLASES ADICIONALES'].includes(planName)) {
     this.paymentForm.patchValue({ monto: 0 }, { emitEvent: false });
     this.isManualConcept = true;
+     if (['CLASES ADICIONALES'].includes(planName)){
+        this.isClasesExtra =true
+     }else{
+        this.isClasesExtra =false
+     }
   }
 }
 
@@ -362,6 +368,7 @@ imprimirTicket() {
       const formVal = this.paymentForm.value;
       const alumnoNombre = formVal.alumna;
       const montoVal = Number(formVal.monto);
+      const clasesAdicionales = Number(formVal.numeroClases);
       const metodoVal = formVal.metodo;
       const planVal = formVal.plan;
       const nombreUsuario = this.userData?.fullName || 'Admin';
@@ -370,6 +377,7 @@ imprimirTicket() {
       const payload: RegistrarPagoRequest = {
         branchId: this.idBranch,
         monto: montoVal,
+        clasesAdicionales:clasesAdicionales,
         emailAlumno: this.selectedStudentEmail || 'cliente@email.com',
         emailRecepcion: receptorConcatenado, // <--- Aquí se envía la concatenación
         metodoPago: metodoVal,
