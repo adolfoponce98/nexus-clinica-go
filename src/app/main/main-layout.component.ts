@@ -7,7 +7,11 @@ import { ThemeService } from '../theme.service';
 import * as CryptoJS from 'crypto-js';
 import { FormsModule } from '@angular/forms';
 import { SPECIALTY_MAP } from './../utils/specialties.constants'; // Ajusta la ruta según corresponda
-import { FloatingChatComponent } from '../home/chatbot/floating-chat.component'; // 1. Importa la ruta correcta de tu componente
+import { FloatingChatComponent } from '../home/chatbot/floating-chat.component';
+import { TokenInterceptorService } from '../auth/token-interceptor.service'; // Asegúrate de ajustar la ruta correcta de tu servicio
+import { Subscription } from 'rxjs';
+import { FcmService } from './../auth/fcm.service';
+import { NotificationToastComponent } from './../auth/notification-toast.component';
 import {
   LucideAngularModule,
   PanelLeft,
@@ -47,7 +51,8 @@ import {
   Sparkles,
   UserCheck,
   Bone,
-  Smile
+  Smile,
+
 } from 'lucide-angular';
 
 declare global {
@@ -57,12 +62,14 @@ declare global {
 }
 
 export interface InfoNotification {
-  id: string;
-  body: string;
-  title: string;
-  read: boolean;
-  type: number;
-  timestamp: string;
+id: string;
+  idAppointment?: string;
+  telefono?: string;
+  estadoRespuesta?: string; // "confirmada" o "cancelada"
+  mensajeOriginal?: string;
+  fechaCita?: string;
+  horaCita?: string;
+  updatedAt?: string;
 }
 
 export interface NotificationsResponse {
@@ -89,12 +96,17 @@ export interface Paciente {
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule, HttpClientModule,FormsModule,FloatingChatComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+    ,NotificationToastComponent
+  ],
   templateUrl: './main-layout.component.html'
 })
 export class MainLayoutComponent implements OnInit {
+    private tokenInterceptor = inject(TokenInterceptorService);
+    private fcmService = inject(FcmService);
    private cdr = inject(ChangeDetectorRef);
    readonly icons = { X };
+   isSwitchingBranch = signal<boolean>(false);
   isAppointmentDetailModalOpen = signal<boolean>(false);
 selectedAppointment = signal<any | null>(null);
   private readonly GET_FOLLOWING_APPOINTMENTS_URL = 'https://syncfollowingappointments-o7vmreizjq-uc.a.run.app';
@@ -132,6 +144,7 @@ showPatientDropdown = false;
     email: '',
     reason: ''
   };
+  private appointmentsSub?: Subscription;
   specialtyIcons = {
   general: Stethoscope,
   pediatria: Baby,
@@ -142,7 +155,10 @@ showPatientDropdown = false;
   dentista: Smile,
   default: Layers
 };
-// 🔍 Estado y lista para el buscador de próximas citas
+isSaving = false;
+selectedModalDate: string = new Date().toISOString().split('T')[0]; // Por defecto hoy (YYYY-MM-DD)
+selectedModalHour: string = ''; // Hora elegida mediante chips
+availableTimeSlots: { time: string; label: string; available: boolean }[] = [];
   searchQuery = signal<string>('');
 appointmentSearchQuery = signal<string>('');
 upcomingAppointments = signal<any[]>([]);
@@ -164,6 +180,99 @@ getSpecialtyLabel(code: string | undefined): string {
   if (!code) return 'Elegir especialidad';
   return SPECIALTY_MAP[code] || code; // Si encuentra el código del catálogo pone el name, sino muestra el texto original o un fallback
 }
+
+async confirmBranchChange() {
+    if (!this.tempSelectedBranch) return;
+
+    const nuevaSucursal = this.tempSelectedBranch;
+    const nuevoConsultorioId = nuevaSucursal.idConsultorio || nuevaSucursal.id;
+    const consultorioActual = this.authService.getSucursal();
+    const actualConsultorioId = consultorioActual?.idConsultorio || consultorioActual?.id;
+
+    // Solo procedemos si realmente cambió de consultorio
+    if (nuevoConsultorioId !== actualConsultorioId) {
+      try {
+        this.isSwitchingBranch.set(true); // 🔄 Activar loader de sincronización
+        this.showBranchModal = false;
+
+        // 1️⃣ Limpiar toda la caché del consultorio previo
+        this.authService.clearBranchCache();
+
+        // 2️⃣ Guardar la nueva sucursal activa
+        this.authService.saveSucursal(nuevaSucursal);
+        this.selectedBranch = nuevaSucursal.name;
+
+        // 3️⃣ Redirigir inmediatamente al Home independientemente de la pestaña actual
+        await this.router.navigate(['/home']);
+
+        // 4️⃣ Sincronizar en paralelo la información del nuevo consultorio
+        await Promise.all([
+          this.cargarFollowingAppointments(nuevoConsultorioId),
+          this.cargarPacientes(nuevoConsultorioId)
+        ]);
+
+        console.log('✨ Sincronización de nueva sucursal completada con éxito.');
+      } catch (err) {
+        console.error('❌ Error al sincronizar la nueva sucursal:', err);
+      } finally {
+        this.isSwitchingBranch.set(false); // ⏹️ Desactivar loader
+        this.cdr.detectChanges();
+      }
+    } else {
+      this.showBranchModal = false;
+    }
+  }
+
+generateTimeSlots() {
+  const cachedApps = this.authService.getCachedAppointments();
+  // Filtrar citas que correspondan estrictamente a la fecha seleccionada en el modal
+  const appsForDay = cachedApps.filter(app => app.date === this.selectedModalDate);
+
+  const slots = [];
+  // Supongamos un horario de atención de 08:00 a 20:00 (8 AM a 8 PM)
+  let currentMinutes = 8 * 60; // 08:00 AM en minutos
+  const endMinutes = 20 * 60;  // 20:00 PM en minutos
+  const interval = 30;         // Intervalos de 30 minutos
+
+  const durationMins = Number(this.selectedDurationMinutes) || 60;
+
+  while (currentMinutes + durationMins <= endMinutes) {
+    const startH = Math.floor(currentMinutes / 60);
+    const startM = currentMinutes % 60;
+    const timeStr = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
+
+    const slotEndMins = currentMinutes + durationMins;
+
+    // Verificar si se cruza con alguna cita existente en ese día
+    let isOccupied = false;
+    for (const app of appsForDay) {
+      const appStartMins = this.parseTimeToMinutes(app.time);
+      const appEndMins = this.parseTimeToMinutes(app.endTime || this.calculateEndTimeAndLabel(app.time, 60).endTime);
+
+      // Comprobación de solapamiento de rangos [start, end)
+      if (currentMinutes < appEndMins && slotEndMins > appStartMins) {
+        isOccupied = true;
+        break;
+      }
+    }
+
+    slots.push({
+      time: timeStr,
+      label: timeStr, // Puedes formatearlo a 12h si prefieres (ej. 09:00 AM)
+      available: !isOccupied
+    });
+
+    currentMinutes += interval;
+  }
+
+  this.availableTimeSlots = slots;
+
+  // Si la hora seleccionada actualmente ya no está disponible, la limpiamos
+  const currentSelected = this.availableTimeSlots.find(s => s.time === this.selectedModalHour);
+  if (!currentSelected || !currentSelected.available) {
+    this.selectedModalHour = '';
+  }
+}
 getSpecialtyIcon(code: string | undefined) {
   if (!code) return this.specialtyIcons.default;
 
@@ -179,79 +288,86 @@ getSpecialtyIcon(code: string | undefined) {
 
   return mapping[code] || this.specialtyIcons.default;
 }
-    async saveAppointment() {
-      if (!this.patientForm.name || !this.patientForm.phone) {
-        alert('Por favor ingresa al menos el nombre y teléfono del paciente.');
-        return;
-      }
+async saveAppointment() {
+  if (!this.selectedModalDate || !this.selectedModalHour) {
+    alert('Por favor selecciona una fecha y un horario disponible.');
+    return;
+  }
+  if (!this.patientForm.name || !this.patientForm.phone) {
+    alert('Por favor ingresa al menos el nombre y teléfono del paciente.');
+    return;
+  }
 
-      const { endTime, durationLabel } = this.calculateEndTimeAndLabel(this.targetHour, Number(this.selectedDurationMinutes));
+  try {
+    this.isSaving = true; // 🔄 Activar loader
+    this.cdr.detectChanges();
 
-      // Validar traslapes de horario en la misma fecha
-      const [newH, newM] = this.targetHour.split(':').map(Number);
-      const [endH, endM] = endTime.split(':').map(Number);
-      const newStartMins = newH * 60 + newM;
-      const newEndMins = endH * 60 + endM;
+    const sessionData = this.authService.getSession();
+    const jwtToken = sessionData?.sessionToken;
 
-      try {
-        const sessionData = this.authService.getSession();
-        const jwtToken = sessionData?.sessionToken;
-
-        if (!jwtToken) {
-          alert('No se encontró una sesión activa o token JWT. Inicie sesión nuevamente.');
-          return;
-        }
- // Asegurar formato de 24 horas para el backend (Ej. "09:00" o "14:00")
-       const normalizedStartTime = this.convertTo24Hour(this.targetHour);
-       const { endTime, durationLabel } = this.calculateEndTimeAndLabel(normalizedStartTime, Number(this.selectedDurationMinutes));
-        const idConsultorio = 'default_consultorio';
-        const newAppointmentData = {
-  time: normalizedStartTime, // 🕒 Siempre en 24 hrs para el back (ej. "09:00")
-      endTime: endTime,
-          durationMinutes: Number(this.selectedDurationMinutes),
-          durationLabel: durationLabel,
-          patientName: this.patientForm.name,
-          phone: this.patientForm.phone,
-          email: this.patientForm.email,
-          reason: this.patientForm.reason,
-          date: this.targetDate,
-          updatedAt: new Date().toISOString()
-        };
-
-        const payload = {
-          idConsultorio: idConsultorio,
-          appointmentData: newAppointmentData
-        };
-
-        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-        // 🔐 Encabezados estrictos requeridos por la Cloud Function también al guardar
-        const response = await fetch(this.SAVE_APPOINTMENT_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular',
-            'Authorization': `Bearer ${jwtToken}`
-          },
-          body: JSON.stringify({ encryptedData: ciphertext })
-        });
-
-        const jsonRes = await response.json();
-        if (!response.ok) {
-          throw new Error(jsonRes.error || 'Error al registrar la cita en el servidor.');
-        }
-
-        this.showAppointmentModal = false;
-        this.showSuccessModal = true;
-        this.cdr.detectChanges();
-
-      } catch (error: any) {
-        console.error('Error al guardar la cita:', error);
-        alert(error.message || 'Hubo un error al registrar la cita.');
-      }
+    if (!jwtToken) {
+      alert('No se encontró una sesión activa o token JWT. Inicie sesión nuevamente.');
+      return;
     }
 
+    const normalizedStartTime = this.convertTo24Hour(this.selectedModalHour);
+    const { endTime, durationLabel } = this.calculateEndTimeAndLabel(normalizedStartTime, Number(this.selectedDurationMinutes));
+    const activeSucursal = this.authService.getSucursal();
+    const idConsultorio = activeSucursal?.idConsultorio || 'default_consultorio';
+
+    const newAppointmentData: any = {
+      time: normalizedStartTime,
+      endTime: endTime,
+      durationMinutes: Number(this.selectedDurationMinutes),
+      durationLabel: durationLabel,
+      patientName: this.patientForm.name,
+      phone: this.patientForm.phone,
+      email: this.patientForm.email,
+      reason: this.patientForm.reason,
+      date: this.selectedModalDate,
+      status: 0,
+      colorClass: this.getRandomStrongColor(),
+      syncId: new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    };
+
+    const payload = {
+      idConsultorio: idConsultorio,
+      appointmentData: newAppointmentData
+    };
+
+    const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+
+    const response = await fetch(this.SAVE_APPOINTMENT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-app-signature': this.APP_SECRET_HEADER,
+        'x-client-source': 'angular',
+        'Authorization': `Bearer ${jwtToken}`
+      },
+      body: JSON.stringify({ encryptedData: ciphertext })
+    });
+
+    const jsonRes = await response.json();
+    if (!response.ok) {
+      throw new Error(jsonRes.error || 'Error al registrar la cita en el servidor.');
+    }
+
+    // 💾 Guardado local inmediato en caché y actualización de la señal
+    this.authService.saveCachedAppointments([newAppointmentData]);
+    this.upcomingAppointments.set(this.authService.getCachedAppointments());
+
+    this.showAppointmentModal = false;
+    this.showSuccessModal = true; // ✨ Muestra el diálogo de éxito
+
+  } catch (error: any) {
+    console.error('Error al guardar la cita:', error);
+    alert(error.message || 'Hubo un error al registrar la cita.');
+  } finally {
+    this.isSaving = false; // ⏹️ Desactivar loader
+    this.cdr.detectChanges();
+  }
+}
      private formatMinutesToTime(totalMins: number): string {
     const normalizedMins = (totalMins + 1440) % 1440; // Evitar negativos
     const h = Math.floor(normalizedMins / 60) % 24;
@@ -321,21 +437,60 @@ private convertTo24Hour(timeStr: string): string {
     return { endTime, durationLabel };
   }
 
-openNewAppointmentModal() {
-  // Opcional: limpiar formulario al abrir
-  this.patientForm = {
-    name: '',
-    phone: '',
-    email: '',
-    reason: ''
-  };
-  this.filteredPatients = [];
-  this.showPatientDropdown = false;
+// 🔄 Cargar los servicios de la sucursal activa al abrir el modal de nueva cita
+  openNewAppointmentModal() {
+    this.patientForm = {
+      name: '',
+      phone: '',
+      email: '',
+      reason: ''
+    };
+    this.filteredPatients = [];
+    this.showPatientDropdown = false;
+    this.showServiceDropdown = false;
 
-  // Abre el modal
-  this.showAppointmentModal = true;
+    // Cargar servicios de la sucursal activa desde el AuthService
+    const activeSucursal = this.authService.getSucursal();
+    this.availableServices = activeSucursal?.services || [];
+    this.filteredServices = [...this.availableServices];
+
+    // Establecemos fecha de hoy por defecto en el formato YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
+    this.selectedModalDate = today;
+    this.selectedModalHour = '';
+    this.selectedDurationMinutes = 60;
+
+    // Generamos los horarios disponibles para esta fecha inicial
+    this.generateTimeSlots();
+
+    this.showAppointmentModal = true;
+  }
+
+  // 🔎 Filtrar servicios al escribir en el campo de motivo
+  onReasonInput(event: any) {
+    const query = event.target.value.toLowerCase();
+    this.patientForm.reason = event.target.value;
+
+    if (this.availableServices.length > 0) {
+      this.filteredServices = this.availableServices.filter((s: any) =>
+        s.nombre.toLowerCase().includes(query)
+      );
+      this.showServiceDropdown = true;
+    } else {
+      this.showServiceDropdown = false;
+    }
+  }
+
+  // ✨ Seleccionar un servicio del combo y precargar su nombre
+  selectServiceReason(service: any) {
+    this.patientForm.reason = service.nombre;
+    this.showServiceDropdown = false;
+  }
+get minDate(): string {
+  return new Date().toISOString().split('T')[0];
 }
   ngOnInit() {
+     this.fcmService.initPushNotifications();
     this.userData = this.authService.getSession();
     this.checkSavedPrinter();
     this.initSelectedBranch();
@@ -358,17 +513,45 @@ openNewAppointmentModal() {
     const activeSucursal = this.authService.getSucursal();
     const consultorioId = activeSucursal?.idConsultorio || 'default_consultorio';
     this.cargarFollowingAppointments(consultorioId);
+
+    this.appointmentsSub = this.authService.appointmentsUpdated$.subscribe(() => {
+    const cachedApps = this.authService.getCachedAppointments();
+    this.upcomingAppointments.set(cachedApps);
+    this.cdr.detectChanges();
+  });
   }
+ngOnDestroy() {
+  if (this.appointmentsSub) {
+    this.appointmentsSub.unsubscribe();
+  }
+}
+getRandomStrongColor(): string {
+  const strongColors = [
+    'bg-blue-600 border-blue-400',
+    'bg-purple-600 border-purple-400',
+    'bg-indigo-600 border-indigo-400',
+    'bg-emerald-600 border-emerald-400',
+    'bg-rose-600 border-rose-400',
+    'bg-amber-600 border-amber-400',
+    'bg-teal-600 border-teal-400',
+    'bg-cyan-600 border-cyan-400',
+    'bg-violet-600 border-violet-400',
+    'bg-fuchsia-600 border-fuchsia-400'
+  ];
 
-// 🆕 Método para consumir el servicio getFollowingAppointments de forma encriptada y segura
-  async cargarFollowingAppointments(consultorioId: string) {
-    try {
-      const sessionData = this.authService.getSession();
-      const jwtToken = sessionData?.sessionToken;
+  // Si la cita ya tiene un color asignado previamente, podemos conservarlo para que no cambie al hacer scroll o refrescar.
+  // O podemos seleccionarlo aleatoriamente basado en su nombre o ID único.
+  const randomIndex = Math.floor(Math.random() * strongColors.length);
+  return strongColors[randomIndex];
+}
 
-      if (!jwtToken) return;
+async cargarFollowingAppointments(consultorioId: string) {
+  try {
+    const clientLastUpdate = this.authService.getLastSyncDateAppointments();
 
-      const clientLastUpdate = this.authService.getLastSyncDateAppointments();
+    // 1️⃣ Ejecutamos la petición a través del interceptor centralizado para soportar Refresh Token
+    const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
+      console.log('🔍 [cargarFollowingAppointments] Token JWT actual en uso:', token);
 
       const payload = {
         idConsultorio: consultorioId,
@@ -380,61 +563,77 @@ openNewAppointmentModal() {
 
       const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
 
-      const response = await fetch(this.GET_FOLLOWING_APPOINTMENTS_URL, {
+      const fetchRes = await fetch(this.GET_FOLLOWING_APPOINTMENTS_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-app-signature': this.APP_SECRET_HEADER,
           'x-client-source': 'angular',
-          'Authorization': `Bearer ${jwtToken}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ encryptedData: ciphertext })
       });
 
-      const jsonRes = await response.json();
-      if (!response.ok) return;
+      console.log('📥 [cargarFollowingAppointments] Status HTTP recibido:', fetchRes.status);
+      return fetchRes;
+    });
 
-      const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    const jsonRes = await response.json();
+    if (!response.ok) {
+      console.error('❌ Error HTTP en la respuesta:', jsonRes);
+      return;
+    }
 
-      // 🔍 LOG: Muestra el objeto completo que respondió el servidor tras desencriptarlo
-      console.log('📥 [Decrypted Response - cargarFollowingAppointments]:', decryptedData);
+    const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
+    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
-      if (decryptedData.success && Array.isArray(decryptedData.appointments) && decryptedData.appointments.length > 0) {
-        // Guardar en caché y combinar con las existentes
-        this.authService.saveCachedAppointments(decryptedData.appointments);
-        this.upcomingAppointments.set(this.authService.getCachedAppointments());
-        this.cdr.detectChanges();
-      }
-    } catch (err) {
-      console.error('❌ Error al sincronizar las siguientes citas:', err);
+    // 🔍 LOG: Muestra el objeto completo que respondió el servidor tras desencriptarlo
+    console.log('📥 [Decrypted Response - cargarFollowingAppointments]:', decryptedData);
+
+    if (decryptedData.success && Array.isArray(decryptedData.appointments) && decryptedData.appointments.length > 0) {
+      // Guardar en caché y combinar con las existentes
+      this.authService.saveCachedAppointments(decryptedData.appointments);
+      this.upcomingAppointments.set(this.authService.getCachedAppointments());
+      this.cdr.detectChanges();
+    }
+  } catch (err) {
+    console.error('❌ Error al sincronizar las siguientes citas:', err);
+  }
+}
+// 🔍 Mostrar pacientes en caché al hacer clic o dar foco al input
+  onPatientFocus() {
+    const allPatients = this.authService.getCachedPatients();
+    if (allPatients.length > 0) {
+      this.filteredPatients = allPatients;
+      this.showPatientDropdown = true;
     }
   }
+
   onPatientInput(event: any) {
-  const query = event.target.value.toLowerCase();
-  this.patientForm.name = event.target.value;
+    const query = event.target.value.toLowerCase();
+    this.patientForm.name = event.target.value;
 
-  // Obtenemos los pacientes desde el caché local mediante el AuthService o tu señal de pacientes
-  const allPatients = this.authService.getCachedPatients();
+    const allPatients = this.authService.getCachedPatients();
 
-  if (query.trim() === '') {
-    this.filteredPatients = [];
-    this.showPatientDropdown = false;
-  } else {
-    this.filteredPatients = allPatients.filter((p: any) =>
-      p.nombre.toLowerCase().includes(query) || p.telefono?.includes(query)
-    );
-    this.showPatientDropdown = true;
+    if (query.trim() === '') {
+      this.filteredPatients = allPatients; // Muestra todos si borra el texto
+      this.showPatientDropdown = true;
+    } else {
+      this.filteredPatients = allPatients.filter((p: any) =>
+        p.nombre.toLowerCase().includes(query) || p.telefono?.includes(query)
+      );
+      this.showPatientDropdown = true;
+    }
   }
-}
 
-selectPatient(patient: any) {
-  this.patientForm.name = patient.nombre;
-  this.patientForm.phone = patient.telefono;
-  this.patientForm.email = patient.correo;
-  this.showPatientDropdown = false;
-  this.filteredPatients = [];
-}
+  selectPatient(patient: any) {
+    this.patientForm.name = patient.nombre;
+    this.patientForm.phone = patient.telefono || '';
+    this.patientForm.email = patient.correo || '';
+    this.showPatientDropdown = false;
+    this.filteredPatients = [];
+  }
+
 
   // Inicializa la sucursal guardada o toma la primera por defecto
   initSelectedBranch() {
@@ -487,7 +686,7 @@ selectPatient(patient: any) {
     let response = await fetchPacientes(jwtToken);
 
     if (response.status === 401) {
-      const refreshTokenValue = sessionData?.refreshToken;
+      const refreshTokenValue = sessionData?.sessionToken;
       if (!refreshTokenValue) {
         this.router.navigate(['/login']);
         return;
@@ -562,34 +761,35 @@ async fetchDoctorsOffices() {
   this.isLoadingBranches = true;
 
   try {
-    const sessionData = this.authService.getSession();
-    const jwtToken = sessionData?.sessionToken || sessionData?.token;
+    // 1️⃣ Ejecutamos la petición a través del interceptor centralizado para soportar Refresh Token
+    const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
+      console.log('🔍 [fetchDoctorsOffices] Token JWT actual en uso:', token);
 
-    if (!jwtToken) {
-      console.warn('No se encontró una sesión activa o token JWT para cargar los consultorios.');
-      this.isLoadingBranches = false;
-      return;
-    }
+      // Obtenemos el correo desde la sesión actual para armar el idDoctor
+      const sessionData = this.authService.getSession();
+      const email = sessionData?.email || '';
+      const idDoctor = email.trim().toLowerCase().replace(/[\/\\]/g, '_');
 
-    const email = sessionData?.email || '';
-    const idDoctor = email.trim().toLowerCase().replace(/[\/\\]/g, '_');
+      const payload = {
+        idDoctor: idDoctor
+      };
 
-    const payload = {
-      idDoctor: idDoctor
-    };
+      // Encriptar el request con CryptoJS AES
+      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
 
-    // Encriptar el request con CryptoJS AES
-    const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+      const fetchRes = await fetch(this.GET_DOCTORS_OFFICE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-app-signature': this.APP_SECRET_HEADER,
+          'x-client-source': 'angular',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ encryptedData: ciphertext })
+      });
 
-    const response = await fetch(this.GET_DOCTORS_OFFICE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-app-signature': this.APP_SECRET_HEADER,
-        'x-client-source': 'angular',
-        'Authorization': `Bearer ${jwtToken}`
-      },
-      body: JSON.stringify({ encryptedData: ciphertext })
+      console.log('📥 [fetchDoctorsOffices] Status HTTP recibido:', fetchRes.status);
+      return fetchRes;
     });
 
     const jsonRes = await response.json();
@@ -646,17 +846,7 @@ irACrearConsultorio() {
     this.showBranchModal = false;
   }
 
-  confirmBranchChange() {
-    if (this.tempSelectedBranch) {
-      this.selectedBranch = this.tempSelectedBranch.name;
-      // Guardar completo en el almacenamiento local mediante el AuthService
-      this.authService.saveSucursal(this.tempSelectedBranch);
 
-      // Toast o mensaje requerido al confirmar cambio de sucursal
-      console.log('Datos de sucursal obtenidos exitosamente');
-    }
-    this.showBranchModal = false;
-  }
 
   readonly PanelLeft = PanelLeft;
   readonly PanelLeftClose = PanelLeftClose;
@@ -678,7 +868,9 @@ irACrearConsultorio() {
   bluetoothDevices: any[] = [];
   connectedDevice: any | null = null;
   bluetoothServer: any | null = null;
-
+availableServices: any[] = [];
+filteredServices: any[] = [];
+showServiceDropdown = false;
   isScanning = false;
 
   // Iconos del sistema registrados
@@ -711,7 +903,7 @@ irACrearConsultorio() {
   readonly ChevronRight = ChevronRight;
   readonly Settings = Settings;
   readonly LogOutIcon =LogOutIcon;
-
+  readonly Stethoscope = Stethoscope;
 
 
   // Puedes adaptarlo según cómo guardes el estado de tu tema en la app
@@ -731,29 +923,83 @@ get isLightTheme(): boolean {
     }
   }
 
-  fetchNotifications() {
+ fetchNotifications() {
+    const sessionData = this.authService.getSession();
+    const jwtToken = sessionData?.sessionToken;
+    const email = sessionData?.email || 'doctor@nexuscliniq.com';
+    const idDoctor = email.trim().toLowerCase().replace(/[\/\\]/g, '_');
+
+    if (!jwtToken) {
+      console.error('No se encontró una sesión activa. Inicie sesión nuevamente.');
+      return;
+    }
+
+    const activeSucursal = this.authService.getSucursal();
+    const consultorioId = activeSucursal?.idConsultorio || 'default_consultorio';
+
+    if (!consultorioId) {
+      console.warn('⚠️ No hay un consultorio seleccionado para consultar notificaciones.');
+      this.notificationsList = [];
+      return;
+    }
+
     this.isLoadingNotifications = true;
-    const bodyRequest = {
-      email: this.userData?.email || '',
-      downloadAll: true,
-      paginationDate: ''
-    };
+    this.cdr.detectChanges(); // Forzar actualización visual al empezar a cargar
 
-    this.http.post<NotificationsResponse>('https://getnotifications-rdotx3vmaq-uc.a.run.app', bodyRequest)
-      .subscribe({
-        next: (response) => {
-          this.isLoadingNotifications = false;
-          if (!response.error) {
-            this.notificationsList = response.notifications || [];
+    try {
+      const payload = {
+        idConsultorio: consultorioId,
+        idDoctor: idDoctor
+      };
+
+      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+      const bodyRequest = { encryptedData: ciphertext };
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'x-app-signature': this.APP_SECRET_HEADER,
+        'x-client-source': 'angular',
+        'Authorization': `Bearer ${jwtToken}`
+      };
+
+      const url = 'https://getnotifications-o7vmreizjq-uc.a.run.app';
+
+      this.http.post<{ encryptedData: string }>(url, bodyRequest, { headers })
+        .subscribe({
+          next: (res) => {
+            this.isLoadingNotifications = false;
+
+            try {
+              const bytes = CryptoJS.AES.decrypt(res.encryptedData, this.ENCRYPTION_KEY);
+              const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+              const response = JSON.parse(decryptedString);
+
+              if (response.success) {
+                this.notificationsList = response.notifications || [];
+                console.log('📦 Notificaciones obtenidas con éxito:', this.notificationsList);
+              } else {
+                console.error('Error devuelto por el servidor:', response.error);
+                this.notificationsList = [];
+              }
+            } catch (decryptErr) {
+              console.error('Error al desencriptar la respuesta de notificaciones:', decryptErr);
+              this.notificationsList = [];
+            }
+            this.cdr.detectChanges(); // 💡 Obligatorio para refrescar el HTML en Angular
+          },
+          error: (err) => {
+            this.isLoadingNotifications = false;
+            console.error('Error de red al obtener notificaciones:', err);
+            this.cdr.detectChanges(); // 💡 Obligatorio para quitar el loader si falla
           }
-        },
-        error: (err) => {
-          this.isLoadingNotifications = false;
-          console.error('Error al obtener notificaciones:', err);
-        }
-      });
-  }
+        });
 
+    } catch (err: any) {
+      this.isLoadingNotifications = false;
+      console.error('Error al preparar la petición encriptada:', err);
+      this.cdr.detectChanges();
+    }
+  }
   hasPermission(moduleKey: string): boolean {
     if (!this.userData) return false;
     const permissions = this.userData.permissions || this.userData;
@@ -800,6 +1046,23 @@ get isLightTheme(): boolean {
     }
   }
 
+  // Añade este método en tu clase MainLayoutComponent para formatear la fecha si lo deseas:
+get formattedExpirationDate(): string {
+  const sessionData = this.authService.getSession();
+  const dateStr = sessionData?.expirationSuscription;
+  if (!dateStr) return '';
+
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } catch (e) {
+    return dateStr;
+  }
+}
   async connectToDevice(device: any) {
     try {
       this.isScanning = true;
@@ -820,6 +1083,10 @@ get isLightTheme(): boolean {
       this.isScanning = false;
       alert('No se pudo establecer conexión con la impresora.');
     }
+  }
+  get hasActivePlan(): boolean {
+    const session = this.authService.getSession();
+    return session?.statusSuscription === true && !!session?.currentIdSuscription;
   }
 
   disconnectPrinter() {

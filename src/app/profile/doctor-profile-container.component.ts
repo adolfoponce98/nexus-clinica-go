@@ -1,14 +1,14 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, User, ShieldCheck, Building2, Briefcase, ImageIcon, Share2, Check } from 'lucide-angular';
+import { LucideAngularModule, User, ShieldCheck, Building2, Briefcase, ImageIcon, Share2, Check, Stethoscope } from 'lucide-angular';
 import { BasicInfoTabComponent } from './tabs/basic-info-tab.component';
 import { LegalInfoTabComponent } from './tabs/legal-info-tab.component';
 import { ClinicsTabComponent } from './tabs/clinics-tab.component';
 import { ExperienceTabComponent } from './tabs/experience-tab.component';
 import { MediaTabComponent } from './tabs/media-tab.component';
 import { SocialTabComponent } from './tabs/social-tab.component';
+import { MedicalFollowupViewComponent } from './tabs/medical-followup-view'; // <--- Nuevo componente importado
 import { AuthService } from '../auth/auth.service';
-import * as CryptoJS from 'crypto-js';
 
 @Component({
   selector: 'app-doctor-profile-container',
@@ -16,7 +16,8 @@ import * as CryptoJS from 'crypto-js';
   imports: [
     CommonModule, LucideAngularModule,
     BasicInfoTabComponent, LegalInfoTabComponent, ClinicsTabComponent,
-    ExperienceTabComponent, MediaTabComponent, SocialTabComponent
+    ExperienceTabComponent, MediaTabComponent, SocialTabComponent,
+    MedicalFollowupViewComponent // <--- Añadido aquí
   ],
   template: `
     <div class="min-h-screen font-sans p-4 sm:p-6 space-y-6 max-w-7xl mx-auto" style="background-color: var(--bg-primary); color: var(--text-main);">
@@ -26,7 +27,7 @@ import * as CryptoJS from 'crypto-js';
         <div>
           <div class="flex items-center gap-2">
             <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Configuración Profesional</span>
-            <span class="text-xs" style="color: var(--text-muted);">Visibilidad del perfil: <strong class="text-emerald-500">85%</strong></span>
+            <span class="text-xs" style="color: var(--text-muted);">Visibilidad del perfil: <strong class="text-emerald-500">92%</strong></span>
           </div>
           <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main);">Mi Perfil Médico y Consultorios</h1>
           <p class="text-xs mt-0.5" style="color: var(--text-muted);">Administra tus centros de trabajo, servicios, métodos de pago y datos profesionales.</p>
@@ -37,7 +38,7 @@ import * as CryptoJS from 'crypto-js';
         </button>
       </div>
 
-      <!-- PESTAÑAS CON INDICADORES DE ESTADO (Verde, Naranja, Rojo) -->
+      <!-- PESTAÑAS CON INDICADORES DE ESTADO -->
       <div class="flex flex-wrap items-center gap-2">
         @for (tab of tabsConfig(); track tab.id) {
           <button (click)="activeTab.set(tab.id)"
@@ -47,7 +48,6 @@ import * as CryptoJS from 'crypto-js';
                   [style.border-color]="activeTab() === tab.id ? '#3b82f6' : 'var(--border-color)'">
             <lucide-icon [img]="tab.icon" class="w-4 h-4"></lucide-icon>
             <span>{{ tab.name }}</span>
-            <!-- Indicador de llenado: verde (completo), naranja (parcial), rojo (vacío) -->
             <span class="w-2.5 h-2.5 rounded-full" [ngClass]="{
               'bg-emerald-400': tab.status === 'complete',
               'bg-amber-400': tab.status === 'partial',
@@ -66,6 +66,7 @@ import * as CryptoJS from 'crypto-js';
           @case ('experience') { <app-experience-tab /> }
           @case ('media') { <app-media-tab /> }
           @case ('social') { <app-social-tab /> }
+          @case ('clinical') { <app-medical-followup-view /> } <!-- <--- Nueva pestaña renderizada -->
         }
       </div>
     </div>
@@ -75,18 +76,18 @@ export class DoctorProfileContainerComponent {
   private authService = inject(AuthService);
   activeTab = signal('basic');
 
-  // Estados dinámicos de cada pestaña (puedes enlazarlos a tus Forms o Signals reales)
+  // Configuración de pestañas incluyendo la nueva pestaña de formato clínico
   tabsConfig = signal([
-    { id: 'basic', name: 'Información Básica', icon: User, status: 'complete' }, // verde
-    { id: 'legal', name: 'Datos y Especialidades', icon: ShieldCheck, status: 'partial' }, // naranja
-    { id: 'clinics', name: 'Consultorios', icon: Building2, status: 'complete' }, // verde
-    { id: 'experience', name: 'Experiencia y Trayectoria', icon: Briefcase, status: 'empty' }, // rojo
-    { id: 'media', name: 'Fotos y Videos', icon: ImageIcon, status: 'partial' }, // naranja
-    { id: 'social', name: 'Redes Sociales', icon: Share2, status: 'empty' } // rojo
+    { id: 'basic', name: 'Información Básica', icon: User, status: 'complete' },
+    { id: 'legal', name: 'Datos y Especialidades', icon: ShieldCheck, status: 'partial' },
+    { id: 'clinics', name: 'Consultorios', icon: Building2, status: 'complete' },
+    { id: 'experience', name: 'Experiencia y Trayectoria', icon: Briefcase, status: 'empty' },
+  //  { id: 'media', name: 'Fotos y Videos', icon: ImageIcon, status: 'partial' },
+   // { id: 'social', name: 'Redes Sociales', icon: Share2, status: 'empty' },
+    { id: 'clinical', name: 'Formato Clínico', icon: Stethoscope, status: 'complete' } // <--- Nueva pestaña añadida
   ]);
 
   async saveAllProfile() {
     alert('Guardando todos los nodos del perfil de forma encriptada...');
-    // Aquí ejecutas la llamada global a la Cloud Function enviando todos los nodos juntos.
   }
 }

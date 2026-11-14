@@ -1,0 +1,79 @@
+<div class="p-6 rounded-3xl shadow-xl space-y-6 border" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <div>
+      <div class="flex items-center gap-2">
+        <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Evolución y Estado de Citas</h3>
+        <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+          {{ totalPeriodPatients() }} citas en el periodo
+        </span>
+      </div>
+      <p class="text-[10px]" style="color: var(--text-muted);">Desglose por estados (Exitosas, Sin confirmar, Canceladas)</p>
+    </div>
+
+    <!-- Leyenda de colores -->
+    <div class="flex items-center gap-3 text-[9px] font-bold">
+      <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Exitosas</span>
+      <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-zinc-400 border border-dashed border-zinc-500"></span> Sin confirmar</span>
+      <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Canceladas</span>
+    </div>
+
+    <!-- Selector de periodos -->
+    <select (change)="onFilterChange($event)" class="text-[10px] font-bold rounded-xl px-2.5 py-1.5 outline-none cursor-pointer border shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+      <option value="30">Último mes (30 días)</option>
+      <option value="60">Últimos 60 días</option>
+      <option value="90">Últimos 90 días</option>
+    </select>
+  </div>
+
+  <!-- Contenedor principal con Eje Y lateral y Gráfica de Barras -->
+  <div class="flex items-end gap-2 pt-2 border-b pb-2" style="border-color: var(--border-color);">
+
+    <!-- EJE Y -->
+    <div class="h-44 flex flex-col justify-between text-[9px] font-bold pr-2 pb-6 text-right select-none" style="color: var(--text-muted); min-width: 28px;">
+      <span>{{ getMaxVal() }}</span>
+      <span>{{ Math.round(getMaxVal() / 2) }}</span>
+      <span>0</span>
+    </div>
+
+    <!-- Área de la gráfica -->
+    <div class="h-44 relative flex-1 flex flex-col justify-between px-2 overflow-hidden">
+      <!-- Líneas horizontales de referencia -->
+      <div class="absolute inset-x-0 top-0 border-b border-dashed pointer-events-none" style="border-color: var(--border-color); opacity: 0.3;"></div>
+      <div class="absolute inset-x-0 top-1/2 border-b border-dashed pointer-events-none" style="border-color: var(--border-color); opacity: 0.3;"></div>
+
+      <!-- Contenedor de barras para las 3 categorías -->
+      <div class="relative z-20 flex items-end justify-between h-full w-full pb-1">
+        @for (item of filteredData(); track item.monthIndex) {
+          <div class="flex flex-col items-center justify-end h-full relative flex-1 group px-0.5">
+
+            <!-- Grupo de las 3 barras verticales -->
+            <div class="w-full flex items-end justify-center gap-0.5 h-32 mb-1">
+
+              <!-- 1. Barra Exitosas (Verde sólida) -->
+              <div class="w-1.5 sm:w-2 bg-emerald-500 rounded-t-sm transition-all duration-300 relative"
+                   [style.height]="getBarHeightPercentage(item.completed)"
+                   [title]="'Exitosas: ' + item.completed">
+              </div>
+
+              <!-- 2. Barra Sin confirmar (Gris con bordes/estilo punteado o rayado) -->
+              <div class="w-1.5 sm:w-2 bg-zinc-400/30 border border-dashed border-zinc-400 rounded-t-sm transition-all duration-300 relative"
+                   [style.height]="getBarHeightPercentage(item.pending)"
+                   [title]="'Sin confirmar: ' + item.pending">
+              </div>
+
+              <!-- 3. Barra Canceladas (Rojo sólida) -->
+              <div class="w-1.5 sm:w-2 bg-rose-500 rounded-t-sm transition-all duration-300 relative"
+                   [style.height]="getBarHeightPercentage(item.cancelled)"
+                   [title]="'Canceladas: ' + item.cancelled">
+              </div>
+
+            </div>
+
+            <!-- Etiqueta inferior de fecha -->
+            <span class="text-[9px] font-bold z-20 mt-auto pt-1 truncate max-w-[40px]" [style.color]="item.isCurrentMonth ? 'var(--text-main)' : 'var(--text-muted)'" [title]="item.month">{{ item.month }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

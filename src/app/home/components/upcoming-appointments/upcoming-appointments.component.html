@@ -1,4 +1,21 @@
-<div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] mb-4 p-6 rounded-3xl shadow-xl space-y-4 transition-colors duration-300">
+<div class="relative bg-[var(--bg-secondary)] border border-[var(--border-color)] mb-4 p-6 rounded-3xl shadow-xl space-y-4 transition-colors duration-300">
+
+  <!-- 🔄 LOADER OVERLAY -->
+  @if (isLoading()) {
+    <div class="absolute inset-0 bg-[var(--bg-secondary)]/80 backdrop-blur-xs rounded-3xl z-50 flex flex-col items-center justify-center space-y-2 animate-in fade-in duration-200">
+      <lucide-icon [img]="Loader2" class="w-8 h-8 text-[var(--accent-color)] animate-spin"></lucide-icon>
+      <p class="text-xs font-bold text-[var(--text-main)]">Procesando solicitud...</p>
+    </div>
+  }
+
+  <!-- ✨ DIÁLOGO DE ÉXITO FLOTANTE -->
+  @if (successMessage()) {
+    <div class="absolute top-4 inset-x-6 z-50 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 p-3 rounded-2xl flex items-center gap-2 shadow-lg animate-in slide-in-from-top duration-300">
+      <lucide-icon [img]="CheckCircle2" class="w-4 h-4 shrink-0"></lucide-icon>
+      <span class="text-xs font-black">{{ successMessage() }}</span>
+    </div>
+  }
+
   <div class="flex justify-between items-center">
     <h3 class="text-xs font-black uppercase tracking-wider text-[var(--text-main)]">Próximas citas</h3>
     <button class="text-xs font-bold text-[var(--accent-color)] hover:underline flex items-center gap-1 cursor-pointer">
@@ -6,27 +23,74 @@
     </button>
   </div>
 
-  @if (appointments().length > 0) {
-    <div class="space-y-3">
-      @for (cita of appointments(); track cita.name) {
-        <div class="flex items-center justify-between p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-[var(--accent-color)] transition-all">
-          <div class="flex items-center gap-3">
-            <span class="text-xs font-black text-[var(--text-muted)] w-10">{{ cita.time }}</span>
-            <img [src]="cita.avatar" class="w-8 h-8 rounded-full object-cover border border-[var(--border-color)]" alt="avatar">
-            <div>
-              <h4 class="text-xs font-bold text-[var(--text-main)]">{{ cita.name }}</h4>
-              <p class="text-[10px] text-[var(--text-muted)]">{{ cita.specialty }}</p>
-            </div>
+  @if (objectKeys(groupedAppointments()).length > 0) {
+    <div class="space-y-4">
+      @for (dateKey of objectKeys(groupedAppointments()); track dateKey) {
+        <div class="space-y-2">
+          <!-- Título del día agrupado -->
+          <h4 class="text-xs font-black text-[var(--accent-color)] tracking-wide uppercase px-1">
+            {{ dateKey }}
+          </h4>
+
+          <!-- Citas correspondientes a este día -->
+          <div class="space-y-3">
+            @for (cita of groupedAppointments()[dateKey]; track cita.name + cita.time) {
+              <!-- Tarjeta contenedora -->
+              <div class="relative">
+                <div (click)="toggleDialog(cita)"
+                     class="flex items-center justify-between p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-[var(--accent-color)] transition-all cursor-pointer">
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs font-black text-[var(--text-muted)] w-12">{{ cita.time }}</span>
+                    <img [src]="cita.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'" class="w-8 h-8 rounded-full object-cover border border-[var(--border-color)]" alt="avatar">
+                    <div>
+                      <h5 class="text-xs font-bold text-[var(--text-main)]">{{ cita.name || cita.patientName }}</h5>
+                      <p class="text-[10px] text-[var(--text-muted)]">{{ cita.specialty || cita.reason }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Badge de estado (0: Sin confirmar, 1: Confirmada, 2: Cancelada) -->
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border"
+                        [class.bg-emerald-500/15]="cita.statusClass === 'Confirmada'"
+                        [class.text-emerald-400]="cita.statusClass === 'Confirmada'"
+                        [class.border-emerald-500/30]="cita.statusClass === 'Confirmada'"
+                        [class.bg-zinc-500/15]="cita.statusClass === 'Sin confirmar'"
+                        [class.text-zinc-400]="cita.statusClass === 'Sin confirmar'"
+                        [class.border-zinc-500/30]="cita.statusClass === 'Sin confirmar'"
+                        [class.bg-rose-500/15]="cita.statusClass === 'Cancelada'"
+                        [class.text-rose-400]="cita.statusClass === 'Cancelada'"
+                        [class.border-rose-500/30]="cita.statusClass === 'Cancelada'">
+                    {{ cita.statusText }}
+                  </span>
+                </div>
+
+                <!-- Diálogo pequeño desplegable en la misma tarjeta -->
+                @if (selectedCitaForAction() === cita) {
+                  <div class="absolute right-0 mt-2 z-30 w-64 p-3 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-2xl space-y-3 animate-in fade-in zoom-in duration-200">
+                    <div class="text-xs font-bold text-[var(--text-main)] border-b border-[var(--border-color)] pb-2">
+                      Cliente: <span class="font-normal">{{ cita.name || cita.patientName }}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5">
+                      <!-- Acción 1: Confirmar (status = 1) -->
+                      <button (click)="handleAppointmentAction(cita, 1, $event)"
+                              class="py-1.5 px-1 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-xl text-[9px] font-black transition-colors cursor-pointer flex items-center justify-center">
+                        Confirma
+                      </button>
+                      <!-- Acción 2: Cancelar (status = 2) -->
+                      <button (click)="handleAppointmentAction(cita, 2, $event)"
+                              class="py-1.5 px-1 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl text-[9px] font-black transition-colors cursor-pointer flex items-center justify-center">
+                        Cancela
+                      </button>
+                      <!-- Acción 3: Eliminar por completo -->
+                      <button (click)="handleAppointmentAction(cita, 3, $event)"
+                              class="py-1.5 px-1 bg-rose-500/15 text-rose-400 hover:bg-rose-500/25 border border-rose-500/30 rounded-xl text-[9px] font-black transition-colors cursor-pointer flex items-center justify-center">
+                        Elimina
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           </div>
-          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border"
-                [class.bg-emerald-500/15]="cita.status === 'Confirmada'"
-                [class.text-emerald-400]="cita.status === 'Confirmada'"
-                [class.border-emerald-500/30]="cita.status === 'Confirmada'"
-                [class.bg-amber-500/15]="cita.status === 'Pendiente'"
-                [class.text-amber-400]="cita.status === 'Pendiente'"
-                [class.border-amber-500/30]="cita.status === 'Pendiente'">
-            {{ cita.status }}
-          </span>
         </div>
       }
     </div>

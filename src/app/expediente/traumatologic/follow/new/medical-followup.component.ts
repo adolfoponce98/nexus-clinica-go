@@ -1,10 +1,11 @@
-import { Component, signal, OnDestroy, inject, computed ,OnInit} from '@angular/core';
+import { Component, signal, OnDestroy, inject, computed, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router';
 import CryptoJS from 'crypto-js';
 import { AuthService } from '../../../../auth/auth.service';
+import { Advanced3DViewerComponent } from '../../../../medicalUtilities/advanced-3d-viewer.component';
 import {
   LucideAngularModule, Activity, ShieldCheck, FileText, Stethoscope,
   ImageIcon, Calendar, Clock, ChevronRight, Mic, MicOff, Pause, Play, Square, X, CheckCircle2, Upload, AlertCircle, Sparkles, ArrowLeft
@@ -12,25 +13,29 @@ import {
 
 interface UploadedFileItem {
   name: string;
-  url: string;         // URL pública en Storage (o local temporal mientras sube)
-  type: string;        // 'image', 'video' o 'document'
-  uploading: boolean;  // True si está subiendo al bucket
-  progress: number;    // Porcentaje de subida (0 a 100)
+  url: string;           // URL original
+  mediumUrl?: string;    // URL versión mediana
+  smallUrl?: string;     // URL versión pequeña (thumbnail)
+  type: string;          // 'image', 'video' o 'document'
+  uploading: boolean;    // True si está subiendo al bucket
+  progress: number;      // Porcentaje de subida (0 a 100)
   error?: boolean;
 }
 
 @Component({
   selector: 'app-medical-followup',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, Advanced3DViewerComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: 'medical-followup.component.html'
 })
-export class MedicalFollowupComponent implements OnDestroy,OnInit {
+export class MedicalFollowupComponent implements OnDestroy, OnInit {
   readonly icons = {
     Activity, ShieldCheck, FileText, Stethoscope,
     ImageIcon, Calendar, Clock, ChevronRight, Mic, MicOff, Pause, Play, Square, X, CheckCircle2, Upload, AlertCircle, Sparkles,
     ArrowLeft
   };
+
   authService = inject(AuthService);
   private http = inject(HttpClient);
   private router = inject(Router);
@@ -40,11 +45,93 @@ export class MedicalFollowupComponent implements OnDestroy,OnInit {
   private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
   private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
 
-  // Parámetros de contexto recibidos por ruta o sesión (ejemplo predeterminado)
+  // Parámetros de contexto
   idDoctor = signal('12345');
   idConsultorio = signal('consultorio_01');
   idPatient = signal('paciente_abc_789');
   expedienteId = signal('exp_001');
+
+  nombreConsultorio = '';
+  nombreMedico = '';
+
+  // --- LÓGICA DE MODELOS 3D DINÁMICOS ---
+  isLoadingModel = signal<boolean>(true);
+  isExpanded = signal<boolean>(false);
+  selectedModelId = signal<string>('modelo-1');
+  huesoActivo = signal<string>('');
+
+  // Estados de guardado
+  isSaving = signal(false);
+  saveSuccess = signal(false);
+
+  traumaModels = [
+    {
+      id: 'modelo-1',
+      name: 'Pie',
+      description: 'pie',
+      thumbnail: 'assets/huesos/pie.png',
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2Fesqueleto_pie.glb?alt=media&token=dec3eb9f-bc43-4f97-87fa-510f22efa4d2'
+    },
+    {
+      id: 'modelo-2',
+      name: 'Pierna',
+      description: 'Pierna',
+      thumbnail: 'assets/huesos/pierna.png',
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2Fesqueleto_pierna.glb?alt=media&token=0e7f2398-2145-4066-8c2f-9f7c0f964ffb'
+    },
+    {
+      id: 'modelo-3',
+      name: 'Torso',
+      description: 'Torso',
+      thumbnail: 'assets/huesos/torso.png',
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2Fesqueleto_torso.glb?alt=media&token=52fcae0c-1867-4c2b-8926-9ab0c75af6f6'
+    },
+    {
+      id: 'modelo-4',
+      name: 'Brazo',
+      description: 'Brazo',
+      thumbnail: 'assets/huesos/brazo.png',
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2Fesqueleto_brazo.glb?alt=media&token=80be2fcc-7e53-4202-8cdc-f16d65265a80'
+    },
+    {
+      id: 'modelo-5',
+      name: 'Craneo',
+      description: 'Craneo',
+      thumbnail: 'assets/huesos/craneo.png',
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2Fcraneo_humano-v1.glb?alt=media&token=049550bd-4976-4b02-bb50-ec6763348bf6'
+    },
+    {
+      id: 'modelo-6',
+      name: 'Esqueleto',
+      description: 'Esqueleto completo',
+      thumbnail: 'assets/huesos/esqueleto.png',
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2FMeshy_AI_Detailed_Male_Skeleto_1008020424_texture-v2.glb?alt=media&token=322a983e-d72d-4df2-904f-092a281ae58a'
+    }
+  ];
+
+  activeTraumaModel = computed(() => {
+    return this.traumaModels.find(m => m.id === this.selectedModelId()) || this.traumaModels[0];
+  });
+
+  selectModel(id: string) {
+    if (this.selectedModelId() !== id) {
+      this.isLoadingModel.set(true);
+      this.selectedModelId.set(id);
+    }
+  }
+
+  toggleExpand() {
+    this.isExpanded.update(v => !v);
+  }
+
+  onModelLoaded() {
+    this.isLoadingModel.set(false);
+  }
+
+  onModelError(event: any) {
+    this.isLoadingModel.set(false);
+    console.error('Error detallado de model-viewer:', event);
+  }
 
   // Formulario - Sección 1: Evolución Subjetiva
   painIntensityEva = signal('Disminuyó significativamente (EVA 2-4)');
@@ -52,19 +139,42 @@ export class MedicalFollowupComponent implements OnDestroy,OnInit {
   treatmentAdherence = signal('');
   newSymptoms = signal('');
 
+  // Nuevos campos agregados
+  dispositivosApoyo = signal('');
+  toleranciaMedicamentos = signal('');
+
   // Formulario - Sección 2: Exploración Física
   softTissueState = signal('');
   rangeOfMotion = signal('');
   stabilityAndStrength = signal('');
   neurovascularState = signal('');
 
-  // Formulario - Sección 3: Archivos y Multimedia (con progreso y separación por categorías)
+  // Nuevo campo agregado
+  banderasRojas = signal('');
+
+  // Formulario - Sección 3: Archivos y Multimedia
   uploadedFiles = signal<UploadedFileItem[]>([]);
 
-  // Listas computadas separadas por tipo de archivo para enviar ordenadamente
-  imagesUrls = computed(() => this.uploadedFiles().filter(f => f.type === 'image' && !f.uploading && !f.error).map(f => ({ name: f.name, url: f.url, type: 'image' })));
-  documentsUrls = computed(() => this.uploadedFiles().filter(f => f.type === 'document' && !f.uploading && !f.error).map(f => ({ name: f.name, url: f.url, type: 'document' })));
-  videosUrls = computed(() => this.uploadedFiles().filter(f => f.type === 'video' && !f.uploading && !f.error).map(f => ({ name: f.name, url: f.url, type: 'video' })));
+  // Mapeamos enviando la original, medium y small en cada objeto listo para guardar
+  imagesUrls = computed(() => this.uploadedFiles().filter(f => f.type === 'image' && !f.uploading && !f.error).map(f => ({
+    name: f.name,
+    url: f.url,
+    mediumUrl: f.mediumUrl || '',
+    smallUrl: f.smallUrl || '',
+    type: 'image'
+  })));
+
+  documentsUrls = computed(() => this.uploadedFiles().filter(f => f.type === 'document' && !f.uploading && !f.error).map(f => ({
+    name: f.name,
+    url: f.url,
+    type: 'document'
+  })));
+
+  videosUrls = computed(() => this.uploadedFiles().filter(f => f.type === 'video' && !f.uploading && !f.error).map(f => ({
+    name: f.name,
+    url: f.url,
+    type: 'video'
+  })));
 
   // Formulario - Sección 4: Plan Terapéutico
   modificacionFarmacologica = signal('');
@@ -75,7 +185,6 @@ export class MedicalFollowupComponent implements OnDestroy,OnInit {
   resumenMedico = signal('');
   isGeneratingAI = signal(false);
   resumenGeneradoIA = signal<string>('');
-  isSaving = signal(false);
 
   // Grabación de voz
   isRecordingActive = signal(false);
@@ -90,16 +199,19 @@ export class MedicalFollowupComponent implements OnDestroy,OnInit {
     this.initSpeechRecognition();
   }
 
-ngOnInit() {
-    // 1. Obtener datos de sesión para idDoctor e idConsultorio
+  ngOnInit() {
+    const defaultOffice = this.authService.getSucursal();
+    this.nombreConsultorio = "Consultorio " + defaultOffice?.name || 'Consultorio Default';
+
     const sessionData = this.authService.getSession();
     const email = sessionData?.email || '';
     const sanitizedDoctorId = email.trim().toLowerCase().replace(/[\/\\]/g, '_');
 
     this.idDoctor.set(sanitizedDoctorId);
-    this.idConsultorio.set('consultorio_general'); // O tu valor predeterminado
+    this.idConsultorio.set(defaultOffice.idConsultorio || 'consultorio_general');
 
-    // 2. Capturar y desencriptar el idPatient que viaja por la URL de forma segura
+    this.nombreMedico = email ? email.split('@')[0].toUpperCase() : 'DOCTOR';
+
     this.route.paramMap.subscribe(params => {
       const safeUrlId = params.get('id');
 
@@ -111,12 +223,9 @@ ngOnInit() {
 
           if (decryptedId) {
             this.idPatient.set(decryptedId);
-            console.log('✅ ID de paciente recuperado y desencriptado:', decryptedId);
-          } else {
-            console.error('❌ El ID desencriptado está vacío.');
           }
         } catch (e) {
-          console.error('❌ Error al desencriptar el ID del paciente desde la ruta:', e);
+          console.error('Error al desencriptar el ID del paciente:', e);
         }
       }
     });
@@ -161,12 +270,10 @@ ngOnInit() {
     this.router.navigate(['/expediente', this.idPatient()]);
   }
 
-  // 📂 Manejo de Selección y Subida Automática a Firebase Storage mediante URL Firmada
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (!file) return;
 
-    // Determinar tipo de documento
     let fileTypeCategory = 'document';
     let docTypeEnum = 'FILE';
     if (file.type.startsWith('image/')) {
@@ -190,122 +297,99 @@ ngOnInit() {
     this.uploadFileToStorage(file, docTypeEnum, newItem);
   }
 
-private uploadFileToStorage(file: File, documentType: string, itemRef: UploadedFileItem) {
-  // 1. Obtener la sesión activa con tu AuthService
-  const sessionData = this.authService.getSession();
-  const jwtToken = sessionData?.sessionToken;
+  private uploadFileToStorage(file: File, documentType: string, itemRef: UploadedFileItem) {
+    const sessionData = this.authService.getSession();
+    const jwtToken = sessionData?.sessionToken;
 
-  if (!jwtToken) {
-    alert('Sesión expirada o no encontrada. Por favor inicia sesión de nuevo.');
-    this.router.navigate(['/login']);
-    return;
-  }
+    if (!jwtToken) {
+      alert('Sesión expirada o no encontrada.');
+      this.router.navigate(['/login']);
+      return;
+    }
 
-  // 2. Preparar el payload
-  const payload = {
-    objectType: 'PATIENT',
-    category: 'EXPEDIENT',
-    documentType: documentType,
-    idPatient: this.idPatient(),
-    idExpedient: this.expedienteId(),
-    contentType: file.type,
-    originalFileName: file.name
-  };
+    const payload = {
+      objectType: 'PATIENT',
+      category: 'EXPEDIENT',
+      documentType: documentType,
+      idPatient: this.idPatient(),
+      idExpedient: this.expedienteId(),
+      contentType: file.type,
+      originalFileName: file.name
+    };
 
-  // 3. Encriptar el payload con CryptoJS AES
-  const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+    const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
 
-  const headers = new HttpHeaders({
-    'Content-Type': 'application/json',
-    'x-app-signature': this.APP_SECRET_HEADER,
-    'x-client-source': 'angular',
-    'Authorization': `Bearer ${jwtToken}`
-  });
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-app-signature': this.APP_SECRET_HEADER,
+      'x-client-source': 'angular',
+      'Authorization': `Bearer ${jwtToken}`
+    });
 
-  // 4. Solicitar URL firmada a la Cloud Function
-  this.http.post<any>('https://getsigneduploadurl-o7vmreizjq-uc.a.run.app', { encryptedData: ciphertext }, { headers }).subscribe({
-    next: (res) => {
-      try {
-        // Desencriptar la respuesta del servidor
-        const bytes = CryptoJS.AES.decrypt(res.encryptedData, this.ENCRYPTION_KEY);
-        const decryptedResponse = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    this.http.post<any>('https://getsigneduploadurl-o7vmreizjq-uc.a.run.app', { encryptedData: ciphertext }, { headers }).subscribe({
+      next: (res) => {
+        try {
+          const bytes = CryptoJS.AES.decrypt(res.encryptedData, this.ENCRYPTION_KEY);
+          const decryptedResponse = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
-        if (decryptedResponse && decryptedResponse.success && decryptedResponse.uploadUrl) {
-          const uploadHeaders = new HttpHeaders({ 'Content-Type': file.type });
+          if (decryptedResponse && decryptedResponse.success && decryptedResponse.uploadUrl) {
+            const uploadHeaders = new HttpHeaders({ 'Content-Type': file.type });
 
-          // 5. Subir binario directo a Google Cloud Storage usando la URL firmada (PUT)
-          this.http.put(decryptedResponse.uploadUrl, file, {
-            headers: uploadHeaders,
-            reportProgress: true,
-            observe: 'events'
-          }).subscribe({
-            next: (uploadEvent: any) => {
-              if (uploadEvent.type === 1 && uploadEvent.total) {
-                const percent = Math.round((uploadEvent.loaded / uploadEvent.total) * 100);
-                this.updateFileProgress(file.name, percent, false);
+            this.http.put(decryptedResponse.uploadUrl, file, {
+              headers: uploadHeaders,
+              reportProgress: true,
+              observe: 'events'
+            }).subscribe({
+              next: (uploadEvent: any) => {
+                if (uploadEvent.type === 1 && uploadEvent.total) {
+                  const percent = Math.round((uploadEvent.loaded / uploadEvent.total) * 100);
+                  this.updateFileProgress(file.name, percent);
+                }
+              },
+              complete: () => {
+                const secureReadUrl = decryptedResponse.readUrl || decryptedResponse.publicUrl;
+                const mediumUrl = decryptedResponse.mediumReadUrl || '';
+                const smallUrl = decryptedResponse.smallReadUrl || '';
+
+                this.updateFileSuccess(file.name, secureReadUrl, mediumUrl, smallUrl);
+              },
+              error: (err) => {
+                console.error('Error subiendo archivo:', err);
+                this.updateFileError(file.name);
               }
-            },
-            complete: () => {
-              // 6. Usar 'readUrl' en lugar de publicUrl para que la previsualización cargue sin AccessDenied
-              const secureReadUrl = decryptedResponse.readUrl || decryptedResponse.publicUrl;
-              this.updateFileSuccess(file.name, secureReadUrl);
-            },
-            error: (err) => {
-              console.error('Error subiendo binario a Storage:', err);
-              this.updateFileError(file.name);
-            }
-          });
-        } else {
-          console.error('Error del servidor:', decryptedResponse.error);
+            });
+          } else {
+            this.updateFileError(file.name);
+          }
+        } catch (decryptErr) {
           this.updateFileError(file.name);
         }
-      } catch (decryptErr) {
-        console.error('Error al desencriptar la respuesta de la Cloud Function:', decryptErr);
-        this.updateFileError(file.name);
-      }
-    },
-    error: (err) => {
-      console.error('Error HTTP obteniendo URL firmada:', err);
-      this.updateFileError(file.name);
-    }
-  });
-}
-// En tu lista de iconos de Lucide-angular añade: FileSpreadsheet, FileCode, etc., si los usas.
-
-// Método para obtener el icono o color según la extensión del archivo
-getFileIconConfig(fileName: string): { iconName: string, bgColor: string, textColor: string } {
-  const ext = fileName.split('.').pop()?.toLowerCase() || '';
-
-  switch (ext) {
-    case 'pdf':
-      return { iconName: 'FileText', bgColor: 'bg-rose-500/10', textColor: 'text-rose-400' };
-    case 'doc':
-    case 'docx':
-      return { iconName: 'FileText', bgColor: 'bg-blue-500/10', textColor: 'text-blue-400' };
-    case 'xls':
-    case 'xlsx':
-      return { iconName: 'FileSpreadsheet', bgColor: 'bg-emerald-500/10', textColor: 'text-emerald-400' };
-    case 'txt':
-      return { iconName: 'FileCode', bgColor: 'bg-zinc-500/10', textColor: 'text-zinc-400' };
-    default:
-      return { iconName: 'FileText', bgColor: 'bg-purple-500/10', textColor: 'text-purple-400' };
+      },
+      error: () => this.updateFileError(file.name)
+    });
   }
-}
 
-// Helper para saber si el archivo es una imagen o video reproducible visualmente
-isVisualMedia(fileName: string): boolean {
-  const ext = fileName.split('.').pop()?.toLowerCase() || '';
-  return ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
-}
-  private updateFileProgress(fileName: string, progress: number, uploading: boolean) {
+  isVisualMedia(fileName: string): boolean {
+    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    return ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
+  }
+
+  private updateFileProgress(fileName: string, progress: number) {
     this.uploadedFiles.update(files =>
       files.map(f => f.name === fileName ? { ...f, progress } : f)
     );
   }
 
-  private updateFileSuccess(fileName: string, publicUrl: string) {
+  private updateFileSuccess(fileName: string, publicUrl: string, mediumUrl: string, smallUrl: string) {
     this.uploadedFiles.update(files =>
-      files.map(f => f.name === fileName ? { ...f, url: publicUrl, uploading: false, progress: 100 } : f)
+      files.map(f => f.name === fileName ? {
+        ...f,
+        url: publicUrl,
+        mediumUrl: mediumUrl,
+        smallUrl: smallUrl,
+        uploading: false,
+        progress: 100
+      } : f)
     );
   }
 
@@ -313,7 +397,6 @@ isVisualMedia(fileName: string): boolean {
     this.uploadedFiles.update(files =>
       files.map(f => f.name === fileName ? { ...f, uploading: false, error: true } : f)
     );
-    alert(`No se pudo subir el archivo: ${fileName}. Intenta de nuevo.`);
   }
 
   // Controles de voz
@@ -368,7 +451,6 @@ isVisualMedia(fileName: string): boolean {
     this.isRecordingPaused.set(false);
   }
 
-  // Procesamiento con IA
   generarResumenMedicoIA() {
     const textoDictado = this.resumenMedico().trim();
     if (!textoDictado) return;
@@ -401,81 +483,89 @@ isVisualMedia(fileName: string): boolean {
     });
   }
 
- saveFollowupRecord() {
-  const pendingUploads = this.uploadedFiles().some(f => f.uploading);
-  if (pendingUploads) {
-    alert('Hay archivos terminando de subirse al servidor. Por favor espera un momento.');
-    return;
-  }
-
-  // Obtener token de sesión activo
-  const sessionData = this.authService.getSession();
-  const jwtToken = sessionData?.sessionToken;
-
-  if (!jwtToken) {
-    alert('Sesión expirada. Inicia sesión nuevamente.');
-    this.router.navigate(['/login']);
-    return;
-  }
-
-  this.isSaving.set(true);
-
-  // Consolidar URLs ordenadas
-  const attachedImagesUrls = [
-    ...this.imagesUrls(),
-    ...this.documentsUrls(),
-    ...this.videosUrls()
-  ];
-
-  const rawPayload = {
-    idDoctor: this.idDoctor(),
-    idConsultorio: this.idConsultorio(),
-    idPatient: this.idPatient(),
-    expedienteId: this.expedienteId(),
-    painIntensityEva: this.painIntensityEva(),
-    functionalActivities: this.functionalActivities(),
-    treatmentAdherence: this.treatmentAdherence(),
-    newSymptoms: this.newSymptoms(),
-    softTissueState: this.softTissueState(),
-    rangeOfMotion: this.rangeOfMotion(),
-    stabilityAndStrength: this.stabilityAndStrength(),
-    neurovascularState: this.neurovascularState(),
-    attachedImagesUrls: attachedImagesUrls,
-    pharmacologicalModification: this.modificacionFarmacologica(),
-    rehabilitationProgression: this.progresionRehabilitacion(),
-    nextAppointmentRemoval: this.retiroProximaCita(),
-    medicalSummary: this.resumenMedico()
-  };
-
-  // Cifrar con la llave AES de tu entorno
-  const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(rawPayload), this.ENCRYPTION_KEY).toString();
-
-  const headers = new HttpHeaders({
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${jwtToken}`,
-    'x-app-signature': this.APP_SECRET_HEADER,
-    'x-client-source': 'angular'
-  });
-
-  const urlSave = 'https://savepatientfollowup-o7vmreizjq-uc.a.run.app';
-
-  this.http.post<any>(urlSave, { encryptedData }, { headers }).subscribe({
-    next: (res) => {
-      this.isSaving.set(false);
-      if (res && res.encryptedData) {
-        alert('¡Consulta de seguimiento guardada y expediente actualizado con éxito!');
-        this.volverAlListado();
-      } else {
-        alert('Error al registrar el seguimiento.');
-      }
-    },
-    error: (err) => {
-      this.isSaving.set(false);
-      console.error('Error guardando seguimiento:', err);
-      alert('Ocurrió un error de red al intentar guardar el seguimiento.');
+  saveFollowupRecord() {
+    const pendingUploads = this.uploadedFiles().some(f => f.uploading);
+    if (pendingUploads) {
+      alert('Hay archivos terminando de subirse al servidor. Por favor espera un momento.');
+      return;
     }
-  });
-}
+
+    const sessionData = this.authService.getSession();
+    const jwtToken = sessionData?.sessionToken;
+
+    if (!jwtToken) {
+      alert('Sesión expirada. Inicia sesión nuevamente.');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.isSaving.set(true);
+    this.saveSuccess.set(false);
+
+    const attachedImagesUrls = [
+      ...this.imagesUrls(),
+      ...this.documentsUrls(),
+      ...this.videosUrls()
+    ];
+
+    const rawPayload = {
+      idDoctor: this.idDoctor(),
+      idConsultorio: this.idConsultorio(),
+      idPatient: this.idPatient(),
+      expedienteId: this.expedienteId(),
+      painIntensityEva: this.painIntensityEva(),
+      functionalActivities: this.functionalActivities(),
+      treatmentAdherence: this.treatmentAdherence(),
+      newSymptoms: this.newSymptoms(),
+      // Nuevos campos incluidos en el payload
+      dispositivosApoyo: this.dispositivosApoyo(),
+      toleranciaMedicamentos: this.toleranciaMedicamentos(),
+      softTissueState: this.softTissueState(),
+      rangeOfMotion: this.rangeOfMotion(),
+      stabilityAndStrength: this.stabilityAndStrength(),
+      neurovascularState: this.neurovascularState(),
+      // Nuevo campo incluido en el payload
+      banderasRojas: this.banderasRojas(),
+      attachedImagesUrls: attachedImagesUrls,
+      pharmacologicalModification: this.modificacionFarmacologica(),
+      rehabilitationProgression: this.progresionRehabilitacion(),
+      nextAppointmentRemoval: this.retiroProximaCita(),
+      medicalSummary: this.resumenMedico()
+    };
+
+    const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(rawPayload), this.ENCRYPTION_KEY).toString();
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${jwtToken}`,
+      'x-app-signature': this.APP_SECRET_HEADER,
+      'x-client-source': 'angular'
+    });
+
+    const urlSave = 'https://savepatientfollowup-o7vmreizjq-uc.a.run.app';
+
+    this.http.post<any>(urlSave, { encryptedData }, { headers }).subscribe({
+      next: (res) => {
+        this.isSaving.set(false);
+
+        if (res && res.encryptedData) {
+          this.saveSuccess.set(true);
+
+          setTimeout(() => {
+            this.volverAlListado();
+          }, 1200);
+        } else {
+          alert('Error al registrar el seguimiento.');
+        }
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        this.saveSuccess.set(false);
+        console.error('Error guardando seguimiento:', err);
+        alert('Ocurrió un error de red al intentar guardar el seguimiento.');
+      }
+    });
+  }
 
   ngOnDestroy() {
     clearInterval(this.timer);

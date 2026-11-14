@@ -1,6 +1,6 @@
-import { Component, signal, OnDestroy, inject, computed, OnInit } from '@angular/core';
+import { Component, signal, OnDestroy, inject, computed, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router';
 import CryptoJS from 'crypto-js';
@@ -8,7 +8,7 @@ import { AuthService } from '../../../../auth/auth.service';
 import {
   LucideAngularModule, Activity, ShieldCheck, FileText, Stethoscope,
   ImageIcon, Calendar, Clock, ChevronRight, Mic, MicOff, Pause, Play, Square, X, CheckCircle2, Upload, AlertCircle, Sparkles, ArrowLeft,
-  Smile, ShieldAlert, Sparkle, FileSpreadsheet, FileCode
+  Smile, ShieldAlert, Sparkle, FileSpreadsheet, FileCode, User, Box, Check
 } from 'lucide-angular';
 
 interface UploadedFileItem {
@@ -23,17 +23,19 @@ interface UploadedFileItem {
 @Component({
   selector: 'app-odontology-followup',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: 'odontology-followup.component.html'
 })
 export class OdontologyFollowupComponent implements OnDestroy, OnInit {
   readonly icons = {
-    Activity, ShieldCheck, FileText, Stethoscope,
+    Activity, ShieldCheck, FileText, Stethoscope, User, Box, Check,
     ImageIcon, Calendar, Clock, ChevronRight, Mic, MicOff, Pause, Play, Square, X, CheckCircle2, Upload, AlertCircle, Sparkles,
     ArrowLeft, Smile, ShieldAlert, Sparkle, FileSpreadsheet, FileCode
   };
 
   authService = inject(AuthService);
+  private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -46,34 +48,149 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
   idPatient = signal('');
   expedienteId = signal('');
 
-  // Tipo de tratamiento seleccionado para adaptar dinámicamente los campos
+  recordForm: FormGroup;
+  activeTab = signal<string>('seguimiento');
+  selectedTooth = signal<number | null>(null);
+
+  // Las 4 pestañas definidas
+  tabs = [
+    { id: 'seguimiento', name: 'Seguimiento y Evolución', icon: Stethoscope },
+    { id: 'habitos', name: 'Hábitos de Higiene', icon: FileText },
+    { id: 'odontograma', name: 'Examen Odontograma', icon: Activity },
+    { id: 'infografia', name: 'Infografía 3D', icon: Box }
+  ];
+
+  // --- LÓGICA DE MODELOS 3D DENTAL ---
+  isLoadingModel = signal<boolean>(true);
+  selectedModelId = signal<string>('diente-1');
+  modelOpacity = signal<number>(1);
+
+  dentalModels = [
+    {
+      id: 'diente-1',
+      name: 'ANATOMIA MUELA',
+      description: 'Anatomía coronal y radicular',
+      thumbnail: 'assets/dientes/modelo_muela1.png',
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2FDIENTE_CAPAS.glb?alt=media&token=9e5d852a-eca0-41b3-bd11-e2d77589fd37'
+    },
+    {
+      id: 'diente-2',
+      name: 'ANATOMIA DIENTE',
+      description: 'Pieza unirradicular de soporte',
+      thumbnail: 'assets/dientes/modelo_muela2.png',
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2FMUELA_INTERIOR.glb?alt=media&token=d72ee6ce-1f6a-412e-bfc9-6d47e7318ba5'
+    },
+    {
+      id: 'diente-3',
+      name: 'MODELO DENTADURA',
+      description: 'Estructura multirradicular y cúspides',
+      thumbnail: 'assets/dientes/dentadura.png',
+      src: 'https://firebasestorage.googleapis.com/v0/b/clinq-go.firebasestorage.app/o/gbl%2FDENTADURA_MODELO_BLANCO.glb?alt=media&token=d4c335fb-9347-48b8-8ed9-92738790e95d'
+    }
+  ];
+
+  activeDentalModel = computed(() => {
+    return this.dentalModels.find(m => m.id === this.selectedModelId()) || this.dentalModels[0];
+  });
+
+  selectModel(id: string) {
+    if (this.selectedModelId() !== id) {
+      this.isLoadingModel.set(true);
+      this.selectedModelId.set(id);
+      this.modelOpacity.set(1);
+    }
+  }
+
+  onModelLoaded() {
+    this.isLoadingModel.set(false);
+  }
+
+  onModelError(event: any) {
+    this.isLoadingModel.set(false);
+    console.error('Error detallado de model-viewer:', event);
+  }
+
+  toggleExpand() {
+    console.log('Ampliar visor 3D');
+  }
+
+  // Estatus de piezas dentales
+  toothStatuses: { [key: string]: { label: string; colorClass: string; bgClass: string } } = {
+    sano: { label: 'Sano', colorClass: 'border-zinc-700', bgClass: 'bg-zinc-800/90' },
+    resina: { label: 'Resina', colorClass: 'border-blue-500', bgClass: 'bg-blue-500/25 text-blue-400' },
+    extraccion: { label: 'Extracción', colorClass: 'border-rose-500', bgClass: 'bg-rose-500/25 text-rose-400' },
+    limpieza: { label: 'Limpieza', colorClass: 'border-emerald-500', bgClass: 'bg-emerald-500/25 text-emerald-400' },
+    blanqueamiento: { label: 'Blanqueamiento', colorClass: 'border-amber-500', bgClass: 'bg-amber-500/25 text-amber-400' }
+  };
+  toothStatusMap = signal<{ [key: number]: string }>({});
+
+  ToothStatus(pieza: number) {
+    const statusKey = this.toothStatusMap()[pieza] || 'sano';
+    return this.toothStatuses[statusKey];
+  }
+
+  cycleToothStatus(pieza: number) {
+    const statuses = ['', 'resina', 'extraccion', 'limpieza', 'blanqueamiento'];
+    const currentVal = this.toothStatusMap()[pieza] || '';
+    const currentIndex = statuses.indexOf(currentVal);
+    const nextIndex = (currentIndex + 1) % statuses.length;
+    const nextStatus = statuses[nextIndex];
+
+    this.recordForm.get(`pieza_${pieza}`)?.setValue(nextStatus);
+
+    const currentMap = { ...this.toothStatusMap() };
+    if (!nextStatus) {
+      delete currentMap[pieza];
+    } else {
+      currentMap[pieza] = nextStatus;
+    }
+    this.toothStatusMap.set(currentMap);
+    this.selectedTooth.set(pieza);
+  }
+
+  onStatusSelectChange(pieza: number, event: any) {
+    const val = event.target.value;
+    const currentMap = { ...this.toothStatusMap() };
+    if (!val) {
+      delete currentMap[pieza];
+    } else {
+      currentMap[pieza] = val;
+    }
+    this.toothStatusMap.set(currentMap);
+    this.selectedTooth.set(pieza);
+  }
+
+  getToothImage(pieza: number): string {
+    const tipo = pieza % 10;
+    if (tipo === 1 || tipo === 2) return '/assets/dientes/incisivo.png';
+    if (tipo === 3) return '/assets/dientes/canino.png';
+    if (tipo === 4 || tipo === 5) return '/assets/dientes/premolar.png';
+    return '/assets/dientes/molar.png';
+  }
+
+  // Tipo de tratamiento seleccionado
   selectedTreatmentType = signal<string>('general');
 
-  // Formulario - Sección 1
+  // Formulario de Evolución y Seguimiento
   dentalPainLevel = signal('Sin dolor / Confortable (EVA 0)');
   orthodonticComfort = signal('');
   hygieneAndHabits = signal('');
   newDentalSymptoms = signal('');
 
-  // Formulario - Sección 2
   gingivalAndPeriodontalState = signal('');
   applianceAndBracketStatus = signal('');
   enamelAndRestorationState = signal('');
   occlusionAndBiteState = signal('');
 
-  // Formulario - Sección 3: Archivos y Multimedia
   uploadedFiles = signal<UploadedFileItem[]>([]);
-
   imagesUrls = computed(() => this.uploadedFiles().filter(f => f.type === 'image' && !f.uploading && !f.error).map(f => ({ name: f.name, url: f.url, type: 'image' })));
   documentsUrls = computed(() => this.uploadedFiles().filter(f => f.type === 'document' && !f.uploading && !f.error).map(f => ({ name: f.name, url: f.url, type: 'document' })));
   videosUrls = computed(() => this.uploadedFiles().filter(f => f.type === 'video' && !f.uploading && !f.error).map(f => ({ name: f.name, url: f.url, type: 'video' })));
 
-  // Formulario - Sección 4
   ajusteArcoOrtodoncia = signal('');
   procedimientoRealizado = signal('');
   recomendacionesProximaCita = signal('');
 
-  // Formulario - Sección 5: Resumen Médico / IA
   resumenMedico = signal('');
   isGeneratingAI = signal(false);
   resumenGeneradoIA = signal<string>('');
@@ -89,6 +206,20 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
   private finalTranscriptBeforePause = '';
 
   constructor() {
+    this.recordForm = this.fb.group({
+      frecuenciaCepillado: [''],
+      usaHiloDental: [false],
+      bruxism: [false],
+      muerdeDedos: [false],
+      muerdeLengua: [false],
+      muerdeLabios: [false],
+      muerdeUnias: [false],
+      muerdeObjetos: [false],
+      pieza_11: [''], pieza_12: [''], pieza_13: [''], pieza_14: [''], pieza_15: [''], pieza_16: [''], pieza_17: [''], pieza_18: [''],
+      pieza_21: [''], pieza_22: [''], pieza_23: [''], pieza_24: [''], pieza_25: [''], pieza_26: [''], pieza_27: [''], pieza_28: [''],
+      pieza_31: [''], pieza_32: [''], pieza_33: [''], pieza_34: [''], pieza_35: [''], pieza_36: [''], pieza_37: [''], pieza_38: [''],
+      pieza_41: [''], pieza_42: [''], pieza_43: [''], pieza_44: [''], pieza_45: [''], pieza_46: [''], pieza_47: [''], pieza_48: ['']
+    });
     this.initSpeechRecognition();
   }
 
@@ -99,8 +230,7 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
 
     this.idDoctor.set(sanitizedDoctorId);
     const defaultOffice = this.authService.getSucursal();
-    this.idConsultorio.set(defaultOffice.idConsultorio || 'consultorio_general');
-    console.log(this.idConsultorio)
+    this.idConsultorio.set(defaultOffice?.idConsultorio || 'consultorio_general');
 
     this.route.paramMap.subscribe(params => {
       const safeUrlId = params.get('id');
@@ -237,8 +367,7 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
                 const secureReadUrl = decryptedResponse.readUrl || decryptedResponse.publicUrl;
                 this.updateFileSuccess(file.name, secureReadUrl);
               },
-              error: (err) => {
-                console.error('Error subiendo archivo dental:', err);
+              error: () => {
                 this.updateFileError(file.name);
               }
             });
@@ -322,7 +451,6 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
     this.isRecordingPaused.set(false);
   }
 
-  // Procesamiento con IA para estructurar notas dentales y llenar campos automáticamente
   generarResumenMedicoIA() {
     const textoDictado = this.resumenMedico().trim();
     if (!textoDictado) return;
@@ -333,7 +461,6 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
     const urlCloudFunction = 'https://generatemedicalsummary-fjo7ia7ora-uc.a.run.app';
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-    // Enviando especialidad hardcodeada "Odontología" y el motivo de consulta desde las cards (selectedTreatmentType)
     const bodyPayload = {
       texto: textoDictado,
       especiality: 'Odontología',
@@ -347,19 +474,10 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
           const info = response.data;
           let htmlLimpio = (info.resumenHtml || '').replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim();
 
-          // Autocompletado robusto mapeando las propiedades exactas que retorna la Cloud Function
-          if (info.evolucionYAdaptacionGeneral) {
-            this.orthodonticComfort.set(info.evolucionYAdaptacionGeneral);
-          }
-          if (info.habitosDeHigieneYUsoDeAuxiliares) {
-            this.hygieneAndHabits.set(info.habitosDeHigieneYUsoDeAuxiliares);
-          }
-          if (info.sintomasEspecificosOHallazgosReportados) {
-            this.newDentalSymptoms.set(info.sintomasEspecificosOHallazgosReportados);
-          }
-          if (info.estadoGingivalYPeriodontal) {
-            this.gingivalAndPeriodontalState.set(info.estadoGingivalYPeriodontal);
-          }
+          if (info.evolucionYAdaptacionGeneral) this.orthodonticComfort.set(info.evolucionYAdaptacionGeneral);
+          if (info.habitosDeHigieneYUsoDeAuxiliares) this.hygieneAndHabits.set(info.habitosDeHigieneYUsoDeAuxiliares);
+          if (info.sintomasEspecificosOHallazgosReportados) this.newDentalSymptoms.set(info.sintomasEspecificosOHallazgosReportados);
+          if (info.estadoGingivalYPeriodontal) this.gingivalAndPeriodontalState.set(info.estadoGingivalYPeriodontal);
           if (info.estadoDeBracketsArcosYLigas || info.tonoDentalYEstadoDelEsmalte || info.estadoDelAlveoloYCicatrizacion) {
             this.applianceAndBracketStatus.set(
               info.estadoDeBracketsArcosYLigas ||
@@ -367,21 +485,11 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
               info.estadoDelAlveoloYCicatrizacion || ''
             );
           }
-          if (info.esmalteLimpiezaYRestauracionesPrevias) {
-            this.enamelAndRestorationState.set(info.esmalteLimpiezaYRestauracionesPrevias);
-          }
-          if (info.oclusionMordidaYPiezasInvolucradas) {
-            this.occlusionAndBiteState.set(info.oclusionMordidaYPiezasInvolucradas);
-          }
-          if (info.tecnicaQuirurgicaYSutura) {
-            this.ajusteArcoOrtodoncia.set(info.tecnicaQuirurgicaYSutura);
-          }
-          if (info.procedimientoRealizadoHoy) {
-            this.procedimientoRealizado.set(info.procedimientoRealizadoHoy);
-          }
-          if (info.indicacionesYProximaCita) {
-            this.recomendacionesProximaCita.set(info.indicacionesYProximaCita);
-          }
+          if (info.esmalteLimpiezaYRestauracionesPrevias) this.enamelAndRestorationState.set(info.esmalteLimpiezaYRestauracionesPrevias);
+          if (info.oclusionMordidaYPiezasInvolucradas) this.occlusionAndBiteState.set(info.oclusionMordidaYPiezasInvolucradas);
+          if (info.tecnicaQuirurgicaYSutura) this.ajusteArcoOrtodoncia.set(info.tecnicaQuirurgicaYSutura);
+          if (info.procedimientoRealizadoHoy) this.procedimientoRealizado.set(info.procedimientoRealizadoHoy);
+          if (info.indicacionesYProximaCita) this.recomendacionesProximaCita.set(info.indicacionesYProximaCita);
 
           this.resumenGeneradoIA.set(htmlLimpio);
         } else {
@@ -395,13 +503,30 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
     });
   }
 
+  // --- BOTONES DE GUARDADO INDEPENDIENTES POR CADA TAB ---
+
   saveFollowupRecord() {
     const pendingUploads = this.uploadedFiles().some(f => f.uploading);
     if (pendingUploads) {
       alert('Hay archivos terminando de subirse al servidor. Por favor espera un momento.');
       return;
     }
+    this.enviarDatosAlServidor({ tipoRegistro: 'seguimiento' });
+  }
 
+  saveHabitsRecord() {
+    this.enviarDatosAlServidor({ tipoRegistro: 'habitos' });
+  }
+
+  saveOdontogramRecord() {
+    this.enviarDatosAlServidor({ tipoRegistro: 'odontograma' });
+  }
+
+  saveInfographicRecord() {
+    alert('¡Registro de infografía 3D guardado correctamente!');
+  }
+
+  private enviarDatosAlServidor(extraInfo: any) {
     const sessionData = this.authService.getSession();
     const jwtToken = sessionData?.sessionToken;
 
@@ -418,6 +543,12 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
       ...this.documentsUrls(),
       ...this.videosUrls()
     ];
+
+    const formValues = this.recordForm.value;
+    const odontogram: { [key: string]: string } = {};
+    for (let p of [11,12,13,14,15,16,17,18,21,22,23,24,25,26,27,28,31,32,33,34,35,36,37,38,41,42,43,44,45,46,47,48]) {
+      odontogram[`tooth_${p}`] = formValues[`pieza_${p}`] || '';
+    }
 
     const rawPayload = {
       especialidad: 'odontologia',
@@ -438,9 +569,21 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
       ajusteArcoOrtodoncia: this.ajusteArcoOrtodoncia(),
       procedimientoRealizado: this.procedimientoRealizado(),
       recomendacionesProximaCita: this.recomendacionesProximaCita(),
-      medicalSummary: this.resumenMedico()
+      medicalSummary: this.resumenMedico(),
+      odontograma: odontogram,
+      habitos: {
+        brushingFrequency: formValues.frecuenciaCepillado || '',
+        dentalFloss: formValues.usaHiloDental || false,
+        bruxism: formValues.bruxism || false,
+        bitesFingers: formValues.muerdeDedos || false,
+        bitesTongue: formValues.muerdeLengua || false,
+        bitesLips: formValues.muerdeLabios || false,
+        bitesNails: formValues.muerdeUnias || false,
+        bitesObjects: formValues.muerdeObjetos || false
+      },
+      ...extraInfo
     };
-  console.log('Response desencriptado del servidor:', rawPayload);
+
     const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(rawPayload), this.ENCRYPTION_KEY).toString();
 
     const headers = new HttpHeaders({
@@ -452,21 +595,16 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
 
     const urlSave = 'https://savepatientfollowup-o7vmreizjq-uc.a.run.app';
 
-   this.http.post<any>(urlSave, { encryptedData }, { headers }).subscribe({
+    this.http.post<any>(urlSave, { encryptedData }, { headers }).subscribe({
       next: (res) => {
         this.isSaving.set(false);
         if (res && res.encryptedData) {
           try {
-            // 🔓 Desencriptar el response recibido del servidor
             const bytes = CryptoJS.AES.decrypt(res.encryptedData, this.ENCRYPTION_KEY);
             const decryptedResponse = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
-            // 📊 Log del response desencriptado
-            console.log('Response desencriptado del servidor:', decryptedResponse);
-
             if (decryptedResponse.success) {
-              alert('¡Seguimiento odontológico guardado y expediente actualizado con éxito!');
-              this.volverAlListado();
+              alert('¡Datos guardados con éxito!');
             } else {
               alert(`Error del servidor: ${decryptedResponse.error || 'Desconocido'}`);
             }
@@ -475,13 +613,12 @@ export class OdontologyFollowupComponent implements OnDestroy, OnInit {
             alert('El servidor respondió pero ocurrió un error al procesar la respuesta.');
           }
         } else {
-          console.warn('Respuesta vacía o sin encryptedData:', res);
-          alert('Error al registrar el seguimiento dental.');
+          alert('Error al registrar la información.');
         }
       },
       error: (err) => {
         this.isSaving.set(false);
-        console.error('Error guardando seguimiento dental:', err);
+        console.error('Error guardando datos:', err);
         alert('Ocurrió un error de red al intentar guardar.');
       }
     });

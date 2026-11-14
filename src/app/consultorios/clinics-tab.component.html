@@ -180,9 +180,22 @@
                     <p class="text-[11px] text-zinc-400 flex items-center gap-1">
                       <lucide-icon [img]="icons.MapPin" class="w-3 h-3"></lucide-icon> {{ c.address || 'Sin dirección' }}, {{ c.city || 'Sin ciudad' }}
                     </p>
-                    <div class="flex items-center gap-4 pt-1 text-[10px] text-zinc-400 font-bold">
+
+                    <div class="flex flex-wrap items-center gap-4 pt-1 text-[10px] text-zinc-400 font-bold">
                       <span class="flex items-center gap-1"><lucide-icon [img]="icons.Users" class="w-3 h-3 text-emerald-400"></lucide-icon> {{ c.totalPatients }} Pacientes</span>
                       <span class="flex items-center gap-1"><lucide-icon [img]="icons.Stethoscope" class="w-3 h-3 text-blue-400"></lucide-icon> {{ c.totalDoctors }} Médicos</span>
+
+                      <!-- INDICADOR DE NIP DE SUCURSAL (Asignado automáticamente por backend) -->
+                      @if (c.codigoConsultorio && c.codigoConsultorio.trim() !== '') {
+                        <span class="flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-600 text-amber-50
+                         border-amber-500/20">
+                          <lucide-icon [img]="icons.KeyRound" class="w-3 h-3"></lucide-icon> NIP: {{ c.codigoConsultorio }}
+                        </span>
+                      } @else {
+                        <span class="flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-500/10 text-zinc-400 border border-zinc-500/20">
+                          <lucide-icon [img]="icons.KeyRound" class="w-3 h-3"></lucide-icon> No tiene asignado NIP
+                        </span>
+                      }
                     </div>
                   </div>
 

@@ -1,6 +1,6 @@
 <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6 sm:p-8 rounded-3xl shadow-2xl space-y-8 transition-colors duration-300 relative">
 
-  <!-- Encabezado y Selector de Ciclo de Facturación -->
+  <!-- Encabezado -->
   <div class="flex flex-col md:flex-row justify-between items-center gap-6 pb-6 border-b border-[var(--border-color)]">
     <div class="space-y-1 text-center md:text-left">
       <div class="flex items-center justify-center md:justify-start gap-2">
@@ -9,244 +9,159 @@
       <h2 class="text-2xl font-black text-[var(--text-main)]">Plan y Beneficios del Sistema</h2>
       <p class="text-xs text-[var(--text-muted)]">Selecciona tu modalidad de pago y potencia tu consultorio al máximo.</p>
     </div>
-
-    <!-- Pestañas de Periodicidad -->
-    <div class="flex items-center p-1 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl shadow-inner flex-wrap justify-center">
-      <button (click)="billingCycle.set('mensual')"
-              [class.bg-[var(--accent-color)]]="billingCycle() === 'mensual'"
-              [class.text-white]="billingCycle() === 'mensual'"
-              [class.text-[var(--text-muted)]]="billingCycle() !== 'mensual'"
-              class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer">
-        Mensual
-      </button>
-      <button (click)="billingCycle.set('trimestral')"
-              [class.bg-[var(--accent-color)]]="billingCycle() === 'trimestral'"
-              [class.text-white]="billingCycle() === 'trimestral'"
-              [class.text-[var(--text-muted)]]="billingCycle() !== 'trimestral'"
-              class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer">
-        Trimestral
-      </button>
-      <button (click)="billingCycle.set('semestral')"
-              [class.bg-[var(--accent-color)]]="billingCycle() === 'semestral'"
-              [class.text-white]="billingCycle() === 'semestral'"
-              [class.text-[var(--text-muted)]]="billingCycle() !== 'semestral'"
-              class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer">
-        Semestral
-      </button>
-      <button (click)="billingCycle.set('anual')"
-              [class.bg-[var(--accent-color)]]="billingCycle() === 'anual'"
-              [class.text-white]="billingCycle() === 'anual'"
-              [class.text-[var(--text-muted)]]="billingCycle() !== 'anual'"
-              class="px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer relative">
-        Anual <span class="absolute -top-2 -right-2 bg-emerald-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">Ahorra 15%</span>
-      </button>
-    </div>
   </div>
 
-  <!-- TARJETAS PRINCIPALES: PLAN ÚNICO + CRÉDITOS DE IA -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-
-    <!-- PLAN ÚNICO PRO -->
-    <div (click)="selectTier('pro')"
-         [class.border-2]="selectedPlanTier() === 'pro'"
-         [class.border-[var(--accent-color)]]="true"
-         class="bg-[var(--bg-primary)] rounded-3xl p-6 flex flex-col justify-between space-y-6 relative transition-all cursor-pointer shadow-lg shadow-blue-500/10 group">
-      <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--accent-color)] text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow">
-        Plan Todo Incluido
-      </div>
-      <div class="space-y-3 pt-2">
-        <div class="flex justify-between items-center">
-          <h4 class="text-xs font-black uppercase tracking-wider text-[var(--accent-color)]">Plan Pro Médico</h4>
-          <span class="w-5 h-5 rounded-full bg-[var(--accent-color)] flex items-center justify-center text-white">
-            <lucide-icon [img]="Check" class="w-3 h-3"></lucide-icon>
-          </span>
-        </div>
-        <div class="flex items-baseline gap-1">
-          <span class="text-3xl font-black text-[var(--text-main)]">${{ calculatedPrices().pro | number }}</span>
-          <span class="text-[10px] text-[var(--text-muted)] font-bold">MXN</span>
-        </div>
-        <p class="text-[10px] text-[var(--text-muted)] leading-relaxed">{{ tierDefinitions.pro.description }}</p>
-      </div>
-
-      <div class="space-y-3 pt-4 border-t border-[var(--border-color)]">
-        <div class="text-[10px] font-bold text-[var(--accent-color)] flex items-center gap-1">
-          <span>Incluye 100 min gratis de transcripción e IA</span>
-        </div>
-        <button (click)="abrirSuscripcion('pro', $event)" class="w-full py-2.5 rounded-xl bg-[var(--accent-color)] hover:opacity-90 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 cursor-pointer">
-          Suscribirse al Plan
-        </button>
-      </div>
+  <!-- LOADER MIENTRAS CARGAN LAS SUSCRIPCIONES -->
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center py-16 space-y-3">
+      <lucide-icon [img]="Loader2" class="w-8 h-8 text-[var(--accent-color)] animate-spin"></lucide-icon>
+      <p class="text-xs font-bold text-[var(--text-muted)]">Cargando planes y suscripciones...</p>
     </div>
+  } @else {
 
-    <!-- TARJETA EXCLUSIVA: CRÉDITOS EXTRA DE IA Y TRANSCRIPCIÓN (LÍNEAS DELGADAS) -->
-    <div (click)="abrirModalIa($event)"
-         class="bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-[var(--accent-color)] rounded-3xl p-6 flex flex-col justify-between space-y-6 relative transition-all shadow-sm cursor-pointer group">
+    <!-- CARRUSEL HORIZONTAL DE TARJETAS (Con overflow visible y padding superior para el badge) -->
+    <div class="flex overflow-x-auto overflow-y-visible snap-x snap-mandatory pb-4 pt-3 gap-6 scrollbar-thin scrollbar-thumb-[var(--border-color)]">
+      @for (sub of subscriptions(); track sub.idSuscription) {
+        @let statusInfo = getSubscriptionStatus(sub.idSuscription);
+        @let isSelected = selectedPlanId() === sub.idSuscription;
+        @let isOneTime = sub.type === 2;
 
-      <div class="space-y-4">
-        <!-- Layout Header Nexus IA (Ajustado con trazos finos) -->
-        <div class="relative inline-block py-1 px-3">
-          <svg class="absolute inset-0 w-full h-full overflow-visible pointer-events-none" viewBox="0 0 440 60" preserveAspectRatio="none">
-            <defs>
-              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-            <path class="animate-nexus-1" fill="none" stroke="rgba(20, 110, 255, 1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.15" />
-            <path class="animate-nexus-2" fill="none" stroke="rgba(10, 194, 255, 1)" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.25" />
-            <path class="animate-nexus-3" fill="none" stroke="rgba(71, 158, 255, 1)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.40" />
-            <path class="animate-nexus-4" fill="none" stroke="rgba(10, 194, 255, 1)" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.70" />
-            <path class="animate-nexus-5" fill="none" stroke="rgba(20, 110, 255, 1)" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.90" />
-          </svg>
-          <div class="relative z-10 px-2 py-1 flex items-center gap-3">
-            <div class="w-8 h-8 flex items-center justify-center shrink-0 relative p-0.5">
-              <img src="assets/logo_nexus.png" alt="Logo IA" class="w-full h-full object-contain">
-              <div class="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[7px] font-black px-1 py-0.2 rounded border border-white shadow-sm">
-                ✨IA
+        <div (click)="selectPlan(sub.idSuscription)"
+             class="min-w-[300px] sm:min-w-[340px] max-w-[360px] flex-shrink-0 snap-start bg-[var(--bg-primary)] rounded-3xl p-6 flex flex-col justify-between space-y-6 relative transition-all cursor-pointer shadow-lg group border-2"
+             [class.border-amber-500]="isOneTime && (isSelected || statusInfo.actionType === 'current')"
+             [class.border-[var(--accent-color)]]="!isOneTime && (isSelected || statusInfo.actionType === 'current')"
+             [class.border-[var(--border-color)]]="!isSelected && statusInfo.actionType !== 'current'">
+
+          <!-- Banda de oferta exclusiva para Pago Único (Type 2) -->
+          @if (isOneTime) {
+            <div class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-4 py-1 rounded-bl-2xl shadow z-10">
+              ⚡ Pago Único / Oferta
+            </div>
+          }
+
+          <!-- 🌟 Badge de Plan Activo centrado y sin cortes -->
+          @if (statusInfo.actionType === 'current') {
+            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[var(--accent-color)] text-white text-[9px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full shadow-md z-20 whitespace-nowrap">
+              Plan Activo
+            </div>
+          }
+
+          <div class="space-y-3 pt-2">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black uppercase tracking-wider"
+                  [class.text-amber-500]="isOneTime"
+                  [class.text-[var(--accent-color)]]="!isOneTime">
+                {{ sub.title || 'Plan Médico' }}
+              </h4>
+              <span class="w-5 h-5 rounded-full flex items-center justify-center text-white"
+                  [class.bg-amber-500]="isSelected && isOneTime"
+                  [class.bg-[var(--accent-color)]]="isSelected && !isOneTime"
+                  [class.border]="!isSelected"
+                  [class.border-[var(--border-color)]]="!isSelected">
+                @if (isSelected) {
+                  <lucide-icon [img]="Check" class="w-3 h-3"></lucide-icon>
+                }
+              </span>
+            </div>
+
+            <div class="flex items-baseline gap-1">
+              <span class="text-3xl font-black text-[var(--text-main)]">${{ sub.price || 0 | number }}</span>
+              <span class="text-[10px] text-[var(--text-muted)] font-bold">{{ isOneTime ? 'MXN (Único)' : 'MXN' }}</span>
+            </div>
+
+            <p class="text-[10px] text-[var(--text-muted)] leading-relaxed">{{ sub.description }}</p>
+          </div>
+
+          <!-- VISTA PREVIA: Muestra un máximo de 5 beneficios directos en la Card -->
+          <div class="space-y-2 pt-2 border-t border-[var(--border-color)]">
+            @if (sub.benefits && sub.benefits.length > 0) {
+              <div class="space-y-1">
+                @for (benefit of sub.benefits | slice:0:5; track benefit) {
+                  <div class="flex items-center gap-2 text-[10px] text-[var(--text-main)]">
+                    <lucide-icon [img]="CheckCircle2" class="w-3.5 h-3.5 text-emerald-500 shrink-0"></lucide-icon>
+                    <span>{{ benefit }}</span>
+                  </div>
+                }
               </div>
-            </div>
-            <div>
-              <h3 class="text-xs font-black tracking-tight leading-tight" style="color: var(--text-main);">Nexus IA</h3>
-              <p class="text-[10px] font-medium leading-tight" style="color: var(--text-muted);">Asistente clínico inteligente</p>
-            </div>
+            }
+          </div>
+
+          <!-- SECCIÓN DE ACCIÓN (Botón o texto de plan actual limpio) -->
+          <div class="space-y-3 pt-4 border-t border-[var(--border-color)]">
+            @if (statusInfo.actionType === 'current') {
+              <div class="w-full py-2.5 text-center text-xs font-black uppercase tracking-wider text-[var(--accent-color)] select-none">
+                {{ statusInfo.label }}
+              </div>
+            } @else {
+              <button (click)="abrirSuscripcion(sub, $event)"
+                      [disabled]="isSubscribing()"
+                      [class.opacity-60]="isSubscribing()"
+                      [class.cursor-not-allowed]="isSubscribing()"
+                      [class.bg-emerald-600]="statusInfo.actionType === 'renew'"
+                      [class.bg-amber-500]="statusInfo.actionType !== 'renew' && isOneTime"
+                      [class.bg-[var(--accent-color)]]="statusInfo.actionType !== 'renew' && !isOneTime"
+                      class="w-full py-2.5 rounded-xl hover:opacity-90 text-white font-bold text-xs transition-all shadow-md cursor-pointer flex items-center justify-center gap-2">
+
+                @if (isSubscribing() && subscribingPlanId() === sub.idSuscription) {
+                  <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin"></lucide-icon>
+                  <span>Generando pago...</span>
+                } @else {
+                  <span>{{ statusInfo.label }}</span>
+                }
+              </button>
+            }
           </div>
         </div>
+      }
+    </div>
 
-        <div class="flex items-baseline gap-1">
-          <span class="text-3xl font-black text-[var(--text-main)]">$199</span>
-          <span class="text-[10px] text-[var(--text-muted)] font-bold">MXN / 100 min extra</span>
+    <!-- SECCIÓN INFERIOR: DETALLE COMPLETO DE BENEFICIOS DEL PLAN SELECCIONADO -->
+    @if (selectedPlanId()) {
+      @let activePlan = subscriptions().find(s => s.idSuscription === selectedPlanId());
+      @if (activePlan) {
+        <div class="bg-[var(--bg-primary)] border p-6 rounded-2xl space-y-4 animate-in fade-in duration-300"
+             [class.border-amber-500/40]="activePlan.type === 2"
+             [class.border-[var(--accent-color)]/40]="activePlan.type !== 2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <lucide-icon [img]="Sparkles" class="w-4 h-4"
+                           [class.text-amber-500]="activePlan.type === 2"
+                           [class.text-[var(--accent-color)]]="activePlan.type !== 2"></lucide-icon>
+              <h3 class="text-xs font-black uppercase tracking-wider text-[var(--text-main)]">
+                Todos los beneficios de <span class="uppercase" [class.text-amber-500]="activePlan.type === 2" [class.text-[var(--accent-color)]]="activePlan.type !== 2">{{ activePlan.title }}</span>
+              </h3>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+            <!-- Todos los beneficios -->
+            @if (activePlan.benefits) {
+              @for (benefit of activePlan.benefits; track benefit) {
+                <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]">
+                  <lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></lucide-icon>
+                  <span>{{ benefit }}</span>
+                </div>
+              }
+            }
+            <!-- Todos los extras -->
+            @if (activePlan.extras) {
+              @for (extra of activePlan.extras; track extra) {
+                <div class="flex items-start gap-2.5 text-xs font-bold"
+                     [class.text-amber-500]="activePlan.type === 2"
+                     [class.text-[var(--accent-color)]]="activePlan.type !== 2">
+                  <lucide-icon [img]="Sparkles" class="w-4 h-4 shrink-0 mt-0.5"></lucide-icon>
+                  <span>{{ extra }}</span>
+                </div>
+              }
+            }
+          </div>
         </div>
-        <p class="text-[10px] text-[var(--text-muted)] leading-relaxed">Haz clic para conocer más sobre cómo la IA automatiza tus consultas y obtén minutos adicionales.</p>
-      </div>
+      }
+    }
 
-      <div class="space-y-3 pt-4 border-t border-[var(--border-color)]">
-        <div class="text-[10px] font-bold text-amber-500 flex items-center gap-1">
-          <span>Sin caducidad • Uso inmediato</span>
-        </div>
-        <button (click)="comprarCreditosIa($event)" class="w-full py-2.5 rounded-xl bg-[var(--border-color)] hover:bg-[var(--accent-color)] text-[var(--text-main)] hover:text-white font-bold text-xs transition-all cursor-pointer">
-          Comprar 100 Min Extra
-        </button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- SECCIÓN DE BENEFICIOS DEL PLAN ÚNICO -->
-  <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] p-6 rounded-2xl space-y-4">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <lucide-icon [img]="Sparkles" class="w-4 h-4 text-[var(--accent-color)]"></lucide-icon>
-        <h3 class="text-xs font-black uppercase tracking-wider text-[var(--text-main)]">
-          Todo lo que incluye tu <span class="text-[var(--accent-color)] uppercase">Plan Pro</span>
-        </h3>
-      </div>
-      <span class="text-[10px] font-bold text-[var(--text-muted)] bg-[var(--bg-secondary)] px-3 py-1 rounded-full border border-[var(--border-color)]">
-        {{ calculatedPrices().label }}
-      </span>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
-      <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]"><lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon><span>5,000 mensajes de campaña al mes</span></div>
-      <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]"><lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon><span>Recordatorios vía Email, Push, SMS y WhatsApp</span></div>
-      <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]"><lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon><span>100 Minutos Gratis de Transcripción e IA</span></div>
-      <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]"><lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon><span>Reservas en línea y Episodios clínicos</span></div>
-      <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]"><lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon><span>Máxima visibilidad en el directorio y Google</span></div>
-      <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]"><lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon><span>Menores comisiones en pagos en línea + Informes</span></div>
-      <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]"><lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon><span>Lista de espera y envíos masivos</span></div>
-      <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]"><lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon><span>Gestión integral de opiniones y reseñas</span></div>
-      <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]"><lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0"></lucide-icon><span>Hasta 5 consultorios presenciales + 1 online</span></div>
-    </div>
-  </div>
+  }
 
 </div>
-
-
-<!-- MODAL EXPLICATIVO DE RECARGA E IA -->
-@if (showAiModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in duration-200">
-
-      <!-- Botón cerrar -->
-      <button (click)="showAiModal.set(false)" class="absolute top-6 right-6 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer z-20">
-        <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
-      </button>
-
-      <!-- Layout Header Nexus IA en el Modal (Trazos finos) -->
-      <div class="relative inline-block py-1 px-3">
-        <svg class="absolute inset-0 w-full h-full overflow-visible pointer-events-none" viewBox="0 0 440 60" preserveAspectRatio="none">
-          <defs>
-            <filter id="glow-modal" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
-      <path class="animate-nexus-1" fill="none" stroke="rgba(20, 110, 255, 1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.15" />
-            <path class="animate-nexus-2" fill="none" stroke="rgba(10, 194, 255, 1)" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.25" />
-            <path class="animate-nexus-3" fill="none" stroke="rgba(71, 158, 255, 1)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.40" />
-            <path class="animate-nexus-4" fill="none" stroke="rgba(10, 194, 255, 1)" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.70" />
-            <path class="animate-nexus-5" fill="none" stroke="rgba(20, 110, 255, 1)" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.90" />  </svg>
-        <div class="relative z-10 px-2 py-1 flex items-center gap-3">
-          <div class="w-9 h-9 flex items-center justify-center shrink-0 relative p-0.5">
-            <img src="assets/logo_nexus.png" alt="Logo IA" class="w-full h-full object-contain">
-            <div class="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[7px] font-black px-1 py-0.2 rounded border border-white shadow-sm">
-              ✨IA
-            </div>
-          </div>
-          <div>
-            <h3 class="text-sm font-black tracking-tight leading-tight" style="color: var(--text-main);">Nexus IA</h3>
-            <p class="text-[10px] font-medium leading-tight text-[var(--accent-color)]">Potenciador Clínico Inteligente</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="space-y-1">
-        <h3 class="text-xl font-black text-[var(--text-main)]">¿Para qué sirven los minutos de IA?</h3>
-        <p class="text-xs text-[var(--text-muted)]">Ahorra horas de trabajo administrativo y concéntrate totalmente en tus pacientes.</p>
-      </div>
-
-      <!-- Beneficios detallados de la IA -->
-      <div class="space-y-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl p-4">
-        <div class="flex items-start gap-3 text-xs text-[var(--text-main)]">
-          <lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></lucide-icon>
-          <div>
-            <strong class="font-bold">Transcripción de textos de expediente y consulta:</strong>
-            <p class="text-[var(--text-muted)] text-[10px]">Convierte automáticamente la voz de la consulta en notas médicas precisas en tiempo real.</p>
-          </div>
-        </div>
-        <div class="flex items-start gap-3 text-xs text-[var(--text-main)]">
-          <lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></lucide-icon>
-          <div>
-            <strong class="font-bold">Resúmenes clínicos inteligentes:</strong>
-            <p class="text-[var(--text-muted)] text-[10px]">Genera historiales y resúmenes ejecutivos del paciente al instante.</p>
-          </div>
-        </div>
-        <div class="flex items-start gap-3 text-xs text-[var(--text-main)]">
-          <lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></lucide-icon>
-          <div>
-            <strong class="font-bold">Autollenado de expediente:</strong>
-            <p class="text-[var(--text-muted)] text-[10px]">Estructura de manera automática apartados complejos de diagnóstico y tratamiento.</p>
-          </div>
-        </div>
-        <div class="flex items-start gap-3 text-xs text-[var(--text-main)]">
-          <lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></lucide-icon>
-          <div>
-            <strong class="font-bold">Dictado ágil:</strong>
-            <p class="text-[var(--text-muted)] text-[10px]">Dicta tus notas sin teclear y ahorra horas de redacción al finalizar el día.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer del modal -->
-      <div class="flex items-center justify-between pt-2">
-        <span class="text-xs font-bold text-[var(--text-main)]">Paquete extra: <span class="text-[var(--accent-color)]">$199 MXN</span> (100 min)</span>
-        <button (click)="showAiModal.set(false); comprarCreditosIaFromModal()" class="px-5 py-2.5 rounded-xl bg-[var(--accent-color)] text-white font-bold text-xs hover:opacity-90 transition-all shadow-md shadow-blue-500/20 cursor-pointer">
-          Comprar Minutos Extra
-        </button>
-      </div>
-
-    </div>
-  </div>
-}
 
 
 <!-- MODAL DE CONFIRMACIÓN DE SUSCRIPCIÓN -->
@@ -260,62 +175,34 @@
       </button>
 
       <div class="space-y-2">
-        <span class="px-3 py-1 rounded-full bg-[var(--accent-color)]/10 text-[var(--accent-color)] text-[10px] font-black uppercase tracking-wider">Confirmar Suscripción</span>
-        <h3 class="text-xl font-black text-[var(--text-main)]">Plan Pro Médico Todo Incluido</h3>
-        <p class="text-xs text-[var(--text-muted)]">Acceso total a todas las herramientas avanzadas y 100 min de IA mensuales.</p>
+        <span class="px-3 py-1 rounded-full bg-[var(--accent-color)]/10 text-[var(--accent-color)] text-[10px] font-black uppercase tracking-wider">Confirmar Transacción</span>
+        <h3 class="text-xl font-black text-[var(--text-main)]">{{ selectedSubscriptionTier()?.title }}</h3>
+        <p class="text-xs text-[var(--text-muted)]">{{ selectedSubscriptionTier()?.description }}</p>
       </div>
 
-      <!-- Resumen de costos y modalidad -->
+      <!-- Resumen de costos -->
       <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl p-4 space-y-3">
-        <div class="flex justify-between items-center text-xs">
-          <span class="text-[var(--text-muted)]">Modalidad de pago:</span>
-          <span class="font-bold text-[var(--text-main)] uppercase">{{ calculatedPrices().cycleName }}</span>
-        </div>
-        <div class="flex justify-between items-center text-xs">
-          <span class="text-[var(--text-muted)]">Consultorios incluidos:</span>
-          <span class="font-bold text-[var(--text-main)]">5 presenciales + 1 online</span>
-        </div>
-        <div class="flex justify-between items-center text-xs">
-          <span class="text-[var(--text-muted)]">Transcripción e IA incluidos:</span>
-          <span class="font-bold text-[var(--text-main)]">100 min mensuales</span>
-        </div>
-        <div class="pt-3 border-t border-[var(--border-color)] flex justify-between items-center">
+        <div class="pt-3 flex justify-between items-center">
           <span class="text-xs font-black uppercase tracking-wider text-[var(--text-main)]">Total a pagar:</span>
-          <span class="text-2xl font-black text-[var(--accent-color)]">${{ calculatedPrices().pro | number }} <span class="text-xs text-[var(--text-muted)] font-normal">MXN</span></span>
+          <span class="text-2xl font-black text-[var(--accent-color)]">${{ selectedSubscriptionTier()?.price || 0 | number }} <span class="text-xs text-[var(--text-muted)] font-normal">MXN</span></span>
         </div>
       </div>
 
-      <!-- Botones de acción -->
+      <!-- Botones de acción del modal -->
       <div class="flex items-center gap-3 pt-2">
         <button (click)="showSubscribeModal.set(false)" class="w-1/2 py-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-main)] font-bold text-xs hover:bg-[var(--border-color)] transition-all cursor-pointer">
           Cancelar
         </button>
         <button (click)="suscribirsePlanMedico()" [disabled]="isSubscribing()" class="w-1/2 py-3 rounded-2xl bg-[var(--accent-color)] text-white font-bold text-xs hover:opacity-90 transition-all shadow-md shadow-blue-500/20 cursor-pointer flex items-center justify-center gap-2">
           @if(isSubscribing()) {
-            <span>Procesando...</span>
+            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin"></lucide-icon>
+            <span>Generando...</span>
           } @else {
-            <span>Confirmar suscripción</span>
+            <span>Continuar al pago</span>
           }
         </button>
       </div>
 
-    </div>
-  </div>
-}
-
-
-<!-- MODAL DE ÉXITO -->
-@if (showSuccessDialog()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl space-y-4 text-center">
-      <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
-        <lucide-icon [img]="CheckCircle2" class="w-6 h-6"></lucide-icon>
-      </div>
-      <h3 class="text-lg font-black text-[var(--text-main)]">¡Operación exitosa!</h3>
-      <p class="text-xs text-[var(--text-muted)]">{{ successMessage() }}</p>
-      <button (click)="showSuccessDialog.set(false)" class="w-full py-3 rounded-2xl bg-[var(--accent-color)] text-white font-bold text-xs hover:opacity-90 transition-all cursor-pointer">
-        Aceptar
-      </button>
     </div>
   </div>
 }

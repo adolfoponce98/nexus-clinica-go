@@ -1,4 +1,5 @@
 <div class="min-h-screen font-sans p-4 sm:p-6 space-y-6 max-w-7xl mx-auto relative pb-32 transition-colors duration-300" style="background-color: var(--bg-primary); color: var(--text-main);">
+
   <!-- BARRA DE NAVEGACIÓN SUPERIOR (BOTÓN DE REGRESO AL LISTADO) -->
   <div class="flex items-center justify-between">
     <button (click)="volverAlListado()"
@@ -7,6 +8,7 @@
       Regresar al expediente
     </button>
   </div>
+
   <!-- ENCABEZADO Y ACCIÓN DE GRABACIÓN DE VOZ -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 rounded-3xl shadow-xl border transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
     <div>
@@ -14,8 +16,8 @@
         <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Consulta Subsecuente / Seguimiento</span>
         <span class="text-xs" style="color: var(--text-muted);">Paciente: Carlos Alberto Ramírez</span>
       </div>
-      <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main);">Evaluación Evolutiva y Control</h1>
-      <p class="text-xs mt-0.5" style="color: var(--text-muted);">Mide la efectividad del tratamiento actual, revisa arcos de movilidad y ajusta la terapia.</p>
+      <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main);">Evaluación Evolutiva, Exploración 3D y Control</h1>
+      <p class="text-xs mt-0.5" style="color: var(--text-muted);">Mide la efectividad del tratamiento, revisa arcos de movilidad, modelo anatómico y ajusta la terapia.</p>
     </div>
 
     <!-- BOTÓN DE DICTADO / GRABACIÓN POR VOZ SUPERIOR -->
@@ -26,7 +28,7 @@
     </button>
   </div>
 
-  <!-- FORMULARIO DE SEGUIMIENTO (4 APARTADOS CLAVE) -->
+  <!-- FORMULARIO DE SEGUIMIENTO (APARTADOS AMPLIADOS) -->
   <div class="space-y-6">
 
     <!-- 1. EVOLUCIÓN TEMPORAL Y SUBJETIVA -->
@@ -44,61 +46,159 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
         <div class="space-y-1.5">
           <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Cambio en la Intensidad del Dolor (EVA)</label>
-          <select class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            <option>Disminuyó significativamente (EVA 2-4)</option>
-            <option>Se mantiene igual</option>
-            <option>Aumentó con la actividad</option>
+          <select [ngModel]="painIntensityEva()" (ngModelChange)="painIntensityEva.set($event)" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <option value="Disminuyó significativamente (EVA 2-4)">Disminuyó significativamente (EVA 2-4)</option>
+            <option value="Se mantiene igual">Se mantiene igual</option>
+            <option value="Aumentó con la actividad">Aumentó con la actividad</option>
           </select>
         </div>
 
         <div class="space-y-1.5">
           <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Funcionalidad / Actividades Diarias (AVD)</label>
-          <input type="text" placeholder="Ej. Camina con menor apoyo de muletas, se viste solo" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+          <input type="text" [ngModel]="functionalActivities()" (ngModelChange)="functionalActivities.set($event)" placeholder="Ej. Camina con menor apoyo de muletas, se viste solo" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
         </div>
 
         <div class="space-y-1.5">
           <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Adherencia al Tratamiento y Fisioterapia</label>
-          <input type="text" placeholder="Ej. Cumplió al 100% con AINEs y sesiones de rehabilitación" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+          <input type="text" [ngModel]="treatmentAdherence()" (ngModelChange)="treatmentAdherence.set($event)" placeholder="Ej. Cumplió al 100% con AINEs y sesiones de rehabilitación" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+        </div>
+
+        <!-- NUEVO CAMPO RECOMENDADO: Uso de Dispositivos de Apoyo -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Uso de Dispositivos de Apoyo (Ortesis)</label>
+          <input type="text" [ngModel]="dispositivosApoyo()" (ngModelChange)="dispositivosApoyo.set($event)" placeholder="Ej. Muletas, bastón, férula, bota walker..." class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+        </div>
+
+        <!-- NUEVO CAMPO RECOMENDADO: Tolerancia a Medicamentos / Efectos Secundarios -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Tolerancia a Medicamentos / Efectos Secundarios</label>
+          <input type="text" [ngModel]="toleranciaMedicamentos()" (ngModelChange)="toleranciaMedicamentos.set($event)" placeholder="Ej. Buena tolerancia gástrica a AINEs, sin molestias..." class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
         </div>
 
         <div class="space-y-1.5 sm:col-span-2 lg:col-span-3">
           <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Nuevos síntomas o reportes del paciente</label>
-          <input type="text" placeholder="Ej. Niega entumecimiento, chasquidos o inestabilidad repentina" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+          <input type="text" [ngModel]="newSymptoms()" (ngModelChange)="newSymptoms.set($event)" placeholder="Ej. Niega entumecimiento, chasquidos o inestabilidad repentina" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-[var(--accent-color)] transition-colors" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
         </div>
       </div>
     </div>
 
-    <!-- 2. EXPLORACIÓN FÍSICA EVOLUTIVA -->
+    <!-- 2. EXPLORACIÓN FÍSICA EVOLUTIVA + VISOR 3D Y MODELOS ANATÓMICOS -->
     <div class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center justify-center">
-          <lucide-icon [img]="icons.Stethoscope" class="w-5 h-5"></lucide-icon>
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center justify-center">
+            <lucide-icon [img]="icons.Stethoscope" class="w-5 h-5"></lucide-icon>
+          </div>
+          <div>
+            <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">2. Exploración Física Evolutiva y Soporte 3D</h3>
+            <p class="text-xs" style="color: var(--text-muted);">Tejidos blandos, arcos de movilidad, pruebas de estabilidad y sistema esquelético interactivo.</p>
+          </div>
         </div>
-        <div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">2. Exploración Física Evolutiva</h3>
-          <p class="text-xs" style="color: var(--text-muted);">Tejidos blandos, control de dolor a palpación, arcos de movilidad y fuerza.</p>
-        </div>
+        @if (huesoActivo()) {
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-300 border border-blue-500/20">
+            {{ huesoActivo() }}
+          </span>
+        }
       </div>
 
+      <!-- SELECTOR DE MODELOS 3D (CARDS CON MINIATURAS PNG) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2">
+        @for (model of traumaModels; track model.id) {
+          <div (click)="selectModel(model.id)"
+              class="group relative flex items-center gap-2.5 p-2.5 rounded-2xl border transition-all cursor-pointer bg-[var(--bg-primary)] hover:border-blue-500/50"
+              [class.border-blue-500]="selectedModelId() === model.id"
+              [class.ring-2]="selectedModelId() === model.id"
+              [class.ring-blue-500/20]="selectedModelId() === model.id"
+              [class.border-[var(--border-color)]]="selectedModelId() !== model.id">
+
+            <!-- Miniatura PNG -->
+            <div class="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-[var(--border-color)] flex-shrink-0 relative">
+              <img [src]="model.thumbnail" [alt]="model.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            </div>
+
+            <!-- Información de la tarjeta -->
+            <div class="flex-1 min-w-0">
+              <p class="text-[11px] font-bold text-[var(--text-main)] truncate">{{ model.name }}</p>
+            </div>
+
+            <!-- Indicador de selección -->
+            @if (selectedModelId() === model.id) {
+              <div class="absolute top-2 right-2 w-3.5 h-3.5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[9px]">✓</div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- VISOR 3D PRINCIPAL -->
+      <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] p-3 rounded-3xl shadow-inner">
+        <div class="relative">
+          <button type="button"
+                  (click)="toggleExpand()"
+                  class="absolute top-3 right-3 z-10 px-3 py-1.5 bg-zinc-800/90 hover:bg-zinc-700 text-white text-xs font-bold rounded-xl border border-white/10 shadow-lg backdrop-blur-md transition-all cursor-pointer flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5v4m0-4h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+            Ampliar Pantalla
+          </button>
+
+          <!-- Spinner de carga superpuesto -->
+          @if (isLoadingModel()) {
+            <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0d1218]/80 backdrop-blur-sm rounded-2xl gap-2 pointer-events-none">
+              <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-xs font-bold text-zinc-300 animate-pulse">Cargando modelo 3D...</p>
+            </div>
+          }
+
+          <model-viewer
+            [attr.src]="activeTraumaModel().src"
+            [attr.alt]="activeTraumaModel().name"
+            draco-decoder-url="https://www.gstatic.com/draco/versioned/decoders/1.5.6/"
+            (load)="onModelLoaded()"
+            (error)="onModelError($event)"
+            camera-controls
+            auto-rotate
+            auto-rotate-delay="1200"
+            rotation-per-second="12deg"
+            shadow-intensity="0.7"
+            exposure="1.15"
+            environment-image="neutral"
+            interaction-prompt="auto"
+            interaction-policy="always-allow"
+            camera-orbit="25deg 75deg 2.5m"
+            min-camera-orbit="auto auto 1m"
+            max-camera-orbit="auto auto 5m"
+            class="w-full h-80 sm:h-[28rem] rounded-2xl bg-[#0d1218]">
+          </model-viewer>
+        </div>
+        <p class="text-[10px] text-[var(--text-muted)] mt-2 text-center">Arrastra para orbitar. Modelo activo: <span class="font-bold text-[var(--text-main)]">{{ activeTraumaModel().name }}</span></p>
+      </div>
+
+      <!-- Campos de Exploración Física -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
         <div class="space-y-1.5">
           <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Estado de Tejidos Blandos / Herida Quirúrgica</label>
-          <textarea rows="2" placeholder="Cicatriz en buen estado, sin datos de dehiscencia ni infección, edema residual leve..." class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          <textarea rows="2" [ngModel]="softTissueState()" (ngModelChange)="softTissueState.set($event)" placeholder="Cicatriz en buen estado, sin datos de dehiscencia ni infección, edema residual leve..." class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Arcos de Movilidad (Goniómetria Actual)</label>
-          <textarea rows="2" placeholder="Flexión de rodilla alcanzando 90° (aumento de 20° respecto a cita pasada)..." class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Arcos de Movilidad (Goniometría Actual)</label>
+          <textarea rows="2" [ngModel]="rangeOfMotion()" (ngModelChange)="rangeOfMotion.set($event)" placeholder="Flexión de rodilla alcanzando 90° (aumento de 20° respecto a cita pasada)..." class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
         </div>
 
         <div class="space-y-1.5">
           <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Pruebas de Estabilidad y Fuerza (Daniels 0-5)</label>
-          <textarea rows="2" placeholder="Fuerza muscular cuádriceps en grado 4/5. Estabilidad ligamentosa firme..." class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          <textarea rows="2" [ngModel]="stabilityAndStrength()" (ngModelChange)="stabilityAndStrength.set($event)" placeholder="Fuerza muscular cuádriceps en grado 4/5. Estabilidad ligamentosa firme..." class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
         </div>
 
         <div class="space-y-1.5">
           <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Estado Neurovascular Distal</label>
-          <textarea rows="2" placeholder="Pulsos pedios presentes, llenado capilar menor a 2 segundos, sensibilidad íntegra..." class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          <textarea rows="2" [ngModel]="neurovascularState()" (ngModelChange)="neurovascularState.set($event)" placeholder="Pulsos pedios presentes, llenado capilar menor a 2 segundos, sensibilidad íntegra..." class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+        </div>
+
+        <!-- NUEVO CAMPO RECOMENDADO: Banderas Rojas / Alertas Clínicas -->
+        <div class="space-y-1.5 sm:col-span-2">
+          <label class="text-[11px] font-bold uppercase text-rose-400">Banderas Rojas y Alertas de Complicación</label>
+          <textarea rows="2" [ngModel]="banderasRojas()" (ngModelChange)="banderasRojas.set($event)" placeholder="Descartar fiebre, dolor desproporcionado, cianosis o datos de trombosis venosa profunda..." class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-rose-500 transition-colors resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
         </div>
       </div>
     </div>
@@ -110,8 +210,8 @@
           <lucide-icon [img]="icons.ImageIcon" class="w-5 h-5"></lucide-icon>
         </div>
         <div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">3. Estudios de Control y Radiografías de Seguimiento</h3>
-          <p class="text-xs" style="color: var(--text-muted);">Consolidación ósea, alineación e integración de implantes ortopédicos.</p>
+          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">3. Estudios de Control, Imagenología y Laboratorios</h3>
+          <p class="text-xs" style="color: var(--text-muted);">RX de control, RM, TAC, consolidación ósea e integración de implantes.</p>
         </div>
       </div>
 
@@ -126,35 +226,33 @@
           <p class="text-[10px]" style="color: var(--text-muted);">PNG, JPG, DICOM o PDF</p>
         </label>
 
- @for (img of uploadedFiles(); track img.name) {
-  <div class="border p-3.5 rounded-2xl flex items-center gap-3 relative group transition-colors duration-300" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+        @for (img of uploadedFiles(); track img.name) {
+          <div class="border p-3.5 rounded-2xl flex items-center gap-3 relative group transition-colors duration-300" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+            @if (isVisualMedia(img.name)) {
+              <img [src]="img.url" class="w-14 h-14 rounded-xl object-cover border shrink-0" style="border-color: var(--border-color);" alt="estudio">
+            } @else {
+              <div class="w-14 h-14 rounded-xl border shrink-0 flex items-center justify-center bg-blue-500/10 text-blue-400 border-blue-500/20 font-bold uppercase text-xs">
+                {{ img.name.split('.').pop() }}
+            </div>
+            }
 
-    <!-- Renderizado condicional: Si es imagen muestra la foto, si no, muestra un icono representativo -->
-    @if (isVisualMedia(img.name)) {
-      <img [src]="img.url" class="w-14 h-14 rounded-xl object-cover border shrink-0" style="border-color: var(--border-color);" alt="estudio">
-    } @else {
-      <div class="w-14 h-14 rounded-xl border shrink-0 flex items-center justify-center bg-blue-500/10 text-blue-400 border-blue-500/20 font-bold uppercase text-xs">
-        {{ img.name.split('.').pop() }}
-      </div>
-    }
+            <div class="overflow-hidden flex-1">
+              <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-md text-[9px] font-black uppercase">{{ img.type }}</span>
+              <p class="text-xs font-bold truncate mt-1" style="color: var(--text-main);">{{ img.name }}</p>
 
-    <div class="overflow-hidden flex-1">
-      <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-md text-[9px] font-black uppercase">{{ img.type }}</span>
-      <p class="text-xs font-bold truncate mt-1" style="color: var(--text-main);">{{ img.name }}</p>
-
-      @if (img.uploading) {
-        <div class="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
-          <div class="bg-blue-500 h-full transition-all duration-300" [style.width.%]="img.progress"></div>
-        </div>
-        <p class="text-[9px] text-blue-400 mt-1">Subiendo al servidor... {{ img.progress }}%</p>
-      } @else if (img.error) {
-        <p class="text-[9px] text-rose-500 mt-1">Error al subir</p>
-      } @else {
-        <p class="text-[9px] text-emerald-400 mt-1">✓ Sincronizado</p>
-      }
-    </div>
-  </div>
-}
+              @if (img.uploading) {
+                <div class="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div class="bg-blue-500 h-full transition-all duration-300" [style.width.%]="img.progress"></div>
+                </div>
+                <p class="text-[9px] text-blue-400 mt-1">Subiendo al servidor... {{ img.progress }}%</p>
+              } @else if (img.error) {
+                <p class="text-[9px] text-rose-500 mt-1">Error al subir</p>
+              } @else {
+                <p class="text-[9px] text-emerald-400 mt-1">✓ Sincronizado</p>
+              }
+            </div>
+          </div>
+        }
       </div>
     </div>
 
@@ -170,43 +268,43 @@
         </div>
       </div>
 
-     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-      <div class="space-y-1.5">
-        <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Modificación Farmacológica</label>
-        <textarea rows="3"
-                  [ngModel]="modificacionFarmacologica()"
-                  (ngModelChange)="modificacionFarmacologica.set($event)"
-                  placeholder="Retiro de AINEs fuertes..."
-                  class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none"
-                  style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
-      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Modificación Farmacológica</label>
+          <textarea rows="3"
+                    [ngModel]="modificacionFarmacologica()"
+                    (ngModelChange)="modificacionFarmacologica.set($event)"
+                    placeholder="Retiro de AINEs fuertes..."
+                    class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none"
+                    style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+        </div>
 
-      <div class="space-y-1.5">
-        <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Progresión de Rehabilitación</label>
-        <textarea rows="3"
-                  [ngModel]="progresionRehabilitacion()"
-                  (ngModelChange)="progresionRehabilitacion.set($event)"
-                  placeholder="Autorizar apoyo parcial de peso..."
-                  class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none"
-                  style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
-      </div>
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Progresión de Rehabilitación</label>
+          <textarea rows="3"
+                    [ngModel]="progresionRehabilitacion()"
+                    (ngModelChange)="progresionRehabilitacion.set($event)"
+                    placeholder="Autorizar apoyo parcial de peso..."
+                    class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none"
+                    style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+        </div>
 
-      <div class="space-y-1.5">
-        <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Retiro de Dispositivos / Próxima Cita</label>
-        <textarea rows="3"
-                  [ngModel]="retiroProximaCita()"
-                  (ngModelChange)="retiroProximaCita.set($event)"
-                  placeholder="Retiro formal de puntos..."
-                  class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none"
-                  style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Retiro de Dispositivos / Próxima Cita</label>
+          <textarea rows="3"
+                    [ngModel]="retiroProximaCita()"
+                    (ngModelChange)="retiroProximaCita.set($event)"
+                    placeholder="Retiro formal de puntos..."
+                    class="w-full border rounded-2xl p-3.5 text-xs outline-none focus:border-[var(--accent-color)] transition-colors resize-none"
+                    style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+        </div>
       </div>
     </div>
-    </div>
 
-  <!-- 5. RESUMEN MÉDICO Y PROCESAMIENTO CON IA -->
+    <!-- 5. RESUMEN MÉDICO Y PROCESAMIENTO CON IA -->
     <div class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
 
-      <!-- Cabecera y Botón de IA (Aparece condicionalmente solo si hay texto escrito) -->
+      <!-- Cabecera y Botón de IA -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl flex items-center justify-center">
@@ -218,38 +316,8 @@
           </div>
         </div>
 
-        <!-- CONTENEDOR DEL BOTÓN ESTILIZADO DE NEXUS IA (Aparece cuando hay texto) -->
         @if (resumenMedico().trim().length > 0) {
           <div class="flex items-center gap-3 animate-in fade-in zoom-in duration-300">
-
-            <!-- Componente visual de Nexus IA con las cuerdas animadas -->
-            <div class="relative inline-block py-1 px-2 cursor-pointer group" (click)="generarResumenMedicoIA()">
-              <!-- SVG DE CUERDAS ANIMADAS -->
-              <svg class="absolute inset-0 w-full h-full overflow-visible pointer-events-none" viewBox="-10 -5 460 70" preserveAspectRatio="none">
-                <defs>
-                  <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
-                    <feGaussianBlur stdDeviation="5" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-                </defs>
-                <path class="animate-string-1" fill="none" stroke="rgba(59, 130, 246, 0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" />
-                <path class="animate-string-2" fill="none" stroke="rgba(99, 102, 241, 0.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" />
-              </svg>
-
-              <!-- CONTENIDO INTERNO DEL COMPONENTE -->
-              <div class="relative z-10 px-3 py-1.5 flex items-center gap-3">
-                <div class="w-8 h-8 flex items-center justify-center shrink-0 relative p-0.5">
-                  <img src="assets/logo_nexus.png" alt="Logo IA" class="w-full h-full object-contain">
-                  <div class="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[6px] font-black px-1 py-0.1 rounded border border-white">✨IA</div>
-                </div>
-                <div>
-                  <h4 class="text-xs font-black tracking-tight leading-tight" style="color: var(--text-main);">Nexus IA</h4>
-                  <p class="text-[9px] font-medium leading-tight text-blue-400">Inteligencia Activa</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Botón de acción rápido para disparar la IA -->
             <button (click)="generarResumenMedicoIA()"
                     [disabled]="isGeneratingAI()"
                     class="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/25 transition-all cursor-pointer">
@@ -261,7 +329,6 @@
                 Procesando con IA...
               }
             </button>
-
           </div>
         }
       </div>
@@ -276,9 +343,6 @@
                   style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
       </div>
 
-      <!-- ===================================================== -->
-      <!-- PANTALLA DE CARGA Y RESULTADO DEL RESUMEN IA         -->
-      <!-- ===================================================== -->
       @if (isGeneratingAI()) {
         <div class="p-6 rounded-2xl border border-blue-500/30 bg-blue-500/5 flex flex-col items-center justify-center space-y-3 animate-pulse">
           <div class="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -295,32 +359,39 @@
             </div>
             <span class="text-[9px] font-bold text-zinc-400 uppercase">Generado por Gemini</span>
           </div>
-
-          <!-- Contenido del resumen estructurado -->
           <div class="text-xs leading-relaxed space-y-2 font-medium" style="color: var(--text-main);" [innerHTML]="resumenGeneradoIA()"></div>
         </div>
       }
-
     </div>
 
   </div>
+<!-- BOTÓN DE GUARDADO FINAL -->
+<div class="flex justify-start pt-4">
+  <button (click)="saveFollowupRecord()"
+          [disabled]="isSaving() || saveSuccess()"
+          class="flex items-center gap-2 px-8 py-3.5 rounded-2xl text-xs font-black shadow-xl transition-all cursor-pointer"
+          [class.bg-emerald-500]="!saveSuccess()"
+          [class.hover:bg-emerald-400]="!saveSuccess()"
+          [class.bg-blue-600]="saveSuccess()"
+          [class.text-zinc-950]="!saveSuccess()"
+          [class.text-white]="saveSuccess()"
+          [class.opacity-75]="isSaving()">
 
-<!-- BOTÓN DE GUARDADO FINAL (Alineado a la Izquierda) -->
-  <div class="flex justify-start pt-4">
-    <button (click)="saveFollowupRecord()"
-            class="flex items-center gap-2 px-8 py-3.5 rounded-2xl text-xs font-black bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xl shadow-emerald-500/20 transition-all cursor-pointer">
+    @if (isSaving()) {
+      <div class="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin"></div>
+      Guardando datos en el servidor...
+    } @else if (saveSuccess()) {
+      <lucide-icon [img]="icons.CheckCircle2" class="w-4 h-4"></lucide-icon>
+      ¡Guardado con éxito! Redirigiendo...
+    } @else {
       Guardar Seguimiento y Actualizar Expediente
       <lucide-icon [img]="icons.CheckCircle2" class="w-4 h-4"></lucide-icon>
-    </button>
-  </div>
+    }
+  </button>
+</div>
 
-
-  <!-- ================================================================= -->
-  <!-- BARRA / BOTÓN FLOTANTE PERMANENTE (Visible en todo momento)       -->
-  <!-- ================================================================= -->
+  <!-- BARRA / BOTÓN FLOTANTE PERMANENTE -->
   <div class="fixed bottom-6 right-6 z-50 flex items-center gap-3">
-
-    <!-- Si NO está grabando, muestra un botón flotante rápido de acceso permanente -->
     @if (!isRecordingActive()) {
       <button (click)="startVoiceRecording()"
               class="flex items-center gap-2.5 px-5 py-3.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-2xl shadow-purple-600/40 text-xs font-black uppercase tracking-wider transition-all cursor-pointer border border-purple-400/30 animate-bounce">
@@ -329,11 +400,8 @@
       </button>
     }
 
-    <!-- Si ESTÁ grabando, muestra la tarjeta de control con ondas animadas, pausa y terminar -->
     @if (isRecordingActive()) {
       <div class="border p-5 rounded-3xl shadow-2xl backdrop-blur-xl w-80 sm:w-96 animate-in slide-in-from-bottom-5 duration-300 space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-
-        <!-- Cabecera de la grabadora -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full bg-rose-500 animate-ping"></span>
@@ -344,7 +412,6 @@
           </button>
         </div>
 
-        <!-- Animación de Ondas de Audio -->
         <div class="flex items-center justify-center gap-1 h-12 border rounded-2xl px-4 transition-colors duration-300" style="background-color: var(--bg-primary); border-color: var(--border-color);">
           @for (bar of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track bar) {
             <div class="w-1 bg-gradient-to-t from-purple-500 to-indigo-400 rounded-full transition-all duration-300"
@@ -353,7 +420,6 @@
           }
         </div>
 
-        <!-- Contador de tiempo -->
         <div class="text-center">
           <span class="text-2xl font-black font-mono tracking-tight" style="color: var(--text-main);">{{ recordingTime() }}</span>
           @if (isRecordingPaused()) {
@@ -363,7 +429,6 @@
           }
         </div>
 
-        <!-- Botones de Control (Pausar, Reanudar, Terminar) -->
         <div class="flex items-center justify-center gap-3 pt-2">
           @if (!isRecordingPaused()) {
             <button (click)="pauseVoiceRecording()"
@@ -385,10 +450,18 @@
             Terminar
           </button>
         </div>
-
       </div>
     }
-
   </div>
 
 </div>
+
+<!-- VISOR 3D AMPLIADO (MODAL) -->
+<app-advanced-3d-viewer
+  [models]="traumaModels"
+  [selectedModelId]="selectedModelId()"
+  [isExpanded]="isExpanded()"
+  [doctorName]="nombreMedico"
+  [officeName]="nombreConsultorio"
+  (close)="toggleExpand()">
+</app-advanced-3d-viewer>

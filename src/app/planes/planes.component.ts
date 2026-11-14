@@ -1,11 +1,11 @@
-import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { LucideAngularModule, Plus, MoreVertical, LayoutGrid, List, CheckCircle2, Trash2, Check, Sparkles, Shield, Zap, X } from 'lucide-angular';
-import { collection, onSnapshot, Unsubscribe, getFirestore } from 'firebase/firestore';
-import { PaqueteMemberShipModel } from './planes.model';
+import { LucideAngularModule, Plus, MoreVertical, LayoutGrid, List, CheckCircle2, Trash2, Check, Sparkles, Shield, Zap, X, Loader2, Tag } from 'lucide-angular';
 import { AuthService } from '../auth/auth.service';
+import { TokenInterceptorService } from '../auth/token-interceptor.service';
+import CryptoJS from 'crypto-js';
 
 @Component({
   selector: 'app-plans',
@@ -16,6 +16,7 @@ import { AuthService } from '../auth/auth.service';
 export class PlansComponent implements OnInit, OnDestroy {
   private headers = new HttpHeaders({ 'Content-Type': 'application/json' });
   private authService = inject(AuthService);
+  private tokenInterceptor = inject(TokenInterceptorService);
   private http = inject(HttpClient);
 
   readonly Plus = Plus;
@@ -29,182 +30,125 @@ export class PlansComponent implements OnInit, OnDestroy {
   readonly Shield = Shield;
   readonly Zap = Zap;
   readonly X = X;
+  readonly Loader2 = Loader2;
+  readonly Tag = Tag;
 
+  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
+  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
+  private readonly GET_SUBSCRIPTIONS_URL = 'https://getsubscriptions-o7vmreizjq-uc.a.run.app';
+  private readonly SUBSCRIBE_URL = 'https://createstripecheckoutsession-fjo7ia7ora-uc.a.run.app';
+
+  isLoading = signal<boolean>(true);
   isGridMode = signal<boolean>(false);
-  private unsubscribe?: Unsubscribe;
-  showDeleteConfirmModal = signal<boolean>(false);
-  isDeleting = signal<boolean>(false);
 
-  // Estados para el Modal de Confirmación de Suscripción
   showSubscribeModal = signal<boolean>(false);
-  selectedSubscriptionTier = signal<'pro'>('pro');
+  selectedSubscriptionTier = signal<any>(null);
+
+  // 🔄 Señal para controlar el loader específico al procesar el pago o servicio de suscripción
   isSubscribing = signal<boolean>(false);
+  subscribingPlanId = signal<string | null>(null); // Para saber exactamente cuál tarjeta está cargando
 
-  private apiUrl = 'https://crearmembresia-rdotx3vmaq-uc.a.run.app';
-  private apiDeleteUrl = 'https://eliminarmembresia-rdotx3vmaq-uc.a.run.app';
   idBranch: string = 'BEAST-TESISTAN';
-
-  billingCycle = signal<'mensual' | 'trimestral' | 'semestral' | 'anual'>('anual');
-  selectedPlanTier = signal<'pro'>('pro');
-
-  tierDefinitions = {
-    pro: {
-      name: 'Plan Pro Médico',
-      baseMonthly: 899,
-      description: 'Acceso total a todas las herramientas avanzadas, consultorios ilimitados y 100 min de IA mensuales.',
-      badge: 'Plan Todo Incluido',
-      consultorios: '5 presenciales + 1 online',
-      mensajes: '5,000 mensajes / mes',
-      transcripcion: '100 min gratis mensuales'
-    }
-  };
-
-  calculatedPrices = computed(() => {
-    const cycle = this.billingCycle();
-    const base = this.tierDefinitions.pro.baseMonthly;
-    let price = base;
-    let discountLabel = 'Facturado mensualmente';
-
-    if (cycle === 'trimestral') {
-      price = (base * 3) * 0.95;
-      discountLabel = 'Facturado trimestralmente (5% desc.)';
-    } else if (cycle === 'semestral') {
-      price = (base * 6) * 0.90;
-      discountLabel = 'Facturado semestralmente (10% desc.)';
-    } else if (cycle === 'anual') {
-      price = (base * 12) * 0.85;
-      discountLabel = 'Facturado anualmente (15% desc.)';
-    }
-
-    return {
-      pro: Math.round(price),
-      label: discountLabel,
-      cycleName: cycle.toUpperCase()
-    };
-  });
-
-  currentPlan = signal<PaqueteMemberShipModel & { visibleParaUsuario?: boolean }>({
-    idPaquete: '',
-    name: '',
-    descripcion: '',
-    tipoMmebresia: 1,
-    creditos: 0,
-    precioRegular: 0,
-    precioDescuento: 0,
-    beneficios: [],
-    fechaCreacion: '',
-    idAdmin: '',
-    idBranch: this.idBranch,
-    visibleParaUsuario: true
-  });
-
-  selectedId = signal<string | null>(null);
-  plans = signal<PaqueteMemberShipModel[]>([]);
+  subscriptions = signal<any[]>([]);
   userData: any = null;
+
+  selectedPlanId = signal<string | null>(null);
+
   showSuccessDialog = signal<boolean>(false);
   successMessage = signal<string>('');
-
   showAiModal = signal<boolean>(false);
 
-// Métodos para controlar el modal de IA:
-abrirModalIa(event: Event) {
-  event.stopPropagation();
-  this.showAiModal.set(true);
-}
-
-comprarCreditosIaFromModal() {
-  this.showAiModal.set(false);
-  // Llama a tu pasarela existente
-  const fakeEvent = new Event('click');
-  this.comprarCreditosIa(fakeEvent);
-}
-
   ngOnInit(): void {
-    this.loadPlansRealtime(this.idBranch);
     this.userData = this.authService.getSession();
+    console.log('🔍 [PlansComponent] Sesión inicial del usuario:', this.userData);
+    this.cargarSuscripciones();
   }
 
-  ngOnDestroy(): void {
-    if (this.unsubscribe) {
-      this.unsubscribe();
+  ngOnDestroy(): void {}
+
+  async cargarSuscripciones() {
+    this.isLoading.set(true);
+    try {
+      const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
+        const payload = {
+          idBranch: this.userData?.brancheInUser?.[0] || this.idBranch,
+          idDoctor: this.userData?.email || ''
+        };
+        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+
+        const fetchRes = await fetch(this.GET_SUBSCRIPTIONS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-app-signature': this.APP_SECRET_HEADER,
+            'x-client-source': 'angular',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ encryptedData: ciphertext })
+        });
+
+        return fetchRes;
+      });
+
+      const jsonRes = await response.json();
+
+      if (!response.ok) {
+        throw new Error(jsonRes.error || 'Error al obtener las suscripciones.');
+      }
+
+      const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
+      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+      console.log('📦 [PlansComponent] Suscripciones descargadas de la API:', decryptedData.subscriptions);
+
+      if (decryptedData.success && Array.isArray(decryptedData.subscriptions)) {
+        this.subscriptions.set(decryptedData.subscriptions);
+
+        if (decryptedData.subscriptions.length > 0) {
+          this.selectedPlanId.set(decryptedData.subscriptions[0].idSuscription);
+        }
+      }
+    } catch (err) {
+      console.error('❌ Error al cargar suscripciones:', err);
+    } finally {
+      this.isLoading.set(false);
     }
   }
 
-  loadPlansRealtime(branchId: string) {
-    const db = getFirestore();
-    const plansRef = collection(db, `membresias/${branchId}/membrecias`);
-
-    this.unsubscribe = onSnapshot(plansRef, (snapshot) => {
-      const firebasePlans: PaqueteMemberShipModel[] = snapshot.docs.map(doc => {
-        const data = doc.data() as any;
-        return {
-          idPaquete: doc.id,
-          name: data.name || '',
-          descripcion: data.descripcion || '',
-          tipoMmebresia: data.tipoMmebresia ?? 1,
-          creditos: data.creditos ?? 0,
-          precioRegular: data.precioRegular ?? 0,
-          precioDescuento: data.precioDescuento ?? 0,
-          beneficios: data.beneficios || [],
-          fechaCreacion: data.fechaCreacion || '',
-          idAdmin: data.idAdmin || '',
-          idBranch: data.idBranch || branchId,
-          visibleParaUsuario: data.visibleParaUsuario ?? true
-        };
-      });
-      this.plans.set(firebasePlans);
-    }, (error) => {
-      console.error('Error al escuchar los planes:', error);
-    });
+  selectPlan(subId: string) {
+    this.selectedPlanId.set(subId);
   }
 
-  selectTier(tier: 'pro') {
-    this.selectedPlanTier.set(tier);
+  abrirModalIa(event: Event) {
+    event.stopPropagation();
+    this.showAiModal.set(true);
   }
 
-  // Abrir modal de confirmación de suscripción
-  abrirSuscripcion(tier: 'pro', event: Event) {
-    event.stopPropagation(); // Evita conflicto con eventos padre
-    this.selectedSubscriptionTier.set(tier);
+  abrirSuscripcion(sub: any, event: Event) {
+    event.stopPropagation();
+    this.selectedSubscriptionTier.set(sub);
     this.showSubscribeModal.set(true);
   }
 
-  // Método para comprar créditos adicionales de IA ($199 MXN)
-  comprarCreditosIa(event: Event) {
-    event.stopPropagation();
-    const urlCloudFunction = 'https://createstripecheckoutsession-fjo7ia7ora-uc.a.run.app';
-
-    const body = {
-      priceId: 'price_ID_CREDITOS_EXTRA_STRIPE', // Reemplaza con tu ID de Stripe para los creditos extra de 199
-      customerEmail: this.userData?.email || 'doctor@tusistema.com'
-    };
-
-    this.http.post<any>(urlCloudFunction, body, { headers: this.headers }).subscribe({
-      next: (response) => {
-        if (response && response.success && response.url) {
-          window.location.href = response.url;
-        } else {
-          alert('No se pudo iniciar la pasarela de pago para los créditos.');
-        }
-      },
-      error: (err) => {
-        console.error('Error de conexión con Stripe:', err);
-      }
-    });
-  }
-
   async suscribirsePlanMedico() {
-    const urlCloudFunction = 'https://createstripecheckoutsession-fjo7ia7ora-uc.a.run.app';
+    const sub = this.selectedSubscriptionTier();
+    if (!sub) return;
 
     const body = {
-      priceId: 'price_1UJimKHLs0r0bFs5BuXrcVuz', // El ID del producto/precio del Plan Único en Stripe Dashboard
-      customerEmail: this.userData?.email || 'doctor@tusistema.com'
+      priceId: sub.stripePriceId || sub.idSuscription,
+      customerEmail: this.userData?.email || 'doctor@tusistema.com',
+      type: sub.type
     };
 
     this.isSubscribing.set(true);
-    this.http.post<any>(urlCloudFunction, body, { headers: this.headers }).subscribe({
-      next: async (response) => {
+    this.subscribingPlanId.set(sub.idSuscription);
+
+    this.http.post<any>(this.SUBSCRIBE_URL, body, { headers: this.headers }).subscribe({
+      next: (response) => {
         this.isSubscribing.set(false);
+        this.subscribingPlanId.set(null);
+        this.showSubscribeModal.set(false);
+
         if (response && response.success && response.url) {
           window.location.href = response.url;
         } else {
@@ -213,89 +157,50 @@ comprarCreditosIaFromModal() {
       },
       error: (err) => {
         this.isSubscribing.set(false);
-        console.error('Error de conexión con Stripe:', err);
+        this.subscribingPlanId.set(null);
+        this.showSubscribeModal.set(false);
+        console.error('Error de conexión al procesar el pago:', err);
+        alert('Hubo un error al procesar la solicitud de pago.');
       }
     });
   }
 
-  confirmarEliminacion() {
-    if (!this.selectedId()) return;
-    this.showDeleteConfirmModal.set(true);
-  }
+// 🌟 Evaluación precisa con LOGS detallados de comparación
+  getSubscriptionStatus(subId: string): { label: string; actionType: 'current' | 'renew' | 'acquire'; disabled: boolean } {
+    const session = this.authService.getSession();
 
-  ejecutarEliminacion() {
-    const planId = this.selectedId();
-    if (!planId) return;
+    const currentId = session?.currentIdSuscription;
+    const isPlanActive = session?.statusSuscription === true;
+    const expirationDateStr = session?.expirationSuscription;
 
-    this.isDeleting.set(true);
-    const payload = {
-      idBranch: this.userData?.brancheInUser?.[0] || this.idBranch,
-      idPaquete: planId
-    };
+    console.log(`🔎 [Evaluando Plan Card] ID de tarjeta: "${subId}" | ID en Sesión (currentIdSuscription): "${currentId}" | ¿Son iguales?: ${currentId === subId}`);
+    console.log(`📊 [Estatus de Sesión] statusSuscription:`, session?.statusSuscription, `| Expiración:`, expirationDateStr);
 
-    this.http.post<{ success: boolean; message: string; id: string }>(this.apiDeleteUrl, payload).subscribe({
-      next: (response) => {
-        this.isDeleting.set(false);
-        this.showDeleteConfirmModal.set(false);
-        if (response && response.success) {
-          this.successMessage.set('¡Membresía eliminada exitosamente!');
-          this.showSuccessDialog.set(true);
-          this.resetForm();
-        } else {
-          alert('Error al eliminar: ' + (response?.message || 'Error desconocido'));
+    const isCurrentPlan = currentId === subId;
+
+    if (!isCurrentPlan) {
+      return { label: 'Adquirir plan', actionType: 'acquire', disabled: false };
+    }
+
+    if (!isPlanActive) {
+      console.warn(`⚠️ [PlansComponent] El plan coincide (${subId}), pero 'statusSuscription' no es true.`);
+      return { label: 'Renovar plan', actionType: 'renew', disabled: false };
+    }
+
+    if (expirationDateStr) {
+      try {
+        const expirationDate = new Date(expirationDateStr);
+        const now = new Date();
+        if (now > expirationDate) {
+          console.warn(`⚠️ [PlansComponent] El plan coincide (${subId}), pero ya expiró con fecha: ${expirationDateStr}`);
+          return { label: 'Renovar plan', actionType: 'renew', disabled: false };
         }
-      },
-      error: (error) => {
-        this.isDeleting.set(false);
-        this.showDeleteConfirmModal.set(false);
-        console.error('Error al eliminar:', error);
-        alert('Hubo un error de red al intentar eliminar el paquete.');
+      } catch (e) {
+        console.error('Error al parsear fecha de expiración', e);
       }
-    });
-  }
+    }
 
-  savePlan() {
-    const planData = this.currentPlan();
-    planData.idAdmin = this.userData?.email || '';
-    planData.idBranch = this.userData?.brancheInUser?.[0] || '';
-    planData.name = this.currentPlan().name || 'Sin nombre';
-
-    const payload: PaqueteMemberShipModel = {
-      ...planData,
-      idPaquete: this.selectedId() ? this.selectedId()! : 'PLAN-' + Date.now(),
-      fechaCreacion: planData.fechaCreacion || new Date().toISOString()
-    };
-
-    this.http.post<{ success: boolean; branchId: string }>(this.apiUrl, payload).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.successMessage.set(this.selectedId() ? '¡Plan actualizado correctamente!' : '¡Nuevo plan guardado correctamente!');
-          this.showSuccessDialog.set(true);
-          this.resetForm();
-        }
-      },
-      error: (error) => {
-        console.error('Error al guardar:', error);
-        alert('Hubo un error al guardar los cambios en el servidor.');
-      }
-    });
-  }
-
-  resetForm() {
-    this.selectedId.set(null);
-    this.currentPlan.set({
-      idPaquete: '',
-      name: '',
-      descripcion: '',
-      tipoMmebresia: 1,
-      creditos: 0,
-      precioRegular: 0,
-      precioDescuento: 0,
-      beneficios: [],
-      fechaCreacion: '',
-      idAdmin: '',
-      idBranch: this.idBranch,
-      visibleParaUsuario: true
-    });
+    console.log(`🎉 [PlansComponent] ¡Plan actual detectado y vigente! Coincide con: ${subId}`);
+    return { label: 'PLAN ACTUAL', actionType: 'current', disabled: true };
   }
 }

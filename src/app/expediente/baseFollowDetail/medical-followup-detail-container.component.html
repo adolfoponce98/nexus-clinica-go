@@ -1,0 +1,18 @@
+<div class="w-full h-full">
+  @switch (currentSpecialtyCode) {
+    <!-- Odontología / Ortodoncia -->
+    @case ('DENT') {
+      <app-odontology-followup-detail></app-odontology-followup-detail>
+    }
+
+    <!-- Traumatología y Ortopedia (Formulario original) -->
+    @case ('TRAUM') {
+      <app-medical-followup-detail></app-medical-followup-detail>
+    }
+
+    <!-- Por defecto (Si es medicina general o cualquier otra especialidad sin formulario específico aún) -->
+    @default {
+      <app-medical-followup-detail></app-medical-followup-detail>
+    }
+  }
+</div>

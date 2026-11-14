@@ -1,49 +1,58 @@
 <div class="p-6 rounded-3xl shadow-xl space-y-4 border mb-6 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-  <div class="flex justify-between items-center">
-    <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Últimos pacientes</h3>
-    <button class="text-xs font-bold text-blue-500 hover:underline flex items-center gap-1 cursor-pointer">
-      Ver todos <lucide-icon [img]="ChevronRight" class="w-3.5 h-3.5"></lucide-icon>
-    </button>
-  </div>
+<div class="flex justify-between items-center">
+  <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Últimos pacientes atendidos</h3>
+  <button (click)="onViewAll()" class="text-xs font-bold text-blue-500 hover:underline flex items-center gap-1 cursor-pointer">
+    Ver todos <lucide-icon [img]="ChevronRight" class="w-3.5 h-3.5"></lucide-icon>
+  </button>
+</div>
 
-  @if (patients().length > 0) {
-    <div class="overflow-x-auto">
-      <table class="w-full text-left text-xs">
-        <thead>
-          <tr class="border-b font-bold uppercase text-[10px]" style="border-color: var(--border-color); color: var(--text-muted);">
-            <th class="pb-3">Paciente</th>
-            <th class="pb-3">Motivo de consulta</th>
-            <th class="pb-3">Última consulta</th>
-            <th class="pb-3 text-right">Estado</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y" style="border-color: var(--border-color);">
-          @for (patient of patients(); track patient.name) {
-            <tr class="transition-colors hover:opacity-90" style="background-color: transparent;">
-              <td class="py-3 font-bold flex items-center gap-2.5" style="color: var(--text-main);">
-                <img [src]="patient.avatar" class="w-7 h-7 rounded-full object-cover border" style="border-color: var(--border-color);" alt="avatar">
-                <span>{{ patient.name }}</span>
-              </td>
-              <td class="py-3" style="color: var(--text-muted);">{{ patient.specialty }}</td>
-              <td class="py-3 text-[10px]" style="color: var(--text-muted);">{{ patient.lastConsult }}</td>
-              <td class="py-3 text-right">
-                <span class="px-2.5 py-1 rounded-full text-[10px] font-black border"
-                      [class.bg-emerald-500/10]="patient.status === 'Completada' || patient.status === 'Tomada'"
-                      [class.text-emerald-500]="patient.status === 'Completada' || patient.status === 'Tomada'"
-                      [class.border-emerald-500/20]="patient.status === 'Completada' || patient.status === 'Tomada'"
-                      [class.bg-rose-500/10]="patient.status === 'Cancelada'"
-                      [class.text-rose-500]="patient.status === 'Cancelada'"
-                      [class.border-rose-500/20]="patient.status === 'Cancelada'"
-                      [class.bg-amber-500/10]="patient.status === 'En seguimiento'"
-                      [class.text-amber-500]="patient.status === 'En seguimiento'"
-                      [class.border-amber-500/20]="patient.status === 'En seguimiento'">
-                  {{ patient.status }}
-                </span>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+  @if (processedPatients().length > 0) {
+    <div class="space-y-3">
+      @for (patient of processedPatients(); track patient.name + patient.date) {
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 p-4 rounded-2xl border transition-all hover:border-blue-500/40" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+
+          <!-- Bloque de información principal -->
+          <div class="space-y-2 flex-1">
+            <!-- Nombre del paciente -->
+            <div>
+              <span class="text-[9px] font-black uppercase tracking-wider text-blue-400 block">Nombre Paciente:</span>
+              <h4 class="text-xs font-bold mt-0.5" style="color: var(--text-main);">{{ patient.name || patient.patientName }}</h4>
+            </div>
+
+            <!-- Motivo de consulta -->
+            <div>
+              <span class="text-[9px] font-black uppercase tracking-wider text-blue-400 block">Motivo Consulta:</span>
+              <p class="text-xs font-medium leading-relaxed mt-0.5" style="color: var(--text-muted);">
+                {{ patient.reason }}
+              </p>
+            </div>
+
+            <!-- Fecha y hora -->
+            <div class="pt-1">
+              <span class="text-xs font-bold flex items-center gap-1.5" style="color: var(--text-main);">
+                🕒 <span class="text-[11px] font-semibold" style="color: var(--text-muted);">Atendido el:</span> {{ patient.lastConsultFormatted }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Estado de la consulta (Completada, Sin confirmar, Cancelada) -->
+          <div class="self-start shrink-0">
+            <span class="px-3 py-1 rounded-full text-[10px] font-black border inline-block"
+                  [class.bg-emerald-500/10]="patient.statusClass === 'Completada'"
+                  [class.text-emerald-500]="patient.statusClass === 'Completada'"
+                  [class.border-emerald-500/20]="patient.statusClass === 'Completada'"
+                  [class.bg-rose-500/10]="patient.statusClass === 'Cancelada'"
+                  [class.text-rose-500]="patient.statusClass === 'Cancelada'"
+                  [class.border-rose-500/20]="patient.statusClass === 'Cancelada'"
+                  [class.bg-zinc-500/10]="patient.statusClass === 'Sin confirmar'"
+                  [class.text-zinc-400]="patient.statusClass === 'Sin confirmar'"
+                  [class.border-zinc-500/20]="patient.statusClass === 'Sin confirmar'">
+              {{ patient.statusText }}
+            </span>
+          </div>
+
+        </div>
+      }
     </div>
   } @else {
     <!-- Empty State -->

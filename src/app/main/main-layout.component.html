@@ -1,28 +1,26 @@
 <div class="min-h-screen font-sans" style="background-color: var(--bg-primary); color: var(--text-main);">
   <div class="flex min-h-screen">
 
-    <!-- SIDEBAR COLAPSIBLE -->
- <aside [class.w-72]="!isSidebarCollapsed" [class.w-20]="isSidebarCollapsed" class="border-r flex flex-col justify-between p-4 shrink-0 transition-all duration-300 relative h-screen sticky top-0 overflow-visible" style="background-color: var(--bg-secondary); border-color: var(--border-color); z-index: 40;">
+<aside [class.w-72]="!isSidebarCollapsed" [class.w-20]="isSidebarCollapsed" class="border-r flex flex-col justify-between p-4 shrink-0 transition-all duration-300 relative h-screen sticky top-0 overflow-visible" style="background-color: var(--bg-secondary); border-color: var(--border-color); z-index: 50;">
 
-  <!-- Botón para colapsar/expandir (Corregido con z-index alto y visible) -->
-  <button (click)="toggleSidebar()" class="absolute -right-3 top-6 border w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-muted); z-index: 50;" title="Colapsar menú">
-    <lucide-icon [img]="PanelLeftClose" class="w-3.5 h-3.5 transition-transform duration-300" [class.rotate-180]="isSidebarCollapsed"></lucide-icon>
-  </button>
+      <!-- 💡 Botón con z-index [60] para estar siempre por encima del header -->
+      <button (click)="toggleSidebar()" class="absolute -right-3.5 top-6 border w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-muted); z-index: 60;" title="Colapsar menú">
+        <lucide-icon [img]="PanelLeftClose" class="w-4 h-4 transition-transform duration-300" [class.rotate-180]="isSidebarCollapsed"></lucide-icon>
+      </button>
+<!-- CONTENIDO SUPERIOR: LOGO Y MENÚ -->
+<div class="space-y-6 overflow-y-auto overflow-x-hidden">
 
-      <!-- CONTENIDO SUPERIOR: LOGO Y MENÚ -->
-      <div class="space-y-6 overflow-y-auto overflow-x-hidden pr-1">
-
-<div class="flex items-center gap-3 px-2">
+<div class="flex items-center">
   @if (isSidebarCollapsed) {
     <!-- Logo pequeño cuando la barra lateral está colapsada -->
-    <div class="overflow-hidden flex flex-col justify-center">
+    <div class="overflow-hidden flex flex-col justify-center w-full">
       <img src="assets/logo_nexus.png" alt="Logo Nexus" class="h-8 w-auto object-contain">
     </div>
   } @else {
     <!-- Logo extendido según el tema (light o dark) -->
-    <div class="overflow-hidden flex flex-col justify-center">
-      <div class="flex items-center gap-2">
-        <img [src]="themeService.isDarkMode() ? 'assets/logo_dark.png' : 'assets/logo_light.png'" alt="Logo" class="h-30 w-auto object-contain">
+    <div class="overflow-hidden flex flex-col justify-center w-full">
+      <div class="flex items-center">
+        <img [src]="themeService.isDarkMode() ? 'assets/logo_dark.png' : 'assets/logo_light.png'" alt="Logo" class="h-25 w-auto object-contain">
       </div>
     </div>
   }
@@ -107,7 +105,7 @@
   <!-- Consultorios -->
   <a routerLink="/consultorios"
      routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
-     [title]="isSidebarCollapsed ? 'Configuracion' : ''"
+     [title]="isSidebarCollapsed ? 'Consultorios' : ''"
      class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
      [style.color]="router.url === '/consultorios' ? '#ffffff' : 'var(--text-muted)'">
     <lucide-icon [img]="Store" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
@@ -115,13 +113,24 @@
       <span class="text-xs uppercase tracking-wider truncate">CONSULTORIOS</span>
     }
   </a>
-  <!-- Consultorios -->
-  <a routerLink="/services"
+    <!-- Configuración -->
+  <a routerLink="/employes"
      routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
      [title]="isSidebarCollapsed ? 'Configuracion' : ''"
      class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
-     [style.color]="router.url === '/consultorios' ? '#ffffff' : 'var(--text-muted)'">
-    <lucide-icon [img]="Store" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+     [style.color]="router.url === '/employes' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="UserCog" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
+    @if (!isSidebarCollapsed) {
+      <span class="text-xs uppercase tracking-wider truncate">Empleados</span>
+    }
+  </a>
+  <!-- Consultorios -->
+  <a routerLink="/services"
+     routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg shadow-blue-600/20 font-black"
+     [title]="isSidebarCollapsed ? 'Servicios' : ''"
+     class="flex items-center gap-3.5 px-3.5 py-3 rounded-2xl transition-all group"
+     [style.color]="router.url === '/services' ? '#ffffff' : 'var(--text-muted)'">
+    <lucide-icon [img]="Stethoscope" class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"></lucide-icon>
     @if (!isSidebarCollapsed) {
       <span class="text-xs uppercase tracking-wider truncate">SERVICIOS</span>
     }
@@ -198,13 +207,8 @@
     </div>
   }
 </a>
-
-</nav>
-        </div>
-
-      </div>
-
-      <!-- CONTENIDO INFERIOR: WIDGET DE BOT WHATSAPP Y AYUDA -->
+<a>
+   <!-- CONTENIDO INFERIOR: WIDGET DE BOT WHATSAPP Y AYUDA -->
       @if (!isSidebarCollapsed) {
         <div class="space-y-3 pt-3 border-t" style="border-color: var(--border-color);">
 
@@ -229,25 +233,73 @@
           </div>
 
           <!-- Centro de Ayuda -->
-          <button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all border cursor-pointer group" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-muted);">
+         <!-- <button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all border cursor-pointer group" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-muted);">
             <div class="flex items-center gap-2.5">
               <lucide-icon [img]="HelpCircle" class="w-4 h-4 transition-colors"></lucide-icon>
               <span class="text-xs font-bold" style="color: var(--text-main);">Centro de Ayuda</span>
             </div>
             <lucide-icon [img]="ChevronRight" class="w-3.5 h-3.5 transition-transform"></lucide-icon>
-          </button>
+          </button>-->
 
         </div>
       }
+</a>
+
+</nav>
+        </div>
+
+      </div>
+
+<!-- 🌟 WIDGET DE SUSCRIPCIÓN MINIMALISTA EN EL SIDEBAR -->
+      <div class="pt-3 border-t mt-auto" style="border-color: var(--border-color);">
+        <a routerLink="/planes"
+           [title]="isSidebarCollapsed ? (hasActivePlan ? 'Suscripción Activa' : 'Sin Suscripción') : ''"
+           class="flex items-center gap-3 p-2.5 rounded-2xl transition-all border group block"
+           [class.bg-emerald-500/5]="hasActivePlan"
+           [class.border-emerald-500/30]="hasActivePlan"
+           [class.bg-amber-500/5]="!hasActivePlan"
+           [class.border-amber-500/30]="!hasActivePlan"
+           style="background-color: var(--bg-primary);">
+
+          <!-- Icono / Indicador -->
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105"
+               [class.bg-emerald-500/10]="hasActivePlan"
+               [class.text-emerald-400]="hasActivePlan"
+               [class.border-emerald-500/20]="hasActivePlan"
+               [class.bg-amber-500/10]="!hasActivePlan"
+               [class.text-amber-500]="!hasActivePlan"
+               [class.border-amber-500/20]="!hasActivePlan">
+            <lucide-icon [img]="hasActivePlan ? CheckCircle2 : CreditCard" class="w-4 h-4"></lucide-icon>
+          </div>
+
+          <!-- Texto descriptivo (Solo se muestra cuando la barra está expandida) -->
+          @if (!isSidebarCollapsed) {
+            <div class="overflow-hidden text-left flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[9px] font-black uppercase tracking-widest truncate"
+                      [class.text-emerald-500]="hasActivePlan"
+                      [class.text-amber-500]="!hasActivePlan">
+                  {{ hasActivePlan ? 'Plan Pro' : 'Sin Plan' }}
+                </span>
+                <span class="w-1.5 h-1.5 rounded-full"
+                      [class.bg-emerald-500]="hasActivePlan"
+                      [class.bg-amber-500]="!hasActivePlan"></span>
+              </div>
+              <p class="text-[11px] font-black truncate" style="color: var(--text-main);">
+                {{ hasActivePlan ? 'Suscripción Activa' : 'Activar Suscripción' }}
+              </p>
+            </div>
+          }
+        </a>
+      </div>
 
     </aside>
 
     <!-- MAIN CONTENT WRAPPER -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden" style="background-color: var(--bg-primary);">
+<main class="flex-1 flex flex-col h-screen overflow-hidden" style="background-color: var(--bg-primary);">
 
       <!-- HEADER -->
-      <header class="h-20 backdrop-blur-md border-b px-8 flex items-center justify-between shrink-0 relative gap-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-
+   <header class="h-20 backdrop-blur-md border-b px-8 flex items-center justify-between shrink-0 relative gap-4 z-40" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
      <!-- BLOQUE IZQUIERDA: Selector de Sucursal y Especialidad -->
 <div class="flex items-center gap-4 flex-1 max-w-2xl">
 
@@ -339,40 +391,52 @@
               }
             </div>
 
-            <!-- POPUP DE NOTIFICACIONES -->
-            @if (showNotificationsPopup) {
-              <div class="absolute right-0 top-12 w-80 sm:w-96 rounded-3xl shadow-2xl p-5 z-50 border" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-                <div class="flex items-center justify-between pb-3 border-b mb-3" style="border-color: var(--border-color);">
-                  <h4 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Notificaciones</h4>
-                  <button (click)="showNotificationsPopup = false" style="color: var(--text-muted);">
-                    <lucide-icon [img]="X" class="w-4 h-4"></lucide-icon>
-                  </button>
-                </div>
+@if (showNotificationsPopup) {
+  <div class="absolute right-0 top-12 w-80 sm:w-96 rounded-3xl shadow-2xl p-5 z-[9999] border" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <div class="flex items-center justify-between pb-3 border-b mb-3" style="border-color: var(--border-color);">
+      <h4 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Notificaciones</h4>
+      <button (click)="showNotificationsPopup = false" style="color: var(--text-muted);">
+        <lucide-icon [img]="X" class="w-4 h-4"></lucide-icon>
+      </button>
+    </div>
 
-                @if (isLoadingNotifications) {
-                  <div class="flex flex-col items-center justify-center py-8">
-                    <div class="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-                    <p class="text-[11px] font-bold uppercase tracking-tight" style="color: var(--text-muted);">Cargando...</p>
-                  </div>
-                } @else {
-                  <div class="max-h-72 overflow-y-auto space-y-2 pr-1">
-                    @if (notificationsList.length === 0) {
-                      <p class="text-center text-xs py-6 font-medium" style="color: var(--text-muted);">No hay notificaciones nuevas</p>
-                    } @else {
-                      @for (item of notificationsList; track item.id) {
-                        <div class="p-3 rounded-2xl border transition-all text-left" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                          <div class="flex items-start justify-between gap-2 mb-1">
-                            <h5 class="text-xs font-black leading-snug" style="color: var(--text-main);">{{ item.title }}</h5>
-                            <span class="text-[9px] font-bold whitespace-nowrap" style="color: var(--text-muted);">{{ item.timestamp }}</span>
-                          </div>
-                          <p class="text-[11px] leading-relaxed font-medium" style="color: var(--text-muted);">{{ item.body }}</p>
-                        </div>
-                      }
-                    }
-                  </div>
-                }
+    @if (isLoadingNotifications) {
+      <div class="flex flex-col items-center justify-center py-8">
+        <div class="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+        <p class="text-[11px] font-bold uppercase tracking-tight" style="color: var(--text-muted);">Cargando...</p>
+      </div>
+    } @else {
+      <div class="max-h-72 overflow-y-auto space-y-2 pr-1">
+        @if (notificationsList.length === 0) {
+          <p class="text-center text-xs py-6 font-medium" style="color: var(--text-muted);">No hay notificaciones nuevas</p>
+        } @else {
+          @for (item of notificationsList; track item.id) {
+            <div class="p-3 rounded-2xl border transition-all text-left space-y-1" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg"
+                      [class.bg-emerald-500/10]="item.estadoRespuesta === 'confirmada'"
+                      [class.text-emerald-400]="item.estadoRespuesta === 'confirmada'"
+                      [class.bg-rose-500/10]="item.estadoRespuesta === 'cancelada'"
+                      [class.text-rose-400]="item.estadoRespuesta === 'cancelada'">
+                  Cita {{ item.estadoRespuesta || 'actualizada' }}
+                </span>
+                <span class="text-[9px] font-bold whitespace-nowrap" style="color: var(--text-muted);">
+                  {{ item.fechaCita }} {{ item.horaCita }}
+                </span>
               </div>
-            }
+              <p class="text-[11px] leading-relaxed font-bold" style="color: var(--text-main);">
+                Paciente: Tel. {{ item.telefono }}
+              </p>
+              <p class="text-[10px] leading-relaxed" style="color: var(--text-muted);">
+                Respuesta: "{{ item.mensajeOriginal }}"
+              </p>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+}
           </div>
 
           <!-- Perfil de Usuario -->
@@ -393,15 +457,73 @@
               <lucide-icon [img]="ChevronRight" class="w-3.5 h-3.5 rotate-90 shrink-0" style="color: var(--text-muted);"></lucide-icon>
             </div>
 
-            <!-- Menú Desplegable de Usuario -->
+        <!-- Menú Desplegable de Usuario -->
             @if (showUserMenu){
-             <div class="absolute right-0 mt-3 w-48 rounded-2xl shadow-2xl p-2 z-50 border" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-              <button (click)="confirmLogout()"
-                      class="w-full flex items-center gap-3 px-4 py-3 text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors text-xs font-bold cursor-pointer">
-                <lucide-icon [img]="LogOut" class="w-4 h-4"></lucide-icon>
-                Cerrar Sesión
-              </button>
-             </div>
+              <div class="absolute right-0 mt-3 w-72 rounded-3xl shadow-2xl p-4 z-50 border space-y-3" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+
+                <!-- 🌟 MISMO DISEÑO LLAMATIVO DEL MODAL DE SUSCRIPCIÓN -->
+                <div class="p-4 rounded-3xl border transition-all text-left space-y-2.5 relative overflow-hidden shadow-sm"
+                     [class.bg-emerald-500/5]="hasActivePlan"
+                     [class.border-emerald-500/30]="hasActivePlan"
+                     [class.bg-amber-500/5]="!hasActivePlan"
+                     [class.border-amber-500/30]="!hasActivePlan"
+                     style="background-color: var(--bg-primary);">
+
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                      @if (hasActivePlan) {
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                          <lucide-icon [img]="CheckCircle2" class="w-4 h-4"></lucide-icon>
+                        </div>
+                        <div>
+                          <span class="text-[9px] font-black uppercase tracking-widest text-emerald-500 block">Suscripción Activa</span>
+                          <span class="text-xs font-black" style="color: var(--text-main);">Plan Médico Pro</span>
+                        </div>
+                      } @else {
+                        <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
+                          <lucide-icon [img]="CreditCard" class="w-4 h-4"></lucide-icon>
+                        </div>
+                        <div>
+                          <span class="text-[9px] font-black uppercase tracking-widest text-amber-500 block">Sin Suscripción</span>
+                          <span class="text-xs font-black" style="color: var(--text-main);">Modo Gratuito / Inactivo</span>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Badge de estatus -->
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shadow-sm"
+                          [class.bg-emerald-500/10]="hasActivePlan"
+                          [class.text-emerald-400]="hasActivePlan"
+                          [class.border-emerald-500/20]="hasActivePlan"
+                          [class.bg-amber-500/10]="!hasActivePlan"
+                          [class.text-amber-400]="!hasActivePlan"
+                          [class.border-amber-500/20]="!hasActivePlan">
+                      {{ hasActivePlan ? 'Activo' : 'Sin Plan' }}
+                    </span>
+                  </div>
+
+                  @if (hasActivePlan) {
+                    <div class="pt-2 border-t flex justify-between items-center text-[10px]" style="border-color: var(--border-color);">
+                      <span style="color: var(--text-muted);">Vigencia hasta:</span>
+                      <span class="font-bold text-emerald-500">{{ formattedExpirationDate || 'Acceso Ilimitado' }}</span>
+                    </div>
+                  } @else {
+                    <p class="text-[10px] leading-relaxed pt-1" style="color: var(--text-muted);">
+                      No cuentas con un plan activo. Adquiere uno en la sección de planes.
+                    </p>
+                  }
+                </div>
+
+                <!-- Separador -->
+                <div class="border-t my-1" style="border-color: var(--border-color);"></div>
+
+                <!-- Botón de Cerrar Sesión -->
+                <button (click)="confirmLogout()"
+                        class="w-full flex items-center justify-center gap-2 px-4 py-3 text-rose-400 hover:bg-rose-500/10 rounded-2xl transition-colors text-xs font-black uppercase tracking-wider cursor-pointer">
+                  <lucide-icon [img]="LogOut" class="w-4 h-4"></lucide-icon>
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
             }
           </div>
 
@@ -410,10 +532,10 @@
       </header>
 
       <!-- ROUTER OUTLET -->
-      <div class="flex-1 overflow-y-auto p-8">
-        <router-outlet></router-outlet>
-      </div>
-<app-floating-chat></app-floating-chat>
+ <div class="flex-1 overflow-y-auto relative">
+    <router-outlet></router-outlet>
+  </div>
+<!--<app-floating-chat></app-floating-chat>-->
     </main>
   </div>
 </div>
@@ -499,28 +621,81 @@
     </div>
   </div>
 }
-<!-- ================= MODAL DE CONFIRMACIÓN DE CIERRE DE SESIÓN ================= -->
+<!-- ================= MODAL DE CONFIRMACIÓN DE CIERRE DE SESIÓN & PLAN ================= -->
 @if (showLogoutConfirm) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-    <div class="border w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative space-y-6 text-center" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+    <div class="border w-full max-w-md rounded-[2.5rem] p-7 shadow-2xl relative space-y-5 text-center" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
 
-      <!-- Icono de advertencia o salida -->
-      <div class="w-16 h-16 bg-pink-500/10 text-pink-500 rounded-3xl flex items-center justify-center mx-auto border border-pink-500/20">
-        <lucide-icon [img]="LogOutIcon" class="w-8 h-8"></lucide-icon>
+      <!-- Icono superior de salida -->
+      <div class="w-14 h-14 bg-pink-500/10 text-pink-500 rounded-3xl flex items-center justify-center mx-auto border border-pink-500/20 shadow-inner">
+        <lucide-icon [img]="LogOutIcon" class="w-7 h-7"></lucide-icon>
       </div>
 
-      <!-- Textos -->
+      <!-- Títulos -->
       <div>
-        <h3 class="text-xl font-black uppercase tracking-tight mb-1" style="color: var(--text-main);">¿Cerrar Sesión?</h3>
-        <p class="text-xs font-medium leading-relaxed" style="color: var(--text-muted);">¿Estás seguro de que deseas salir del sistema? Tendrás que ingresar tus credenciales nuevamente.</p>
+        <h3 class="text-lg font-black uppercase tracking-tight mb-0.5" style="color: var(--text-main);">¿Cerrar Sesión?</h3>
+        <p class="text-xs font-medium" style="color: var(--text-muted);">Revisa el estatus actual de tu cuenta antes de salir.</p>
       </div>
 
-      <!-- Botones de Acción -->
-      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+      <!-- 🌟 SECCIÓN INFORMATIVA DE SUSCRIPCIÓN -->
+      <div class="p-4 rounded-3xl border transition-all text-left space-y-2.5 relative overflow-hidden shadow-sm"
+           [class.bg-emerald-500/5]="hasActivePlan"
+           [class.border-emerald-500/30]="hasActivePlan"
+           [class.bg-amber-500/5]="!hasActivePlan"
+           [class.border-amber-500/30]="!hasActivePlan"
+           style="background-color: var(--bg-primary);">
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            @if (hasActivePlan) {
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                <lucide-icon [img]="CheckCircle2" class="w-4 h-4"></lucide-icon>
+              </div>
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-500 block">Suscripción Activa</span>
+                <span class="text-xs font-black" style="color: var(--text-main);">Plan Médico Pro</span>
+              </div>
+            } @else {
+              <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
+                <lucide-icon [img]="CreditCard" class="w-4 h-4"></lucide-icon>
+              </div>
+              <div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-amber-500 block">Sin Suscripción</span>
+                <span class="text-xs font-black" style="color: var(--text-main);">Modo Gratuito / Inactivo</span>
+              </div>
+            }
+          </div>
+
+          <!-- Badge de estatus -->
+          <span class="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border shadow-sm"
+                [class.bg-emerald-500/10]="hasActivePlan"
+                [class.text-emerald-400]="hasActivePlan"
+                [class.border-emerald-500/20]="hasActivePlan"
+                [class.bg-amber-500/10]="!hasActivePlan"
+                [class.text-amber-400]="!hasActivePlan"
+                [class.border-amber-500/20]="!hasActivePlan">
+            {{ hasActivePlan ? 'Activo' : 'Sin Plan' }}
+          </span>
+        </div>
+
+        @if (hasActivePlan) {
+          <div class="pt-2 border-t flex justify-between items-center text-[11px]" style="border-color: var(--border-color);">
+            <span style="color: var(--text-muted);">Vigencia hasta:</span>
+            <span class="font-bold text-emerald-500">{{ formattedExpirationDate || 'Acceso Ilimitado' }}</span>
+          </div>
+        } @else {
+          <p class="text-[11px] leading-relaxed pt-1" style="color: var(--text-muted);">
+            Actualmente no cuentas con ningún plan de suscripción contratado. Potencia tu consultorio adquiriendo un plan en la sección correspondiente.
+          </p>
+        }
+      </div>
+
+      <!-- Botones de Acción (Hasta abajo) -->
+      <div class="flex flex-col sm:flex-row gap-3 pt-1">
         <button
           type="button"
           (click)="showLogoutConfirm = false"
-          class="w-full sm:w-1/2 border py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-sm hover:opacity-80"
+          class="w-full sm:w-1/2 border py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-sm hover:opacity-80"
           style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
         >
           Cancelar
@@ -529,7 +704,7 @@
         <button
           type="button"
           (click)="logout()"
-          class="w-full sm:w-1/2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-purple-600/20"
+          class="w-full sm:w-1/2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-purple-600/20"
         >
           Sí, Salir
         </button>
@@ -538,85 +713,176 @@
     </div>
   </div>
 }
-<!-- ================= MODAL DE AGENDAR CITA ================= -->
 @if (showAppointmentModal) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-    <div class="border w-full max-w-md rounded-[2.5rem] p-7 shadow-2xl relative space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <button (click)="showAppointmentModal = false" class="absolute right-6 top-6 cursor-pointer" style="color: var(--text-muted);">
+    <!-- Contenedor más ancho: max-w-3xl o max-w-4xl -->
+    <div class="border w-full max-w-4xl rounded-[2.5rem] p-7 shadow-2xl relative space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+      <button (click)="showAppointmentModal = false" class="absolute right-6 top-6 cursor-pointer z-10" style="color: var(--text-muted);">
         <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
       </button>
 
       <div>
         <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main);">Agendar Cita de Paciente</h3>
-        <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted);">Fecha: {{ targetDate }}</p>
+        <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted);">Selecciona la fecha, duración y horario disponible</p>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div class="space-y-1.5">
-          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Hora de Inicio (Fija)</label>
-          <input type="text" [value]="targetHour" disabled class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold opacity-70 cursor-not-allowed shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-        </div>
+      <!-- GRID PRINCIPAL DE 2 COLUMNAS PARA AHORRAR ESPACIO -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-        <div class="space-y-1.5">
-          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Duración</label>
-          <select [(ngModel)]="selectedDurationMinutes" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            <option [value]="30">30 min</option>
-            <option [value]="60">1 hr</option>
-            <option [value]="90">1:30 hr</option>
-            <option [value]="120">2 hrs</option>
-          </select>
-        </div>
-      </div>
+        <!-- COLUMNA IZQUIERDA: Fecha, Duración y Datos del Paciente -->
+        <div class="space-y-3">
 
-      <div class="space-y-3 pt-1">
-        <!-- BUSCADOR HÍBRIDO DE PACIENTE -->
-        <div class="space-y-1 relative">
-          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Nombre Completo del Paciente</label>
-          <input
-            [ngModel]="patientForm.name"
-            (input)="onPatientInput($event)"
-            type="text"
-            placeholder="Escribe para buscar o ingresar nuevo..."
-            class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
-            style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
-          >
-          @if (showPatientDropdown && filteredPatients.length > 0) {
-            <div class="absolute left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto border rounded-2xl shadow-xl py-1" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-              @for (p of filteredPatients; track p.id) {
-                <div (click)="selectPatient(p)" class="px-4 py-2.5 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center" style="color: var(--text-main);">
-                  <span>{{ p.nombre }}</span>
-                  <span class="text-[10px]" style="color: var(--text-muted);">{{ p.telefono }}</span>
+          <!-- Fila 1: Fecha y Duración Juntas -->
+          <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+  <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Fecha de la Cita</label>
+  <input
+    type="date"
+    [(ngModel)]="selectedModalDate"
+    [min]="minDate"
+    (change)="generateTimeSlots()"
+    class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+    style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+  >
+</div>
+
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Duración</label>
+              <select [(ngModel)]="selectedDurationMinutes" (change)="generateTimeSlots()" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+                <option [value]="30">30 min</option>
+                <option [value]="60">1 hr</option>
+                <option [value]="90">1:30 hr</option>
+                <option [value]="120">2 hrs</option>
+              </select>
+            </div>
+          </div>
+
+      <!-- Buscador Híbrido de Paciente -->
+          <div class="space-y-1 relative">
+            <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Nombre Completo del Paciente</label>
+            <input
+              [ngModel]="patientForm.name"
+              (input)="onPatientInput($event)"
+              (focus)="onPatientFocus()"
+              type="text"
+              placeholder="Escribe para buscar o selecciona del caché..."
+              class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+              style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+            >
+            @if (showPatientDropdown && filteredPatients.length > 0) {
+              <div class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                @for (p of filteredPatients; track p.id) {
+                  <div
+                    (click)="selectPatient(p)"
+                    class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                    style="color: var(--text-main);"
+                  >
+                    <span>{{ p.nombre }}</span>
+                    <span class="text-[10px]" style="color: var(--text-muted);">{{ p.telefono }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Fila: Teléfono y Correo Electrónico uno al lado del otro -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Teléfono</label>
+              <input [(ngModel)]="patientForm.phone" type="text" placeholder="Ej. 33 1234 5678" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Correo Electrónico</label>
+              <input [(ngModel)]="patientForm.email" type="email" placeholder="correo@email.com" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            </div>
+          </div>
+
+          <!-- Motivo de la Consulta -->
+      <!-- Motivo de la Consulta -->
+          <div class="space-y-1 relative">
+            <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Motivo de la Consulta</label>
+            <div class="relative">
+              <input
+                [ngModel]="patientForm.reason"
+                (input)="onReasonInput($event)"
+                (focus)="showServiceDropdown = true"
+                type="text"
+                placeholder="Escribe o selecciona un servicio..."
+                class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+              >
+
+              <!-- Desplegable de Servicios Híbrido -->
+              @if (showServiceDropdown && filteredServices.length > 0) {
+                <div class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                  @for (s of filteredServices; track s.id) {
+                    <div
+                      (click)="selectServiceReason(s)"
+                      class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                      style="color: var(--text-main);"
+                    >
+                      <span>{{ s.nombre }}</span>
+                      <span class="text-[10px] font-semibold text-blue-500">${{ s.precioFinal }}</span>
+                    </div>
+                  }
                 </div>
               }
             </div>
-          }
+          </div>
+
         </div>
 
-        <div class="space-y-1">
-          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Teléfono</label>
-          <input [(ngModel)]="patientForm.phone" type="text" placeholder="Ej. 33 1234 5678" class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-        </div>
+        <!-- COLUMNA DERECHA: Lista de Chips de Horarios Disponibles -->
+        <div class="space-y-2 flex flex-col">
+          <label class="text-[10px] font-black uppercase tracking-widest flex justify-between items-center" style="color: var(--text-muted);">
+            <span>Horarios Disponibles</span>
+            @if (selectedModalHour) {
+              <span class="text-blue-500 font-bold lowercase">Seleccionado: {{ selectedModalHour }}</span>
+            }
+          </label>
 
-        <div class="space-y-1">
-          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Correo Electrónico</label>
-          <input [(ngModel)]="patientForm.email" type="email" placeholder="Ej. correo@email.com" class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-        </div>
-
-        <!-- MOTIVO DE LA CONSULTA HÍBRIDO (Escrito o Seleccionable) -->
-        <div class="space-y-1">
-          <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Motivo de la Consulta</label>
-          <div class="grid grid-cols-3 gap-2">
-            <input [(ngModel)]="patientForm.reason" type="text" placeholder="Ej. Dolor agudo" class="col-span-2 border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            <select (change)="patientForm.reason = $any($event.target).value" class="col-span-1 border rounded-2xl px-2 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-              <option value="" disabled selected>Opciones...</option>
-              <option value="Seguimiento consulta">Seguimiento consulta</option>
-            </select>
+          <div class="grid grid-cols-3 gap-2.5 p-3 border rounded-2xl shadow-inner flex-1 content-start max-h-[310px] overflow-y-auto" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+            @for (slot of availableTimeSlots; track slot.time) {
+              <button
+                type="button"
+                [disabled]="!slot.available"
+                (click)="selectedModalHour = slot.time"
+                [class.bg-blue-600]="selectedModalHour === slot.time && slot.available"
+                [class.text-white]="selectedModalHour === slot.time && slot.available"
+                [class.opacity-40]="!slot.available"
+                [class.cursor-not-allowed]="!slot.available"
+                class="py-2.5 px-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center cursor-pointer"
+                [style.background-color]="selectedModalHour === slot.time ? undefined : 'var(--bg-secondary)'"
+                [style.border-color]="'var(--border-color)'"
+                [style.color]="selectedModalHour === slot.time ? '#ffffff' : 'var(--text-main)'">
+                {{ slot.label }}
+              </button>
+            } @empty {
+              <p class="col-span-3 text-center text-xs py-8" style="color: var(--text-muted);">No hay horarios calculados para esta fecha</p>
+            }
           </div>
         </div>
+
       </div>
 
-      <button (click)="saveAppointment()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20">
-        Guardar Cita
+   <!-- Botón Guardar Cita con estado de Carga -->
+      <button
+        type="button"
+        (click)="saveAppointment()"
+        [disabled]="isSaving"
+        class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20 mt-2 flex items-center justify-center space-x-2"
+        [class.opacity-50]="isSaving"
+        [class.cursor-not-allowed]="isSaving">
+        @if (isSaving) {
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Guardando Cita...</span>
+        } @else {
+          <span>Guardar Cita</span>
+        }
       </button>
     </div>
   </div>
@@ -742,3 +1008,36 @@
     </div>
   </div>
 }
+@if (showSuccessModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+    <div class="border w-full max-w-sm rounded-[2.5rem] p-7 shadow-2xl relative text-center space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+      <div class="w-12 h-12 rounded-full bg-green-500/20 text-green-500 mx-auto flex items-center justify-center text-xl font-bold">
+        ✓
+      </div>
+      <div>
+        <h3 class="text-base font-black uppercase tracking-tight" style="color: var(--text-main);">¡Cita Guardada Exitosamente!</h3>
+        <p class="text-xs font-bold mt-1" style="color: var(--text-muted);">La cita se ha registrado correctamente en el sistema.</p>
+      </div>
+      <button
+        type="button"
+        (click)="showSuccessModal = false"
+        class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+        Aceptar
+      </button>
+    </div>
+  </div>
+}
+@if (isSwitchingBranch()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div class="border p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-4" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+      <div class="w-16 h-16 mx-auto rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 animate-spin">
+        <lucide-icon [img]="RefreshCw" class="w-8 h-8"></lucide-icon>
+      </div>
+      <div class="space-y-1">
+        <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Sincronizando Sucursal</h3>
+        <p class="text-xs" style="color: var(--text-muted);">Actualizando datos del nuevo consultorio, por favor espere...</p>
+      </div>
+    </div>
+  </div>
+}
+<app-notification-toast />

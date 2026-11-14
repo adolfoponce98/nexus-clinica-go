@@ -256,6 +256,14 @@ export class ServiciosConsultorioComponent implements OnInit {
         } else {
           this.servicios.update(lista => [nuevoServicio, ...lista]);
         }
+        // 🚀 NUEVO: Guardar los servicios actualizados en la caché local
+        const listaActualizada = this.servicios();
+        this.authService.saveServicesToActiveSucursal(listaActualizada);
+
+        // Si el servicio afecta a múltiples sucursales, actualizamos cada una en la lista general
+        idsConsultoriosToSave.forEach(idSuc => {
+          this.authService.updateServicesInBranch(idSuc, listaActualizada);
+        });
         this.showModal.set(false);
       } else {
         throw new Error(decryptedResponse?.error || 'Error desconocido al procesar el servidor.');

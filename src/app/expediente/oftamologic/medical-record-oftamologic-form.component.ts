@@ -2,19 +2,20 @@ import { Component, computed, inject, signal, CUSTOM_ELEMENTS_SCHEMA } from '@an
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule, Check, CheckCircle, ChevronLeft, ChevronRight, User, FileText, Eye, ShieldAlert } from 'lucide-angular';
-
+import { Advanced3DViewerComponent } from '../../medicalUtilities/advanced-3d-viewer.component';
+import { AuthService } from '../../auth/auth.service';
 @Component({
   selector: 'app-oftalmologia',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule,Advanced3DViewerComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: 'medical-record-oftamologic-form.component.html'
 })
 export class OftalmologiaComponent {
   private fb = inject(FormBuilder);
-
+  private authService = inject(AuthService);
   icons = { Check, CheckCircle, ChevronLeft, ChevronRight, User, FileText, Eye, ShieldAlert };
-
+  idConsultorio = signal('');
   activeTab = signal<number>(1);
 
   tabs = signal([
@@ -83,8 +84,9 @@ estructuras = [
   { key: 'presion_intraocular', label: 'Presión intraocular' }
 ];
 
-// Catálogo de tus 3 modelos 3D con sus respectivas URLs de imágenes miniatura (reemplaza las rutas de las miniaturas por tus assets o enlaces reales)
-  eyeModels = [
+   nombreConsultorio = '';
+  nombreMedico = '';
+   eyeModels = [
     {
       id: 'modelo-1',
       name: 'Anatomía Ocular General',
@@ -157,6 +159,21 @@ onModelError(event: any) {
       this.activeTab.update(t => t - 1);
     }
   }
+
+    ngOnInit() {
+    const defaultOffice = this.authService.getSucursal();
+    this.idConsultorio = defaultOffice?.idConsultorio || 'consultorio_general';
+    this.nombreConsultorio = "Consultorio " + defaultOffice?.name || 'Consultorio Default';
+
+    const sessionData = this.authService.getSession();
+    const email = sessionData?.fullName || 'doctor@nexuscliniq.com';
+    this.nombreMedico = email.split('@')[0].toUpperCase();
+
+    if (defaultOffice) {
+      this.authService.saveSucursal(defaultOffice);
+    }
+  }
+
 
   saveRecord() {
     console.log('Historia Oftalmológica con 3D Guardada:', this.recordForm.value);

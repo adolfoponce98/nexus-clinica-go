@@ -1,9 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import CryptoJS from 'crypto-js';
 import {
-  LucideAngularModule, Calendar, Clock, AlertCircle, CheckCircle2,Building2,
-  Users, Bell, ArrowRight, UserCheck, CreditCard, FileText, Plus, Search, FilePlus, Stethoscope, Activity, TrendingUp, ChevronRight
+  LucideAngularModule, Calendar, Clock, AlertCircle, CheckCircle2, Building2,
+  Users, Bell, ArrowRight, UserCheck, CreditCard, FileText, Plus, Search, FilePlus, Stethoscope, Activity, TrendingUp, ChevronRight, X
 } from 'lucide-angular';
 
 import { SpecialtyChartComponent } from '../home/components/speciality/speciality-chart.component';
@@ -12,7 +14,9 @@ import { RecentPatientsComponent } from '../home/components/recent-patients/rece
 import { QuickActionsComponent } from '../home/components/quick-actions/quick-actions.component';
 import { UpcomingAppointmentsComponent } from '../home/components/upcoming-appointments/upcoming-appointments.component';
 import { RemindersComponent } from '../home/components/reminders/reminders.component';
-import { AuthService } from '../auth/auth.service'; // Asegúrate de ajustar la ruta de importación de tu AuthService
+import { AuthService } from '../auth/auth.service';
+import { TokenInterceptorService } from '../auth/token-interceptor.service';
+import { AppointmentsEvolutionComponent } from '../home/components/appointments-evolution/appointments-evolution.component';
 
 @Component({
   selector: 'app-home',
@@ -24,100 +28,154 @@ import { AuthService } from '../auth/auth.service'; // Asegúrate de ajustar la 
     PatientEvolutionComponent,
     RecentPatientsComponent,
     QuickActionsComponent,
+    AppointmentsEvolutionComponent,
     UpcomingAppointmentsComponent,
     RemindersComponent
   ],
   templateUrl: './home.component.html'
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
+  private tokenInterceptor = inject(TokenInterceptorService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
+  private appointmentsSub?: Subscription;
+  private branchSub?: Subscription;
+  private queryParamsSub?: Subscription;
+
+  cachedAppointmentsSignal = signal<any[]>([]);
 
   readonly icons = {
-    Building2,
-    Calendar, Clock, AlertCircle, CheckCircle2,
-    Users, Bell, ArrowRight, UserCheck, CreditCard, FileText, Plus, Search, FilePlus, Stethoscope, Activity, TrendingUp, ChevronRight
+    Building2, Calendar, Clock, AlertCircle, CheckCircle2,
+    Users, Bell, ArrowRight, UserCheck, CreditCard, FileText, Plus, Search, FilePlus, Stethoscope, Activity, TrendingUp, ChevronRight, X
   };
 
-  currentDateText = 'Jueves, 26 de junio de 2025';
-  // Claves de seguridad para encriptar el payload hacia savePatientFollowUp
+  userData: any = null;
+  currentDateText = '';
   private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
   private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
 
-  patientEvolutionData = [
-    { month: 'Ene', total: 60, spacing: '20px' },
-    { month: 'Feb', total: 85, spacing: '45px' },
-    { month: 'Mar', total: 110, spacing: '70px' },
-    { month: 'Abr', total: 135, spacing: '95px' },
-    { month: 'May', total: 180, spacing: '130px' },
-    { month: 'Jun', total: 248, spacing: '160px' }
-  ];
+  objectKeys = Object.keys;
+  todayAppointmentsCount = 0;
+  todayAppointmentsSubText = '0 confirmadas • 0 por confirmar';
+  totalActivePatientsCount = 0;
 
-  recentPatients = [
-    { name: 'María González', specialty: 'Medicina General', lastConsult: '26 jun 2025, 08:00', status: 'Activa', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100' },
-    { name: 'Carlos Ramírez', specialty: 'Cardiología', lastConsult: '25 jun 2025, 10:30', status: 'Activa', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100' },
-    { name: 'Laura Martínez', specialty: 'Nutrición', lastConsult: '24 jun 2025, 09:15', status: 'Activa', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100' },
-    { name: 'Jorge Sánchez', specialty: 'Medicina Interna', lastConsult: '23 jun 2025, 11:00', status: 'Activa', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100' },
-    { name: 'Patricia Torres', specialty: 'Pediatría', lastConsult: '22 jun 2025, 16:20', status: 'En seguimiento', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100' }
-  ];
+  // 🌟 Nuevas métricas para el mes actual
+  canceledThisMonthCount = 0;
+  unconfirmedThisMonthCount = 0;
 
-  quickActions = [
-    { title: 'Nueva cita', icon: Calendar, colorClass: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' },
-    { title: 'Buscar paciente', icon: Search, colorClass: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
-    { title: 'Crear expediente', icon: FilePlus, colorClass: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' },
-    { title: 'Recetar', icon: FileText, colorClass: 'bg-rose-500/10 text-rose-400 border border-rose-500/20' },
-    { title: 'Subir estudio', icon: Stethoscope, colorClass: 'bg-amber-500/10 text-amber-400 border border-amber-500/20' },
-    { title: 'Generar reporte', icon: TrendingUp, colorClass: 'bg-purple-500/10 text-purple-400 border border-purple-500/20' }
-  ];
+  appointmentsGrouped = signal<any>({});
 
-  // 🔄 Lista reactiva o arreglo que se llenará con las citas de la caché
-  upcomingAppointments: Array<{ time: string; name: string; specialty: string; status: string; avatar: string }> = [];
+  showPaymentModal = signal<boolean>(false);
+  paymentStatusType = signal<'success' | 'canceled'>('success');
+  paymentTitle = signal<string>('');
+  paymentMessage = signal<string>('');
 
- reportsList = [
+  recentPatients: Array<any> = [];
+  upcomingAppointments: Array<{ date: string; time: string; name: string; specialty: string; status: any; avatar: string }> = [];
+
+  reportsList = [
     { title: 'Reportes de pacientes', subtitle: 'Historial, demografía y estatus', icon: Users, colorClass: 'bg-blue-500/10 text-blue-400 border-blue-500/20', type: 'patients' },
     { title: 'Reportes de citas', subtitle: 'Flujo, asistencias y cancelaciones', icon: Calendar, colorClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', type: 'appointments' },
     { title: 'Reportes del consultorio', subtitle: 'Ocupación, sucursales y horarios', icon: Building2, colorClass: 'bg-purple-500/10 text-purple-400 border-purple-500/20', type: 'office' },
     { title: 'Reportes de servicios', subtitle: 'Especialidades y procedimientos', icon: Stethoscope, colorClass: 'bg-amber-500/10 text-amber-400 border-amber-500/20', type: 'services' }
   ];
 
-  patientEvolutionDataMap: Record<number, number> = {};
+  patientEvolutionDataMap = signal<Record<number, number>>({});
+  specialtyData: Array<{ name: string; count: number; percentage: number; color: string }> = [];
 
-async loadPatientEvolutionMetrics() {
+  ngOnInit(): void {
+    this.userData = this.authService.getSession();
+    this.cargarDatosHome();
+    this.currentDateText = this.obtenerFechaActualFormateada();
+
+    this.queryParamsSub = this.route.queryParams.subscribe(params => {
+      if (params['success'] === 'true') {
+        this.paymentStatusType.set('success');
+        this.paymentTitle.set('¡Pago y Suscripción Exitosa!');
+        this.paymentMessage.set('Tu pago se ha procesado correctamente y tu suscripción ha sido activada en el sistema.');
+        this.showPaymentModal.set(true);
+        this.limpiarQueryStringURL();
+      } else if (params['canceled'] === 'true') {
+        this.paymentStatusType.set('canceled');
+        this.paymentTitle.set('Proceso Cancelado');
+        this.paymentMessage.set('El proceso de pago fue cancelado. No se ha realizado ninguna transacción ni cargo a tu cuenta.');
+        this.showPaymentModal.set(true);
+        this.limpiarQueryStringURL();
+      }
+    });
+
+    this.appointmentsSub = this.authService.appointmentsUpdated$.subscribe(() => {
+      this.loadAppointmentsFromCache();
+      this.loadReasonsChartData();
+    });
+
+    this.branchSub = this.authService.branchChanged$.subscribe(() => {
+      this.cargarDatosHome();
+    });
+  }
+
+  private limpiarQueryStringURL() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { success: null, canceled: null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  closePaymentModal() {
+    this.showPaymentModal.set(false);
+  }
+
+  private obtenerFechaActualFormateada(): string {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    const fechaFormateada = new Date().toLocaleDateString('es-ES', options);
+    return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+  }
+
+  ngOnDestroy(): void {
+    if (this.appointmentsSub) this.appointmentsSub.unsubscribe();
+    if (this.branchSub) this.branchSub.unsubscribe();
+    if (this.queryParamsSub) this.queryParamsSub.unsubscribe();
+  }
+
+  cargarDatosHome() {
+    this.loadReasonsChartData();
+    this.loadAppointmentsFromCache();
+    this.loadRecentPatientsFromCache();
+    this.loadPatientEvolutionMetrics();
+    this.loadActivePatientsCount();
+  }
+
+  async loadPatientEvolutionMetrics() {
     try {
       const sessionData = this.authService.getSession();
-      console.log('Session Data:', sessionData);
-      const jwtToken = sessionData?.sessionToken;
-
-      if (!jwtToken) {
-        console.warn('No se encontró un token JWT válido para cargar las métricas.');
-        return;
-      }
-
-      const idDoctor = sessionData.email ? sessionData.email.trim().toLowerCase().replace(/[\/\\]/g, "_") : 'default_doctor';
+      const idDoctor = sessionData?.email ? sessionData.email.trim().toLowerCase().replace(/[\/\\]/g, "_") : 'default_doctor';
       const activeSucursal = this.authService.getSucursal();
       const idConsultorio = activeSucursal?.idConsultorio || 'default_consultorio';
-      const currentYear = new Date().getFullYear(); // 2026
+      const currentYear = new Date().getFullYear();
 
-      const payload = {
-        idDoctor: idDoctor,
-        idConsultorio: idConsultorio,
-        year: currentYear
-      };
+      const payload = { idDoctor, idConsultorio, year: currentYear };
 
-      // 📥 LOG: Ver el request antes de ser encriptado
-      console.log('📤 [Request] Payload para getOfficeMetrics (Sin encriptar):', payload);
+      const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
+        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
 
-      // Encriptar payload usando la llave de tu app
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-      const response = await fetch('https://getofficemetrics-o7vmreizjq-uc.a.run.app', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular',
-          'Authorization': `Bearer ${jwtToken}`
-        },
-        body: JSON.stringify({ encryptedData: ciphertext })
+        return await fetch('https://getofficemetrics-o7vmreizjq-uc.a.run.app', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-app-signature': this.APP_SECRET_HEADER,
+            'x-client-source': 'angular',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ encryptedData: ciphertext })
+        });
       });
 
       const jsonRes = await response.json();
@@ -125,26 +183,18 @@ async loadPatientEvolutionMetrics() {
         throw new Error(jsonRes.error || 'Error al obtener métricas del servidor.');
       }
 
-      // Desencriptar respuesta
       const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
       const decryptedResponse = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-      // 📥 LOG: Ver la respuesta completa ya desencriptada del servidor
-      console.log('📥 [Response] Datos de métricas desencriptados:', decryptedResponse);
 
       if (decryptedResponse && decryptedResponse.success) {
         const yearKey = String(currentYear);
         const monthsData = decryptedResponse.resumeByMonths?.[yearKey]?.evolutionPatientsByMonth || {};
-
-        console.log('📊 Meses de evolución cargados:', monthsData);
-        this.patientEvolutionDataMap = monthsData;
+        this.patientEvolutionDataMap.set(monthsData);
       }
     } catch (err) {
       console.error('❌ Error al cargar métricas de evolución:', err);
     }
   }
-
-  specialtyData: Array<{ name: string; count: number; percentage: number; color: string }> = [];
 
   loadReasonsChartData() {
     const cached = this.authService.getCachedAppointments();
@@ -153,7 +203,6 @@ async loadPatientEvolutionMetrics() {
       return;
     }
 
-    // 1. Contar frecuencias por cada 'reason' diferente
     const countsMap = new Map<string, number>();
     cached.forEach((item: any) => {
       const reason = (item.reason && item.reason.trim() !== '') ? item.reason.trim() : 'Sin motivo especificado';
@@ -163,7 +212,6 @@ async loadPatientEvolutionMetrics() {
     const totalCitas = cached.length;
     const colorPalette = ['#34d399', '#60a5fa', '#a855f7', '#f43f5e', '#fbbf24', '#38bdf8', '#fb7185', '#c084fc', '#4ade80', '#818cf8'];
 
-    // 2. Mapear al formato requerido calculando su porcentaje global
     let index = 0;
     const processed = Array.from(countsMap.entries()).map(([name, count]) => {
       const percentage = totalCitas > 0 ? Math.round((count / totalCitas) * 100) : 0;
@@ -175,31 +223,18 @@ async loadPatientEvolutionMetrics() {
     this.specialtyData = processed;
   }
 
-  ngOnInit(): void {
-    this.loadReasonsChartData();
-    this.loadAppointmentsFromCache();
-    this.loadRecentPatientsFromCache();
-    this.loadPatientEvolutionMetrics();
-  }
   loadRecentPatientsFromCache() {
     const cached = this.authService.getCachedAppointments();
-    const now = new Date();
-
     if (cached && cached.length > 0) {
-      // Filtrar solo las citas que ya pasaron (fecha + hora de término < ahora)
-      const pastAppointments = cached.filter((item: any) => {
-        if (!item.date || !item.endTime) return false;
-        const appointmentEndDateTime = new Date(`${item.date}T${item.endTime}:00`);
-        return appointmentEndDateTime < now;
-      });
-
-      // Mapearlas al formato requerido por RecentPatientsComponent
-      this.recentPatients = pastAppointments.map((item: any) => ({
+      this.recentPatients = cached.map((item: any) => ({
         name: item.patientName || 'Sin nombre',
-        specialty: item.reason || 'Consulta general', // Usando el motivo (reason)
-        lastConsult: `${item.date} - ${item.time}`,
-        status: item.status || 'Completada', // O 'Tomada' / 'Cancelada' según corresponda
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' // Avatar genérico
+        specialty: item.reason || 'Consulta general',
+        date: item.date || '',
+        time: item.time || '00:00',
+        endTime: item.endTime || item.time || '00:00',
+        lastConsult: `${item.date || ''} - ${item.time || ''}`,
+        status: item.status || 'Completada',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'
       }));
     } else {
       this.recentPatients = [];
@@ -208,16 +243,59 @@ async loadPatientEvolutionMetrics() {
 
   loadAppointmentsFromCache() {
     const cached = this.authService.getCachedAppointments();
+
     if (cached && cached.length > 0) {
-      // Mapeamos los datos reales del caché a la estructura que requiere el componente de próximas citas
-      this.upcomingAppointments = cached.map((item: any) => ({
+      this.cachedAppointmentsSignal.set(cached);
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const currentDateStr = `${currentYear}-${currentMonth}-${day}`;
+      const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      // 🔍 Filtrar citas que pertenecen al mes y año actual
+      const currentMonthPrefix = `${currentYear}-${currentMonth}`;
+      const thisMonthAppointments = cached.filter((item: any) => item.date && item.date.startsWith(currentMonthPrefix));
+
+      // ❌ Contar canceladas en el mes (status === 2)
+      this.canceledThisMonthCount = thisMonthAppointments.filter((item: any) => Number(item.status) === 2).length;
+
+      // ⏳ Contar sin confirmar en el mes (status === 0 o undefined/null)
+      this.unconfirmedThisMonthCount = thisMonthAppointments.filter((item: any) => Number(item.status) === 0 || item.status === undefined || item.status === null).length;
+
+      const todayUpcoming = cached.filter((item: any) => {
+        const isToday = item.date === currentDateStr || item.date?.includes(`${now.getDate()}`);
+        const isFutureTime = (item.time || '00:00') >= currentTimeStr;
+        return isToday && isFutureTime;
+      });
+
+      this.todayAppointmentsCount = todayUpcoming.length;
+      const confirmedCount = todayUpcoming.filter((i: any) => Number(i.status) === 1).length;
+      const pendingCount = todayUpcoming.filter((i: any) => Number(i.status) === 0 || !i.status).length;
+      this.todayAppointmentsSubText = `${confirmedCount} confirmadas • ${pendingCount} por confirmar`;
+
+      this.upcomingAppointments = todayUpcoming.map((item: any) => ({
+        date: item.date || '',
         time: item.time || '00:00',
         name: item.patientName || 'Sin nombre',
         specialty: item.reason || 'Consulta General',
-        status: 'Confirmada', // Por defecto o basado en alguna propiedad si la trae
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' // Avatar genérico solicitado
+        status: item.status,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'
       }));
+    } else {
+      this.cachedAppointmentsSignal.set([]);
+      this.todayAppointmentsCount = 0;
+      this.todayAppointmentsSubText = '0 confirmadas • 0 por confirmar';
+      this.canceledThisMonthCount = 0;
+      this.unconfirmedThisMonthCount = 0;
+      this.upcomingAppointments = [];
     }
+  }
+
+  loadActivePatientsCount() {
+    const patients = this.authService.getCachedPatients();
+    this.totalActivePatientsCount = patients ? patients.length : 0;
   }
 
   triggerAction(actionName: string) {

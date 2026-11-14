@@ -23,8 +23,8 @@ import { ListaPacientesComponent } from './patient/patient-list/lista-pacientes.
 import { ClinicsComponent } from './consultorios/clinics-tab.component';
 import { MedicalFollowupContainerComponent } from './expediente/baseFollow/medical-followup-container.component';
 import { MedicalRecordContainerComponent } from './expediente/medical-record-container.component';
-import { MedicalFollowupReadonlyComponent } from './expediente/traumatologic/follow/detail/medical-followup-detail.component';
-
+import { MedicalFollowupDetailContainerComponent } from './expediente/baseFollowDetail/medical-followup-detail-container.component';
+import { EmployeesComponent } from './employes/employees-tab.component';
 import { AuthService } from './auth/auth.service';
 import { inject } from '@angular/core';
 // Protege rutas privadas
@@ -58,6 +58,8 @@ export const routes: Routes = [
      canActivate: [authGuard], // Solo entra si HAY sesión
     children: [
       { path: 'home', component: HomeComponent },
+      { path: 'dashboard', component: HomeComponent },
+
       { path: 'expediente/nuevo', component: MedicalRecordContainerComponent },
       { path: 'usuarios_sistema', component: UsersSystemComponent },
       { path: 'expediente/:id', component: ClinicalHistoryComponent },
@@ -68,13 +70,13 @@ export const routes: Routes = [
       { path: 'recetas', component: RecetaMedicaComponent },
       { path: 'planes', component: PlansComponent },
       { path: 'calendario', component: CalendarComponent },
+       { path: 'employes', component: EmployeesComponent },
       { path: 'profile', component: DoctorProfileContainerComponent },
       { path: 'sucursales', component: SucursalComponent },
         { path: 'services', component: ServiciosConsultorioComponent },
 
        { path: 'consultorios', component: ClinicsComponent },
-        { path: 'expediente/detail/:id', component: MedicalFollowupReadonlyComponent },
-
+     { path: 'expediente/detail/:id/:expedienteId/:followUpId', component: MedicalFollowupDetailContainerComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },

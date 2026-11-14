@@ -10,7 +10,9 @@ export const SPECIALTIES_CATALOG: Specialty[] = [
   { code: 'DER', name: 'Dermatología' },
   { code: 'GINE', name: 'Ginecología y Obstetricia' },
   { code: 'TRAUM', name: 'Traumatología y Ortopedia' },
-    { code: 'DENT', name: 'Dentista' },
+  { code: 'DENT', name: 'Odontologia' },
+  { code: 'ONC', name: 'Oncología' },
+  { code: 'OFTA', name: 'Oftamología' },
 ];
 
 // Objeto de mapeo rápido para traducciones O(1)

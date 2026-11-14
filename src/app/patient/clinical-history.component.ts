@@ -5,16 +5,17 @@ import { SendReminderModalComponent } from './send-reminder-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../auth/auth.service';
 import * as CryptoJS from 'crypto-js';
+import { FormsModule } from '@angular/forms';
 import {
   LucideAngularModule, ArrowLeft, FilePlus, Phone, Mail, MapPin,
   ChevronRight, Calendar, Clock, Image as ImageIcon, User,
-  Activity, HeartPulse, FileText, Bell, Loader2
+  Activity, HeartPulse, FileText, Bell, Loader2,Pencil,Check
 } from 'lucide-angular';
 
 @Component({
   selector: 'app-clinical-history',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule,FormsModule],
   templateUrl: './clinical-history.component.html'
 })
 export class ClinicalHistoryComponent implements OnInit {
@@ -26,7 +27,7 @@ export class ClinicalHistoryComponent implements OnInit {
   readonly icons = {
     ArrowLeft, FilePlus, Phone, Mail, MapPin,
     ChevronRight, Calendar, Clock, ImageIcon, User,
-    Activity, HeartPulse, FileText, Bell, Loader2
+    Activity, HeartPulse, FileText, Bell, Loader2,Pencil,Check
   };
 
   // 🔐 URL de la Cloud Function y credenciales de seguridad
@@ -34,7 +35,12 @@ export class ClinicalHistoryComponent implements OnInit {
   private readonly REFRESH_TOKEN_URL = 'https://refreshtoken-o7vmreizjq-uc.a.run.app';
   private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
   private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
+// Señales de control de edición
+isEditingContact = signal<boolean>(false);
+isEditingCategory = signal<boolean>(false);
 
+// Copia editable temporal para los inputs
+editablePatientData = signal<any>({});
   patientId = signal<string | null>(null);
   selectedCategory = signal<string>('general');
   isLoading = signal<boolean>(true);
@@ -67,37 +73,52 @@ export class ClinicalHistoryComponent implements OnInit {
   // Historial cronológico de atenciones (History Board / Follow-ups)
   historyBoard = signal<any[]>([]);
 ngOnInit() {
-    const defaultOffice = this.authService.getSucursal();
-    this.idConsultorio.set(defaultOffice.idConsultorio || 'consultorio_general');
-    console.log(this.idConsultorio)
+  const defaultOffice = this.authService.getSucursal();
+  this.idConsultorio.set(defaultOffice.idConsultorio || 'consultorio_general');
 
-    this.route.paramMap.subscribe(params => {
-      const safeUrlId = params.get('id');
-      if (safeUrlId) {
+  this.route.paramMap.subscribe(params => {
+    const safeUrlId = params.get('id');
+    if (safeUrlId) {
+      let decryptedId = '';
+      const decodedParam = decodeURIComponent(safeUrlId);
+
+      try {
+        // Intento 1: ¿Viene con el formato antiguo (Base64 + AES)?
         try {
-          // 🔓 1. Revertir el Base64 seguro para obtener el texto cifrado original de AES
-          const ciphertext = atob(safeUrlId);
-
-          // 🔓 2. Desencriptar el AES usando la llave maestra
+          const ciphertext = atob(decodedParam);
           const bytes = CryptoJS.AES.decrypt(ciphertext, this.ENCRYPTION_KEY);
-          const decryptedId = bytes.toString(CryptoJS.enc.Utf8);
+          decryptedId = bytes.toString(CryptoJS.enc.Utf8);
+        } catch (err) {
+          // Si atob falla, pasamos al intento 2
+        }
 
-          if (decryptedId) {
-            this.patientId.set(decryptedId);
-            this.cargarDetallePaciente(this.idConsultorio(), decryptedId);
-          } else {
-            console.error('❌ El ID desencriptado está vacío.');
-            this.isLoading.set(false);
-          }
-        } catch (e) {
-          console.error('❌ Error al desencriptar el ID del paciente desde la ruta:', e);
+        // Intento 2: ¿Viene cifrado solo con AES (y encodeURIComponent)?
+        if (!decryptedId) {
+          const bytes = CryptoJS.AES.decrypt(decodedParam, this.ENCRYPTION_KEY);
+          decryptedId = bytes.toString(CryptoJS.enc.Utf8);
+        }
+
+        // Intento 3: Si todo lo anterior falla, asumimos que es texto plano
+        if (!decryptedId) {
+          decryptedId = safeUrlId;
+        }
+
+        if (decryptedId) {
+          this.patientId.set(decryptedId);
+          this.cargarDetallePaciente(this.idConsultorio(), decryptedId);
+        } else {
+          console.error('❌ No se pudo resolver el ID del paciente.');
           this.isLoading.set(false);
         }
-      } else {
+      } catch (e) {
+        console.error('❌ Error al procesar el ID del paciente desde la ruta:', e);
         this.isLoading.set(false);
       }
-    });
-  }
+    } else {
+      this.isLoading.set(false);
+    }
+  });
+}
 
   // 🚀 MÉTODO PARA CARGAR EL DETALLE DEL PACIENTE CON PETICIÓN ENCRIPTADA
   async cargarDetallePaciente(consultorioId: string, patientId: string) {
@@ -208,10 +229,18 @@ ngOnInit() {
           fiscalData: ficha.datosFiscales || 'Sin datos fiscales registrados'
         });
 
-        // Mapear el historial de follow-ups (History Board)
+ // Mapear el historial de follow-ups (History Board)
         const followUpsRaw = p.followUps || [];
+
+        // Opcional: ordenar explícitamente por fecha descendente (más reciente primero)
+        followUpsRaw.sort((a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA; // De mayor a menor (más nuevo arriba)
+        });
+
         const mappedFollowUps = followUpsRaw.map((fu: any, index: number) => ({
-          id: fu.followUpId || index,
+          id: fu.followUpId || `reg_${index}`,
           doctor: fu.doctor || 'Dr. (Consulta Médica)',
           date: fu.createdAt ? new Date(fu.createdAt).toLocaleDateString() : 'Fecha reciente',
           time: fu.createdAt ? new Date(fu.createdAt.replace('Z', '')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
@@ -229,6 +258,39 @@ ngOnInit() {
       this.isLoading.set(false);
     }
   }
+
+  // Habilitar / deshabilitar edición de contacto
+toggleEditContact() {
+  if (!this.isEditingContact()) {
+    // Copiamos los datos actuales al modelo editable
+    this.editablePatientData.set({ ...this.patientData() });
+    this.isEditingContact.set(true);
+  } else {
+    this.isEditingContact.set(false);
+  }
+}
+
+// Habilitar / deshabilitar edición de la categoría seleccionada
+toggleEditCategory() {
+  if (!this.isEditingCategory()) {
+    this.editablePatientData.set({ ...this.patientData() });
+    this.isEditingCategory.set(true);
+  } else {
+    this.isEditingCategory.set(false);
+  }
+}
+
+// Guardar cambios de contacto
+async saveContactData() {
+  await this.persistPatientChanges();
+  this.isEditingContact.set(false);
+}
+
+// Guardar cambios de categoría
+async saveCategoryData() {
+  await this.persistPatientChanges();
+  this.isEditingCategory.set(false);
+}
 
 openSendReminderModal() {
     const currentData = this.patientData();
@@ -264,12 +326,116 @@ openSendReminderModal() {
     this.router.navigate(['/expediente/nuevaRevision', safeUrlId]);
   }
 
-  verExpedienteCompleto() {
-    const email = this.patientData().email;
-    this.router.navigate(['/expediente/detail', email]);
-  }
+verExpedienteCompleto(followUpId: string) {
+  // 1. Ciframos el followUpId que viene como parámetro (ej. "exp_001_2026-10-28")
+  const cipherFollowUpId = encodeURIComponent(CryptoJS.AES.encrypt(followUpId, this.ENCRYPTION_KEY).toString());
+
+  // 2. Ciframos el ID del paciente
+  const cipherpatientId = encodeURIComponent(CryptoJS.AES.encrypt(this.patientId() || '', this.ENCRYPTION_KEY).toString());
+
+  // 3. (Opcional pero recomendado) Si el expedienteId es fijo o viene estructurado, lo ciframos también.
+  // Si tu estructura usa "exp_001" por defecto, puedes pasarlo o extraerlo del item.
+  const expedienteId = 'exp_001';
+  const cipherExpedienteId = encodeURIComponent(CryptoJS.AES.encrypt(expedienteId, this.ENCRYPTION_KEY).toString());
+
+  // Navegamos enviando los tres parámetros cifrados a la ruta de detalle
+  this.router.navigate(['/expediente/detail', cipherpatientId, cipherExpedienteId, cipherFollowUpId]);
+}
 
   volverAlListado() {
     this.router.navigate(['/pacientes']);
   }
+
+getSmallThumbnail(originalUrl: string): string {
+  try {
+    // 1. Tomamos la URL firmada original y le quitamos los parámetros de firma (?X-Goog-...)
+    const baseUrl = originalUrl.split('?')[0];
+
+    // 2. Encontramos la última barra para separar la ruta del archivo y el nombre
+    const lastIndex = baseUrl.lastIndexOf('/');
+    if (lastIndex === -1) return originalUrl;
+
+    const folder = baseUrl.substring(0, lastIndex + 1);
+    const fileName = baseUrl.substring(lastIndex + 1);
+
+    const extIndex = fileName.lastIndexOf('.');
+    if (extIndex === -1) return originalUrl;
+
+    const nameWithoutExt = fileName.substring(0, extIndex);
+    const ext = fileName.substring(extIndex);
+
+    // 3. Construimos la URL limpia apuntando al thumbnail pequeño SIN alterar firmas ajenas
+    // (O bien, si usas urls públicas / firmadas de otra forma, ajustas aquí)
+    const thumbnailPath = `${folder}thumbnails/${nameWithoutExt}_small${ext}`;
+
+    // Si tus miniaturas son públicas o usas URLs públicas directas:
+    return thumbnailPath;
+  } catch (e) {
+    return originalUrl;
+  }
+}
+
+onImageError(event: Event, originalUrl: string) {
+  const imgElement = event.target as HTMLImageElement;
+  // Evita bucles infinitos si la original también llegara a fallar
+  if (imgElement.src !== originalUrl) {
+    imgElement.src = originalUrl;
+  }
+}
+
+
+
+
+// Método general para enviar los datos actualizados al backend
+private async persistPatientChanges() {
+  try {
+    const sessionData = this.authService.getSession();
+    const jwtToken = sessionData?.sessionToken;
+    if (!jwtToken) return;
+
+    const updated = this.editablePatientData();
+
+    // Actualizamos localmente el signal principal
+    this.patientData.set({ ...updated });
+
+    const payload = {
+      idConsultorio: this.idConsultorio(),
+      idPaciente: this.patientId(),
+      fichaDeIdentificacion: {
+        nombreCompleto: updated.fullName,
+        telefono: updated.phone,
+        correo: updated.email,
+        calleNumero: updated.address,
+        edad: updated.age,
+        fechaNacimiento: updated.birthDate,
+        sexo: updated.gender,
+        contactoEmergencia: updated.emergencyContact,
+        ocupacion: updated.occupation,
+        actividadDeportiva: updated.sport,
+        datosFiscales: updated.fiscalData
+      },
+      antecedentes: {
+        habitos: updated.lifestyle
+      }
+    };
+
+    const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+
+    // Aquí realizas tu petición HTTP POST para guardar en el backend
+    await fetch('https://updatepatientexpedient-o7vmreizjq-uc.a.run.app', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-app-signature': this.APP_SECRET_HEADER,
+        'x-client-source': 'angular',
+        'Authorization': `Bearer ${jwtToken}`
+      },
+      body: JSON.stringify({ encryptedData: ciphertext })
+    });
+
+  } catch (err) {
+    console.error('❌ Error al guardar los cambios del paciente:', err);
+    alert('No se pudieron guardar los cambios.');
+  }
+}
 }

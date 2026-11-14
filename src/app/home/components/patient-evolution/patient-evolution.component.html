@@ -16,31 +16,63 @@
     </select>
   </div>
 
-  <div class="h-44 relative flex items-end justify-between pt-8 px-2 border-b" style="border-color: var(--border-color);">
-    <div class="absolute inset-x-0 bottom-8 h-24 bg-gradient-to-t from-emerald-500/10 to-transparent pointer-events-none rounded-t-xl"></div>
+  <!-- Contenedor principal con Eje Y lateral y Gráfica -->
+  <div class="flex items-end gap-2 pt-2 border-b pb-2" style="border-color: var(--border-color);">
 
-    @for (item of displayedData(); track item.monthIndex) {
-      <div class="flex flex-col items-center gap-2 z-10 relative">
+    <!-- EJE Y (Valores numéricos laterales izquierdos) -->
+    <div class="h-44 flex flex-col justify-between text-[9px] font-bold pr-2 pb-6 text-right select-none" style="color: var(--text-muted); min-width: 28px;">
+      <span>{{ getMaxVal() }}</span>
+      <span>{{ Math.round(getMaxVal() / 2) }}</span>
+      <span>0</span>
+    </div>
 
-        <!-- Línea roja vertical destacando el mes actual -->
-        @if (item.isCurrentMonth) {
-          <div class="absolute -top-8 bottom-0 w-0.5 bg-rose-500 z-0 shadow-sm" title="Mes Actual"></div>
-          <span class="absolute -top-11 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-20">En curso</span>
+    <!-- Área de la gráfica y puntos -->
+    <div class="h-44 relative flex-1 flex flex-col justify-between px-2 overflow-hidden">
+
+      <!-- Fondo decorativo degradado -->
+      <div class="absolute inset-x-0 bottom-6 h-24 bg-gradient-to-t from-emerald-500/10 to-transparent pointer-events-none rounded-t-xl z-0"></div>
+
+      <!-- Líneas horizontales de referencia del Eje Y -->
+      <div class="absolute inset-x-0 top-0 border-b border-dashed pointer-events-none" style="border-color: var(--border-color); opacity: 0.3;"></div>
+      <div class="absolute inset-x-0 top-1/2 border-b border-dashed pointer-events-none" style="border-color: var(--border-color); opacity: 0.3;"></div>
+
+      <!-- Capa SVG con múltiples líneas convergiendo en los nodos -->
+      <svg class="absolute inset-0 w-full h-full z-10 pointer-events-none" preserveAspectRatio="none" viewBox="0 0 600 120">
+        <path [attr.d]="getConvergingWavePath(displayedData(), -6)" fill="none" stroke="rgba(16, 185, 129, 0.2)" stroke-width="1" stroke-dasharray="1 2.5" stroke-linecap="round"></path>
+        <path [attr.d]="getConvergingWavePath(displayedData(), 0)" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="1 2" stroke-linecap="round"></path>
+        <path [attr.d]="getConvergingWavePath(displayedData(), 6)" fill="none" stroke="rgba(16, 185, 129, 0.2)" stroke-width="1" stroke-dasharray="1 2.5" stroke-linecap="round"></path>
+      </svg>
+
+      <!-- Puntos de datos, números sobre cada círculo y etiquetas de meses -->
+      <div class="relative z-20 flex items-end justify-between h-full w-full pb-1">
+        @for (item of displayedData(); track item.monthIndex) {
+          <div class="flex flex-col items-center justify-end h-full relative flex-1 group">
+
+            <!-- Línea roja vertical destacando el mes actual -->
+            @if (item.isCurrentMonth) {
+              <div class="absolute -top-4 bottom-0 w-0.5 bg-rose-500 z-0 shadow-sm" title="Mes Actual"></div>
+              <span class="absolute -top-8 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-30">En curso</span>
+            }
+
+            <!-- Contenedor dinámico posicionado exactamente en el nodo del punto -->
+            <div class="absolute flex flex-col items-center z-30 transition-all" [style.bottom]="getNodeBottomPosition(item.total)">
+              <!-- Número de pacientes situado justo arriba/en el círculo -->
+              <span class="text-[9px] font-black text-emerald-500 mb-0.5 bg-[var(--bg-secondary)] px-1 py-0.2 rounded shadow-2xs border border-emerald-500/20">{{ item.total }}</span>
+
+              <!-- Círculo / Nodo exacto -->
+              @if (item.total > 0) {
+                <div class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30"></div>
+              } @else {
+                <div class="w-1.5 h-1.5 rounded-full bg-zinc-600/30"></div>
+              }
+            </div>
+
+            <!-- Etiqueta inferior del mes -->
+            <span class="text-[10px] font-bold z-20 mt-auto pt-1" [style.color]="item.isCurrentMonth ? 'var(--text-main)' : 'var(--text-muted)'">{{ item.month }}</span>
+          </div>
         }
-
-        <!-- Número de pacientes visible permanentemente -->
-        <span class="text-[10px] font-black text-emerald-500 z-10">{{ item.total }}</span>
-
-        @if (item.total > 0) {
-          <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20 z-10" [style.margin-bottom]="item.spacing"></div>
-        } @else {
-          <!-- Mes sin valor (círculo inactivo) -->
-          <div class="w-2 h-2 rounded-full bg-zinc-600/30 mb-2 z-10"></div>
-        }
-
-        <span class="text-[10px] font-bold z-10" [style.color]="item.isCurrentMonth ? 'var(--text-main)' : 'var(--text-muted)'">{{ item.month }}</span>
       </div>
-    }
+    </div>
   </div>
 
   <!-- Botones de navegación (flechas) centrados abajo de la gráfica -->

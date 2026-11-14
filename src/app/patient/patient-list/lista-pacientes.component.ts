@@ -7,6 +7,8 @@ import {
   UserCheck, Calendar, ArrowUpDown, ChevronRight, Stethoscope, Plus, Loader2, Droplet, BookOpen
 } from 'lucide-angular';
 import { AuthService } from '../../auth/auth.service';
+import { TokenInterceptorService } from '../../auth/token-interceptor.service';
+
 import * as CryptoJS from 'crypto-js';
 
 export interface Paciente {
@@ -32,7 +34,7 @@ export interface Paciente {
 })
 export class ListaPacientesComponent implements OnInit {
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
+ private tokenInterceptor = inject(TokenInterceptorService);
   private authService = inject(AuthService);
 
   readonly icons = {
@@ -99,125 +101,90 @@ export class ListaPacientesComponent implements OnInit {
 
   ngOnInit() {
     const defaultOffice = this.authService.getSucursal();
-    this.idConsultorio.set(defaultOffice.idConsultorio || 'consultorio_general');
+    if(defaultOffice!=null)
+         this.idConsultorio.set(defaultOffice.idConsultorio || 'consultorio_general');
+        else{
+          this.idConsultorio.set('consultorio_general')
+        }
     this.cargarPacientes(this.idConsultorio());
   }
 
-  // 🚀 MÉTODO PARA CARGAR LOS PACIENTES
-  async cargarPacientes(consultorioId: string) {
-    try {
-      this.isLoading.set(true);
-      const sessionData = this.authService.getSession();
-      let jwtToken = sessionData?.sessionToken;
-
-      if (!jwtToken) {
-        this.router.navigate(['/login']);
-        return;
-      }
-
-      const lastSync = this.authService.getLastSyncDatePatients();
-
-      const fetchPacientes = async (token: string) => {
-        const payload = {
-          idConsultorio: consultorioId,
-          ultimaSincronizacion: lastSync
-        };
-        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-        return await fetch(this.GET_PATIENTS_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ encryptedData: ciphertext })
-        });
-      };
-
-      let response = await fetchPacientes(jwtToken);
-
-      // Manejo de expiración de Token (401)
-      if (response.status === 401) {
-        const refreshTokenValue = sessionData?.sessionToken;
-        if (!refreshTokenValue) {
-          this.router.navigate(['/login']);
-          return;
-        }
-
-        const refreshPayload = { refreshToken: refreshTokenValue };
-        const refreshCiphertext = CryptoJS.AES.encrypt(JSON.stringify(refreshPayload), this.ENCRYPTION_KEY).toString();
-
-        const refreshResponse = await fetch('https://refreshtoken-o7vmreizjq-uc.a.run.app', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular'
-          },
-          body: JSON.stringify({ encryptedData: refreshCiphertext })
-        });
-
-        const refreshJsonRes = await refreshResponse.json();
-        if (!refreshResponse.ok) {
-          this.router.navigate(['/login']);
-          return;
-        }
-
-        const bytesRefresh = CryptoJS.AES.decrypt(refreshJsonRes.encryptedData, this.ENCRYPTION_KEY);
-        const decryptedRefresh = JSON.parse(bytesRefresh.toString(CryptoJS.enc.Utf8));
-
-        if (decryptedRefresh.success && decryptedRefresh.accessToken) {
-          jwtToken = decryptedRefresh.accessToken;
-          this.authService.updateSessionToken(jwtToken);
-          response = await fetchPacientes(jwtToken);
-        } else {
-          this.router.navigate(['/login']);
-          return;
-        }
-      }
-
-      if (!response.ok) {
-        const errorJson = await response.json();
-        throw new Error(errorJson.error || 'Error al obtener los pacientes.');
-      }
-
-      const jsonRes = await response.json();
-      const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-      if (decryptedData.success && Array.isArray(decryptedData.patients)) {
-        const listaMapeada: Paciente[] = decryptedData.patients.map((p: any) => {
-          const ficha = p.fichaDeIdentificacion || {};
-          const numVisitas = p.contadorDeVisitas || 1;
-          return {
-            id: p.idPaciente || '',
-            nombre: ficha.nombreCompleto || p.nombre || 'Sin nombre',
-            telefono: ficha.telefono || p.telefono || 'Sin teléfono',
-            correo: ficha.correo || 'Sin correo',
-            expedienteNum: p.numeroDeExpediente || 'EXP-2026-0000',
-            categoriaConsulta: p.categoria || 'Medicina General',
-            ultimaVisita: p.ultimaVisita ? p.ultimaVisita.split('T')[0] : '2026-10-07',
-            numeroVisitas: numVisitas,
-            esPrimeraVez: numVisitas === 1,
-            edad: ficha.edad || 0,
-            sexo: ficha.sexo || 'No especificado'
-          };
-        });
-
-        this.pacientes.set(listaMapeada);
-
-        if (listaMapeada.length > 0) {
-          this.authService.saveCachedPatients(listaMapeada);
-        }
-      }
-    } catch (err) {
-      console.error('❌ Error en cargarPacientes:', err);
-    } finally {
-      this.isLoading.set(false);
+async cargarPacientes(consultorioId: string) {
+  this.isLoading.set(true); // Aseguramos que inicie encendido
+  try {
+    // 1️⃣ Cargar caché local para respuesta inmediata
+    const cachedList = this.authService.getCachedPatients();
+    if (cachedList.length > 0) {
+      this.pacientes.set(cachedList);
     }
+
+    const lastSync = this.authService.getLastSyncDatePatients();
+
+    // 2️⃣ Ejecutamos la petición a través del interceptor centralizado
+    const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
+      console.log('🔍 [cargarPacientes] Token JWT actual in uso:', token);
+
+      const payload = {
+        idConsultorio: consultorioId,
+        ultimaSincronizacion: lastSync
+      };
+      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+
+      const fetchRes = await fetch(this.GET_PATIENTS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-app-signature': this.APP_SECRET_HEADER,
+          'x-client-source': 'angular',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ encryptedData: ciphertext })
+      });
+
+      console.log('📥 [cargarPacientes] Status HTTP recibido:', fetchRes.status);
+      return fetchRes;
+    });
+
+    const jsonRes = await response.json();
+    console.log('📦 [cargarPacientes] JSON crudo devuelto por el servidor:', jsonRes);
+
+    if (!response.ok) {
+      throw new Error(jsonRes.error || 'Error al obtener los pacientes.');
+    }
+
+    const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
+    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    console.log('🔓 [cargarPacientes] Datos desencriptados:', decryptedData);
+
+    if (decryptedData.success && Array.isArray(decryptedData.patients)) {
+      const listaMapeada: Paciente[] = decryptedData.patients.map((p: any) => {
+        const ficha = p.fichaDeIdentificacion || {};
+        const numVisitas = p.contadorDeVisitas || 1;
+        return {
+          id: p.idPaciente || '',
+          nombre: ficha.nombreCompleto || p.nombre || 'Sin nombre',
+          telefono: ficha.telefono || p.telefono || 'Sin teléfono',
+          correo: ficha.correo || 'Sin correo',
+          expedienteNum: p.numeroDeExpediente || 'EXP-2026-0000',
+          categoriaConsulta: p.categoria || 'Medicina General',
+          ultimaVisita: p.ultimaVisita ? p.ultimaVisita.split('T')[0] : '2026-09-29',
+          numeroVisitas: numVisitas,
+          esPrimeraVez: numVisitas === 1,
+          edad: ficha.edad || 0,
+          sexo: ficha.sexo || 'No especificado'
+        };
+      });
+
+      this.pacientes.set(listaMapeada);
+      this.authService.saveCachedPatients(listaMapeada);
+    }
+  } catch (err) {
+    console.error('❌ Error al cargar pacientes:', err);
+  } finally {
+    // 🌟 Apagamos el loader sin importar si fue exitoso o falló
+    this.isLoading.set(false);
   }
+}
 
   // 📂 Métodos para la Importación de Expedientes con IA
   abrirModalImportar() {

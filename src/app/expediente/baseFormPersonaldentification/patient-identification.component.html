@@ -1,0 +1,293 @@
+<div class="space-y-6 animate-in fade-in duration-300" [formGroup]="patientForm">
+
+  <!-- ================= SUB-TABS / PESTAÑAS INTERNAS ================= -->
+  <div class="flex flex-wrap items-center gap-2 border-b border-[var(--border-color)] pb-4">
+    @for (subTab of subTabs; track subTab.id) {
+      <button type="button"
+              (click)="activeSubTab.set(subTab.id)"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border"
+              [class.bg-teal-600]="activeSubTab() === subTab.id"
+              [class.text-white]="activeSubTab() === subTab.id"
+              [class.border-teal-500]="activeSubTab() === subTab.id"
+              [class.shadow-md]="activeSubTab() === subTab.id"
+              [class.bg-[var(--bg-primary)]]="activeSubTab() !== subTab.id"
+              [class.text-[var(--text-muted)]]="activeSubTab() !== subTab.id"
+              [class.border-[var(--border-color)]]="activeSubTab() !== subTab.id">
+        <span>{{ subTab.name }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- ================= CONTENEDOR DE LA SUB-PESTAÑA ACTIVA ================= -->
+  <div>
+    @switch (activeSubTab()) {
+
+      <!-- 1. DATOS DE IDENTIFICACIÓN PERSONAL -->
+      @case (1) {
+        <div class="space-y-4 bg-[var(--bg-secondary)] p-5 rounded-3xl border border-[var(--border-color)]">
+          <div>
+            <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">1. Datos de identificación personal</h3>
+            <p class="text-xs text-[var(--text-muted)]">Información general y demográfica del paciente (Campos obligatorios: Nombres y Fecha de Nacimiento).</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <!-- Nombre -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Nombre(s) <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="firstName" placeholder="Nombre(s)" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Apellido Paterno -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Apellido Paterno <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="paternalSurname" placeholder="Apellido paterno" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Apellido Materno -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Apellido Materno</label>
+              <input type="text" formControlName="maternalSurname" placeholder="Apellido materno" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Fecha de Nacimiento -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase flex items-center justify-between">
+                <span>Fecha de Nacimiento <span class="text-red-500">*</span></span>
+                <label class="cursor-pointer text-teal-500 hover:underline flex items-center gap-1 text-[10px]">
+                  <lucide-icon [img]="icons.Calendar" class="w-3.5 h-3.5"></lucide-icon>
+                  Calendario
+                  <input type="date" (change)="onCalendarChange($event)" class="hidden">
+                </label>
+              </label>
+              <div class="flex items-center gap-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3 py-1.5">
+                <input type="text" maxlength="2" placeholder="DD" [value]="birthDay()" (input)="onDateInput('day', $event, monthInput)" class="w-10 text-center bg-transparent text-xs text-[var(--text-main)] outline-none font-mono">
+                <span class="text-[var(--text-muted)] font-bold">/</span>
+                <input type="text" #monthInput maxlength="2" placeholder="MM" [value]="birthMonth()" (input)="onDateInput('month', $event, yearInput)" class="w-10 text-center bg-transparent text-xs text-[var(--text-main)] outline-none font-mono">
+                <span class="text-[var(--text-muted)] font-bold">/</span>
+                <input type="text" #yearInput maxlength="4" placeholder="AAAA" [value]="birthYear()" (input)="onDateInput('year', $event)" class="w-16 text-center bg-transparent text-xs text-[var(--text-main)] outline-none font-mono">
+              </div>
+            </div>
+
+            <!-- Edad -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Edad (Años)</label>
+              <input type="number" formControlName="age" readonly placeholder="Auto-calculada" class="w-full bg-[var(--bg-primary)]/50 border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none cursor-not-allowed">
+            </div>
+
+            <!-- Género -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Género</label>
+              <select formControlName="gender" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-teal-500 cursor-pointer">
+                <option value="" disabled selected>Selecciona</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+
+            <!-- CURP -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">CURP</label>
+              <input type="text" formControlName="curp" maxlength="18" placeholder="CURP de 18 caracteres" class="w-full uppercase bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500 font-mono">
+            </div>
+
+            <!-- Celular -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Celular (10 Dígitos)</label>
+              <input type="text" formControlName="cellphone" maxlength="10" placeholder="3312345678" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500 font-mono">
+            </div>
+
+            <!-- Teléfono de casa -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Teléfono de Casa (10 Dígitos)</label>
+              <input type="text" formControlName="homePhone" maxlength="10" placeholder="3387654321" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500 font-mono">
+            </div>
+
+            <!-- Correo -->
+            <div class="space-y-1 sm:col-span-2">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Correo Electrónico</label>
+              <input type="email" formControlName="email" placeholder="correo@ejemplo.com" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Calle y Número -->
+            <div class="space-y-1 sm:col-span-2">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Calle y Número</label>
+              <input type="text" formControlName="streetAndNumber" placeholder="Ej. Av. Vallarta #1230" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Colonia -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Colonia</label>
+              <input type="text" formControlName="neighborhood" placeholder="Colonia o Fraccionamiento" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Municipio -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Municipio / Alcaldía</label>
+              <input type="text" formControlName="municipality" placeholder="Municipio" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Estado -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Estado</label>
+              <input type="text" formControlName="state" placeholder="Estado" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- País -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">País</label>
+              <input type="text" formControlName="country" placeholder="País" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Estado Civil -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Estado Civil</label>
+              <select formControlName="maritalStatus" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-teal-500 cursor-pointer">
+                <option value="" disabled selected>Selecciona</option>
+                <option value="Soltero(a)">Soltero(a)</option>
+                <option value="Casado(a)">Casado(a)</option>
+                <option value="Divorciado(a)">Divorciado(a)</option>
+                <option value="Viudo(a)">Viudo(a)</option>
+                <option value="Unión libre">Unión libre</option>
+              </select>
+            </div>
+
+            <!-- Escolaridad -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Escolaridad</label>
+              <select formControlName="educationLevel" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-teal-500 cursor-pointer">
+                <option value="" disabled selected>Selecciona</option>
+                <option value="Primaria">Primaria</option>
+                <option value="Secundaria">Secundaria</option>
+                <option value="Bachillerato">Bachillerato / Preparatoria</option>
+                <option value="Licenciatura">Licenciatura</option>
+                <option value="Posgrado">Posgrado</option>
+                <option value="Ninguna">Ninguna</option>
+              </select>
+            </div>
+
+            <!-- Religión -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Religión</label>
+              <input type="text" formControlName="religion" placeholder="Religión" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Ocupación -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Ocupación</label>
+              <input type="text" formControlName="occupation" placeholder="Ocupación" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+            </div>
+
+            <!-- Nota Adicional -->
+            <div class="space-y-1 sm:col-span-3">
+              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Nota Adicional / Observaciones</label>
+              <textarea formControlName="additionalNote" rows="2" placeholder="Observaciones generales..." class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500"></textarea>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- 2. ANTECEDENTES HEREDOFAMILIARES -->
+      @case (2) {
+        <div class="space-y-4 bg-[var(--bg-secondary)] p-5 rounded-3xl border border-[var(--border-color)]">
+          <div>
+            <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">2. Antecedentes Heredofamiliares</h3>
+            <p class="text-xs text-[var(--text-muted)]">Seleccione los antecedentes familiares que apliquen:</p>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" formGroupName="familyBackground">
+            @for (item of hereditaryOptions; track item.key) {
+              <label class="flex items-center gap-2 p-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl cursor-pointer hover:border-teal-500">
+                <input type="checkbox" [formControlName]="item.key" class="rounded text-teal-600 focus:ring-teal-500 w-4 h-4">
+                <span class="text-xs text-[var(--text-main)]">{{ item.label }}</span>
+              </label>
+            }
+          </div>
+          <div class="space-y-1 mt-2">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Otras Enfermedades Heredofamiliares</label>
+            <input type="text" formControlName="familyBackgroundOther" placeholder="Especifique otras..." class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+          </div>
+        </div>
+      }
+
+      <!-- 3. ANTECEDENTES PATOLÓGICOS -->
+      @case (3) {
+        <div class="space-y-4 bg-[var(--bg-secondary)] p-5 rounded-3xl border border-[var(--border-color)]">
+          <div>
+            <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">3. Antecedentes Patológicos</h3>
+            <p class="text-xs text-[var(--text-muted)]">Enfermedades o condiciones médicas previas del paciente:</p>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" formGroupName="pathologicalBackground">
+            @for (item of pathologicalOptions; track item.key) {
+              <label class="flex items-center gap-2 p-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl cursor-pointer hover:border-teal-500">
+                <input type="checkbox" [formControlName]="item.key" class="rounded text-teal-600 focus:ring-teal-500 w-4 h-4">
+                <span class="text-xs text-[var(--text-main)]">{{ item.label }}</span>
+              </label>
+            }
+          </div>
+          <div class="space-y-1 mt-2">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Otros Antecedentes Patológicos</label>
+            <input type="text" formControlName="pathologicalBackgroundOther" placeholder="Especifique otros..." class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+          </div>
+        </div>
+      }
+
+      <!-- 4. ANTECEDENTES NO PATOLÓGICOS -->
+      @case (4) {
+        <div class="space-y-4 bg-[var(--bg-secondary)] p-5 rounded-3xl border border-[var(--border-color)]">
+          <div>
+            <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">4. Antecedentes No Patológicos</h3>
+            <p class="text-xs text-[var(--text-muted)]">Estilo de vida y hábitos:</p>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3" formGroupName="nonPathologicalBackground">
+            @for (item of nonPathologicalOptions; track item.key) {
+              <label class="flex items-center gap-2 p-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl cursor-pointer hover:border-teal-500">
+                <input type="checkbox" [formControlName]="item.key" class="rounded text-teal-600 focus:ring-teal-500 w-4 h-4">
+                <span class="text-xs text-[var(--text-main)]">{{ item.label }}</span>
+              </label>
+            }
+          </div>
+          <div class="space-y-1 mt-2">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Otros Antecedentes No Patológicos</label>
+            <input type="text" formControlName="nonPathologicalBackgroundOther" placeholder="Especifique otros..." class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
+          </div>
+        </div>
+      }
+
+    }
+  </div>
+
+  <!-- ================= BOTONERA DE NAVEGACIÓN INTERNA Y GUARDADO GLOBAL ================= -->
+  <div class="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
+
+    <!-- Botón Anterior -->
+    <button type="button"
+            (click)="prevSubTab()"
+            [disabled]="activeSubTab() === 1"
+            class="px-4 py-2 rounded-2xl text-xs font-bold bg-[var(--bg-primary)] hover:opacity-80 text-[var(--text-main)] border border-[var(--border-color)] transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
+      Anterior sección
+    </button>
+
+    <!-- Indicador de sección actual -->
+    <span class="text-xs font-bold text-[var(--text-muted)]">
+      Sección {{ activeSubTab() }} de 4
+    </span>
+
+    <!-- Botón Siguiente o Guardar General -->
+    @if (activeSubTab() < 4) {
+      <button type="button"
+              (click)="nextSubTab()"
+              class="px-5 py-2 rounded-2xl text-xs font-black bg-teal-600 hover:bg-teal-500 text-white shadow-lg shadow-teal-600/20 transition-all cursor-pointer">
+        Siguiente sección
+      </button>
+    } @else {
+      <!-- ÚNICO BOTÓN GLOBAL PARA GUARDAR TODO EL FORMULARIO DE LAS SUB-TABS -->
+      <button type="button"
+              (click)="onSubmit()"
+              class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-teal-500/20 cursor-pointer">
+        Guardar Datos de Identificación y Antecedentes
+      </button>
+    }
+
+  </div>
+
+</div>

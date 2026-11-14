@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucideAngularModule, Building2, Plus, Trash2, Search,
-  ArrowLeft, Eye, Edit3, MapPin, Users, Stethoscope, Save, Loader2
+  ArrowLeft, Eye, Edit3, MapPin, Users, Stethoscope, Save, Loader2, KeyRound
 } from 'lucide-angular';
 import { AuthService } from '../auth/auth.service';
 import * as CryptoJS from 'crypto-js';
@@ -19,6 +19,7 @@ interface Consultorio {
   website: string;
   phoneMain: string;
   phoneSecondary: string;
+  codigoConsultorio?: string; // Solo para lectura desde el backend
   accessibility: {
     wheelchair: boolean;
     pregnantOrKids: boolean;
@@ -54,10 +55,9 @@ export class ClinicsComponent implements OnInit {
 
   readonly icons = {
     Building2, Plus, Trash2, Search, ArrowLeft,
-    Eye, Edit3, MapPin, Users, Stethoscope, Save, Loader2
+    Eye, Edit3, MapPin, Users, Stethoscope, Save, Loader2, KeyRound
   };
 
-  // 🔐 URLs y Credenciales de las Cloud Functions
   private readonly SAVE_URL = 'https://saveorupdateconsultorio-o7vmreizjq-uc.a.run.app';
   private readonly GET_URL = 'https://getdoctorsoffice-o7vmreizjq-uc.a.run.app';
   private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
@@ -80,16 +80,13 @@ export class ClinicsComponent implements OnInit {
     this.cargarConsultorios();
   }
 
-  // 🚀 MÉTODO PARA CARGAR LOS CONSULTORIOS DESDE LA CLOUD FUNCTION
   async cargarConsultorios() {
     try {
       this.isLoading.set(true);
       const sessionData = this.authService.getSession();
       const jwtToken = sessionData?.sessionToken;
 
-      if (!jwtToken) {
-        return;
-      }
+      if (!jwtToken) return;
 
       const response = await fetch(this.GET_URL, {
         method: 'GET',
@@ -105,15 +102,14 @@ export class ClinicsComponent implements OnInit {
         throw new Error(jsonRes.error || 'Error al obtener los consultorios.');
       }
 
-      // Desencriptar la respuesta recibida
       const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
       const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
       if (decryptedData.success && Array.isArray(decryptedData.consultorios)) {
-        // Mapeamos para asegurar consistencia en la propiedad 'id' de la interfaz
         const listadoMapeado = decryptedData.consultorios.map((c: any) => ({
           ...c,
-          id: c.idConsultorio || c.id || ''
+          id: c.idConsultorio || c.id || '',
+          codigoConsultorio: c.codigoConsultorio || c.codigoConsultorio || ''
         }));
         this.consultorios.set(listadoMapeado);
       }
@@ -135,6 +131,7 @@ export class ClinicsComponent implements OnInit {
       website: '',
       phoneMain: '',
       phoneSecondary: '',
+      codigoConsultorio: '',
       accessibility: { wheelchair: false, pregnantOrKids: false, visualDisability: false, hearingDisability: false },
       directions: '',
       paymentMethods: { creditCard: false, cash: true, paypal: false, debitCard: false, transfer: false },
@@ -152,18 +149,18 @@ export class ClinicsComponent implements OnInit {
   verDetalle(c: Consultorio, index: number) {
     this.selectedConsultorio.set({ ...c });
     this.activeIdx = index;
-    this.isEditingMode = false; // Modo solo lectura
+    this.isEditingMode = false;
   }
 
   editarConsultorio(c: Consultorio, index: number) {
     this.selectedConsultorio.set({ ...c });
     this.activeIdx = index;
-    this.isEditingMode = true; // Modo edición habilitado
+    this.isEditingMode = true;
   }
 
   regresarAListado() {
     this.selectedConsultorio.set(null);
-    this.cargarConsultorios(); // Recargar al volver por si hubo cambios
+    this.cargarConsultorios();
   }
 
   async guardarConsultorioIndividual() {
@@ -182,6 +179,7 @@ export class ClinicsComponent implements OnInit {
         return;
       }
 
+      // Payload sin NIP manual (el backend lo gestiona)
       const payload = {
         idConsultorio: typeof consultorioActual.id === 'string' && consultorioActual.id !== '' ? consultorioActual.id : null,
         name: consultorioActual.name,
@@ -232,13 +230,5 @@ export class ClinicsComponent implements OnInit {
 
   eliminarConsultorio(id: number | string) {
     this.consultorios.update(list => list.filter(c => c.id !== id));
-  }
-
-  addService(consultorio: Consultorio) {
-    consultorio.services.push({ name: '', price: 0 });
-  }
-
-  removeService(consultorio: Consultorio, index: number) {
-    consultorio.services.splice(index, 1);
   }
 }
