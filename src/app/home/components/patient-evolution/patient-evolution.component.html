@@ -1,63 +1,123 @@
-<div class="p-6 rounded-3xl shadow-xl space-y-6 border" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+<div
+  class="p-6 rounded-3xl shadow-xl space-y-6 border"
+  style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+>
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
     <div>
       <div class="flex items-center gap-2">
-        <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main);">Evolución de pacientes</h3>
-        <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+        <h3 class="text-xs font-black uppercase tracking-wider" style="color: var(--text-main)">
+          Evolución de pacientes
+        </h3>
+        <span
+          class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20"
+        >
           {{ totalYearPatients() }} pacientes en total
         </span>
       </div>
-      <p class="text-[10px]" style="color: var(--text-muted);">Registro mensual acumulado</p>
+      <p class="text-[10px]" style="color: var(--text-muted)">Registro mensual acumulado</p>
     </div>
 
-    <select (change)="onFilterChange($event)" class="text-[10px] font-bold rounded-xl px-2.5 py-1.5 outline-none cursor-pointer border shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+    <select
+      (change)="onFilterChange($event)"
+      class="text-[10px] font-bold rounded-xl px-2.5 py-1.5 outline-none cursor-pointer border shadow-sm"
+      style="
+        background-color: var(--bg-primary);
+        border-color: var(--border-color);
+        color: var(--text-main);
+      "
+    >
       <option value="6">Últimos 6 meses</option>
       <option value="12">Último año</option>
     </select>
   </div>
 
   <!-- Contenedor principal con Eje Y lateral y Gráfica -->
-  <div class="flex items-end gap-2 pt-2 border-b pb-2" style="border-color: var(--border-color);">
-
+  <div class="flex items-end gap-2 pt-2 border-b pb-2" style="border-color: var(--border-color)">
     <!-- EJE Y (Valores numéricos laterales izquierdos) -->
-    <div class="h-44 flex flex-col justify-between text-[9px] font-bold pr-2 pb-6 text-right select-none" style="color: var(--text-muted); min-width: 28px;">
+    <div
+      class="h-44 flex flex-col justify-between text-[9px] font-bold pr-2 pb-6 text-right select-none"
+      style="color: var(--text-muted); min-width: 28px"
+    >
       <span>{{ getMaxVal() }}</span>
       <span>{{ Math.round(getMaxVal() / 2) }}</span>
       <span>0</span>
     </div>
 
     <!-- Área de la gráfica y puntos -->
-    <div class="h-44 relative flex-1 flex flex-col justify-between px-2 overflow-hidden">
-
+    <div class="min-w-0 h-44 relative flex-1 flex flex-col justify-between px-2 overflow-hidden">
       <!-- Fondo decorativo degradado -->
-      <div class="absolute inset-x-0 bottom-6 h-24 bg-gradient-to-t from-emerald-500/10 to-transparent pointer-events-none rounded-t-xl z-0"></div>
+      <div
+        class="absolute inset-x-0 bottom-6 h-24 bg-gradient-to-t from-emerald-500/10 to-transparent pointer-events-none rounded-t-xl z-0"
+      ></div>
 
       <!-- Líneas horizontales de referencia del Eje Y -->
-      <div class="absolute inset-x-0 top-0 border-b border-dashed pointer-events-none" style="border-color: var(--border-color); opacity: 0.3;"></div>
-      <div class="absolute inset-x-0 top-1/2 border-b border-dashed pointer-events-none" style="border-color: var(--border-color); opacity: 0.3;"></div>
+      <div
+        class="absolute inset-x-0 top-0 border-b border-dashed pointer-events-none"
+        style="border-color: var(--border-color); opacity: 0.3"
+      ></div>
+      <div
+        class="absolute inset-x-0 top-1/2 border-b border-dashed pointer-events-none"
+        style="border-color: var(--border-color); opacity: 0.3"
+      ></div>
 
       <!-- Capa SVG con múltiples líneas convergiendo en los nodos -->
-      <svg class="absolute inset-0 w-full h-full z-10 pointer-events-none" preserveAspectRatio="none" viewBox="0 0 600 120">
-        <path [attr.d]="getConvergingWavePath(displayedData(), -6)" fill="none" stroke="rgba(16, 185, 129, 0.2)" stroke-width="1" stroke-dasharray="1 2.5" stroke-linecap="round"></path>
-        <path [attr.d]="getConvergingWavePath(displayedData(), 0)" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="1 2" stroke-linecap="round"></path>
-        <path [attr.d]="getConvergingWavePath(displayedData(), 6)" fill="none" stroke="rgba(16, 185, 129, 0.2)" stroke-width="1" stroke-dasharray="1 2.5" stroke-linecap="round"></path>
+      <svg
+        class="absolute inset-0 w-full h-full z-10 pointer-events-none"
+        preserveAspectRatio="none"
+        viewBox="0 0 600 120"
+      >
+        <path
+          [attr.d]="getConvergingWavePath(displayedData(), -6)"
+          fill="none"
+          stroke="rgba(16, 185, 129, 0.2)"
+          stroke-width="1"
+          stroke-dasharray="1 2.5"
+          stroke-linecap="round"
+        ></path>
+        <path
+          [attr.d]="getConvergingWavePath(displayedData(), 0)"
+          fill="none"
+          stroke="#10b981"
+          stroke-width="1.5"
+          stroke-dasharray="1 2"
+          stroke-linecap="round"
+        ></path>
+        <path
+          [attr.d]="getConvergingWavePath(displayedData(), 6)"
+          fill="none"
+          stroke="rgba(16, 185, 129, 0.2)"
+          stroke-width="1"
+          stroke-dasharray="1 2.5"
+          stroke-linecap="round"
+        ></path>
       </svg>
 
       <!-- Puntos de datos, números sobre cada círculo y etiquetas de meses -->
       <div class="relative z-20 flex items-end justify-between h-full w-full pb-1">
         @for (item of displayedData(); track item.monthIndex) {
-          <div class="flex flex-col items-center justify-end h-full relative flex-1 group">
-
+          <div class="min-w-0 flex flex-col items-center justify-end h-full relative flex-1 group">
             <!-- Línea roja vertical destacando el mes actual -->
             @if (item.isCurrentMonth) {
-              <div class="absolute -top-4 bottom-0 w-0.5 bg-rose-500 z-0 shadow-sm" title="Mes Actual"></div>
-              <span class="absolute -top-8 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-30">En curso</span>
+              <div
+                class="absolute -top-4 bottom-0 w-0.5 bg-rose-500 z-0 shadow-sm"
+                title="Mes Actual"
+              ></div>
+              <span
+                class="absolute -top-8 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-30"
+                >En curso</span
+              >
             }
 
             <!-- Contenedor dinámico posicionado exactamente en el nodo del punto -->
-            <div class="absolute flex flex-col items-center z-30 transition-all" [style.bottom]="getNodeBottomPosition(item.total)">
+            <div
+              class="absolute flex flex-col items-center z-30 transition-all"
+              [style.bottom]="getNodeBottomPosition(item.total)"
+            >
               <!-- Número de pacientes situado justo arriba/en el círculo -->
-              <span class="text-[9px] font-black text-emerald-500 mb-0.5 bg-[var(--bg-secondary)] px-1 py-0.2 rounded shadow-2xs border border-emerald-500/20">{{ item.total }}</span>
+              <span
+                class="text-[9px] font-black text-emerald-500 mb-0.5 bg-[var(--bg-secondary)] px-1 py-0.2 rounded shadow-2xs border border-emerald-500/20"
+                >{{ item.total }}</span
+              >
 
               <!-- Círculo / Nodo exacto -->
               @if (item.total > 0) {
@@ -68,7 +128,11 @@
             </div>
 
             <!-- Etiqueta inferior del mes -->
-            <span class="text-[10px] font-bold z-20 mt-auto pt-1" [style.color]="item.isCurrentMonth ? 'var(--text-main)' : 'var(--text-muted)'">{{ item.month }}</span>
+            <span
+              class="text-[10px] font-bold z-20 mt-auto pt-1"
+              [style.color]="item.isCurrentMonth ? 'var(--text-main)' : 'var(--text-muted)'"
+              >{{ item.month }}</span
+            >
           </div>
         }
       </div>
@@ -77,15 +141,51 @@
 
   <!-- Botones de navegación (flechas) centrados abajo de la gráfica -->
   <div class="flex items-center justify-center gap-2 pt-1">
-    <div class="flex items-center gap-1 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl p-1 shadow-sm">
-      <button (click)="prevPage()" [disabled]="page() === 0" class="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1 text-[10px] font-bold px-2" title="Meses anteriores">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    <div
+      class="flex items-center gap-1 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl p-1 shadow-sm"
+    >
+      <button
+        (click)="prevPage()"
+        [disabled]="page() === 0"
+        class="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1 text-[10px] font-bold px-2"
+        title="Meses anteriores"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-3.5 h-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
         Anterior
       </button>
-      <span class="text-[10px] font-bold px-2 text-[var(--text-muted)] border-x border-[var(--border-color)]">{{ page() === 0 ? 'Semestre 1' : 'Semestre 2' }}</span>
-      <button (click)="nextPage()" [disabled]="page() === 1" class="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1 text-[10px] font-bold px-2" title="Meses siguientes">
+      <span
+        class="text-[10px] font-bold px-2 text-[var(--text-muted)] border-x border-[var(--border-color)]"
+        >{{ page() === 0 ? 'Semestre 1' : 'Semestre 2' }}</span
+      >
+      <button
+        (click)="nextPage()"
+        [disabled]="page() === 1"
+        class="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-1 text-[10px] font-bold px-2"
+        title="Meses siguientes"
+      >
         Siguiente
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-3.5 h-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
       </button>
     </div>
   </div>

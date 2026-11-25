@@ -1,8 +1,43 @@
+import { GoogleCalendarConnectionComponent } from './google-calendar-connection.component';
+import { CalendarSkeletonComponent } from './calendar-skeleton.component';
+import { OfficeSyncService } from '../auth/office-sync.service';
+import { CalendarOnboardingComponent } from './onboarding/calendar-onboarding.component';
+import { BookingDatePickerComponent } from '../scheduling/booking-date-picker.component';
+import {
+  officePeriods,
+  officeBookingSlots,
+  isOfficeBookingAllowed,
+  timeMinutes,
+  clockTime,
+} from '../scheduling/office-hours';
+import { appointmentPatientLink, patientId } from '../appointments/appointment-patient';
+import { PermissionService } from '../auth/permission.service';
+import { PermissionDirective } from '../auth/permission.directive';
+import { versionedFetch } from '../auth/sync-cache';
+import {
+  localDateKey,
+  normalizedTime,
+  parseLocalDate,
+} from '../appointment-history/appointment-history.utils';
+import { AppointmentBillingComponent } from '../reporting/appointment-billing.component';
+import { SECURITY_CONFIG } from '../config/security.config';
+import { API_URLS } from '../config/api-urls';
 import { Component, OnInit, OnDestroy, signal, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { LucideAngularModule, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, User, Plus, X, CheckCircle2 } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  Clock,
+  User,
+  Plus,
+  X,
+  CheckCircle2,
+  GraduationCap,
+} from 'lucide-angular';
 import { AuthService } from '../auth/auth.service';
 import * as CryptoJS from 'crypto-js';
 import { Subscription } from 'rxjs';
@@ -20,30 +55,83 @@ interface PatientAppointment {
   syncId?: string;
   colorClass?: string;
   status?: number;
+  idPaciente?: string;
+  expedienteId?: string;
+  numeroDeExpediente?: string;
+  isExistingPatient?: boolean;
+  isNewPatient?: boolean;
+  serviceId?: string;
+  appointmentId?: string;
+  finalCost?: number;
+  amountPaid?: number;
 }
 
 @Component({
   selector: 'app-calendar-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule, LucideAngularModule],
-  templateUrl: './calendar.component.html'
+  imports: [
+    GoogleCalendarConnectionComponent,
+    CalendarSkeletonComponent,
+    CalendarOnboardingComponent,
+    BookingDatePickerComponent,
+    PermissionDirective,
+    CommonModule,
+    FormsModule,
+    HttpClientModule,
+    LucideAngularModule,
+    AppointmentBillingComponent,
+  ],
+  templateUrl: './calendar.component.html',
 })
 export class CalendarComponent implements OnInit, OnDestroy {
+  private readonly permissions = inject(PermissionService);
+  private readonly officeSync = inject(OfficeSyncService);
   private cdr = inject(ChangeDetectorRef);
   private authService = inject(AuthService);
-    private tokenInterceptor = inject(TokenInterceptorService);
-  readonly icons = { ChevronLeft, ChevronRight, CalendarIcon, Clock, User, Plus, X, CheckCircle2 };
+  private tokenInterceptor = inject(TokenInterceptorService);
+  readonly icons = {
+    ChevronLeft,
+    ChevronRight,
+    CalendarIcon,
+    Clock,
+    User,
+    Plus,
+    X,
+    CheckCircle2,
+    GraduationCap,
+  };
   private appointmentsSub?: Subscription;
-  private readonly SAVE_APPOINTMENT_URL = 'https://saveappointment-o7vmreizjq-uc.a.run.app';
-  private readonly GET_FOLLOWING_APPOINTMENTS_URL = 'https://syncfollowingappointments-o7vmreizjq-uc.a.run.app';
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
-  private readonly MODIFY_APPOINTMENT_URL = 'https://modifyOrDeleteAppointment-o7vmreizjq-uc.a.run.app';
+  private branchSub?: Subscription;
+  private loadSerial = 0;
+  readonly loadError = signal('');
+  private readonly SAVE_APPOINTMENT_URL = API_URLS.SAVEAPPOINTMENT;
+  private readonly GET_FOLLOWING_APPOINTMENTS_URL = API_URLS.SYNCFOLLOWINGAPPOINTMENTS;
+  private readonly ENCRYPTION_KEY = SECURITY_CONFIG.ENCRYPTION_KEY;
+  private readonly APP_SECRET_HEADER = SECURITY_CONFIG.APP_SECRET_HEADER;
+  private readonly MODIFY_APPOINTMENT_URL = API_URLS.MODIFY_OR_DELETE_APPOINTMENT;
 
+  readonly tutorialOpen = signal(false);
+  private deferredCalendarLoad = false;
+  private get tutorialKey() {
+    return 'clinicago:calendar-practice:v1:' + (this.authService.getSession()?.email || 'local');
+  }
+  startTutorial() {
+    this.tutorialOpen.set(true);
+  }
+  endTutorial() {
+    try {
+      localStorage.setItem(this.tutorialKey, 'seen');
+    } catch {}
+    this.tutorialOpen.set(false);
+    if (this.deferredCalendarLoad) {
+      this.deferredCalendarLoad = false;
+      void this.loadAppointments();
+    }
+  }
   currentView = signal<'month' | 'week' | 'day'>('month');
   selectedDate = new Date();
-selectedModalHour: string = ''; // Hora seleccionada mediante chips
-availableTimeSlots: { time: string; label: string; available: boolean }[] = [];
+  selectedModalHour: string = ''; // Hora seleccionada mediante chips
+  availableTimeSlots: { time: string; label: string; available: boolean }[] = [];
   // 🛑 Estados para el diálogo de confirmación de cancelación
   showCancelConfirmModal = false;
   isCancelling = false;
@@ -51,40 +139,166 @@ availableTimeSlots: { time: string; label: string; available: boolean }[] = [];
   showAppointmentModal = false;
   showSuccessModal = false;
   isSaving = false;
-  isAdvancedModal =false;
+  isAdvancedModal = false;
   targetDate = '';
   targetHour = '09:00';
   selectedDurationMinutes: number = 60;
   // 1. Agregar estas propiedades en tu clase CalendarComponent
-filteredPatients: any[] = [];
-showPatientDropdown = false;
+  filteredPatients: any[] = [];
+  showPatientDropdown = false;
 
-availableServices: any[] = [];
-filteredServices: any[] = [];
-showServiceDropdown = false;
-focusedIndices = new Map<string, number>();
+  availableServices: any[] = [];
+  filteredServices: any[] = [];
+  showServiceDropdown = false;
+  focusedIndices = new Map<string, number>();
+  selectedPatientId = '';
+  selectedServiceId = '';
+  reasonUnknown = false;
+  private previousReason = '';
+  private previousServiceId = '';
+  toggleUnknownReason(checked: boolean): void {
+    if (checked) {
+      this.previousReason = this.patientForm.reason;
+      this.previousServiceId = this.selectedServiceId;
+      this.patientForm.reason = 'Sin definir';
+      this.selectedServiceId = '';
+    } else {
+      this.patientForm.reason = this.previousReason;
+      this.selectedServiceId = this.previousServiceId;
+    }
+    this.reasonUnknown = checked;
+    this.showServiceDropdown = false;
+  }
   patientForm = {
     name: '',
     phone: '',
     email: '',
-    reason: ''
+    reason: '',
   };
 
   appointmentsList = signal<PatientAppointment[]>([]);
-  isLoading = false;
+  isLoading = true;
 
-  hoursList = [
-    '6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
-    '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
-    '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM', '11:00 PM'
-  ];
+  get bookingOffice() {
+    return this.authService.getSucursal();
+  }
+  get calendarRange() {
+    const sunday = new Date(this.selectedDate);
+    sunday.setDate(sunday.getDate() - sunday.getDay());
+    const dates =
+      this.currentView() === 'week'
+        ? Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(sunday);
+            d.setDate(d.getDate() + i);
+            return localDateKey(d);
+          })
+        : [localDateKey(this.selectedDate)];
+    const periods = dates.flatMap((date) => officePeriods(this.bookingOffice, date));
+    return {
+      start: periods.length
+        ? Math.floor(Math.min(...periods.map((p: any) => timeMinutes(p.start))) / 60) * 60
+        : 420,
+      end: periods.length
+        ? Math.ceil(
+            Math.max(...periods.map((p: any) => (p.end === '24:00' ? 1440 : timeMinutes(p.end)))) /
+              60,
+          ) * 60
+        : 420,
+    };
+  }
+  get currentTimeInsideRange() {
+    this.bookingClock();
+    const d = new Date(),
+      m = d.getHours() * 60 + d.getMinutes(),
+      r = this.calendarRange;
+    return m >= r.start && m < r.end;
+  }
+  get hoursList(): string[] {
+    const result = [];
+    const range = this.calendarRange;
+    for (let at = range.start; at < range.end; at += 60)
+      result.push(this.formatTo12Hour(clockTime(at)));
+    return result;
+  }
+  get calendarHeight() {
+    return this.hoursList.length * 64;
+  }
+  canBookDay(date: string) {
+    this.bookingClock();
+    return (
+      !this.isPastBookingDay(date) &&
+      officeBookingSlots(this.bookingOffice, date, 15).some(
+        (time: string) => new Date(date + 'T' + time).getTime() > Date.now(),
+      )
+    );
+  }
 
   // 🕒 Control de la hora actual en tiempo real
   currentTimeTopPx = signal<number>(0);
-  private timeInterval: any;
+  private timeInterval?: ReturnType<typeof setTimeout>;
+  private readonly bookingClock = signal(Date.now());
+  readonly bookingTimeError = signal('');
+  private readonly onClockFocus = () => this.updateCurrentTimeIndicator();
 
-ngOnInit() {
-    this.loadAppointments();
+  get minBookingDate(): string {
+    this.bookingClock();
+    return localDateKey();
+  }
+
+  isPastBookingDay(date: string): boolean {
+    this.bookingClock();
+    return !parseLocalDate(date) || date < localDateKey();
+  }
+
+  canBookSlot(date: string, hour: string): boolean {
+    this.bookingClock();
+    const time = normalizedTime(hour);
+    return (
+      !!parseLocalDate(date) &&
+      !!time &&
+      new Date(`${date}T${time}:00`).getTime() > Date.now() &&
+      isOfficeBookingAllowed(this.bookingOffice, date, time, this.selectedDurationMinutes)
+    );
+  }
+
+  canSaveBookingTime(): boolean {
+    return this.canBookSlot(
+      this.targetDate,
+      this.isAdvancedModal ? this.selectedModalHour : this.targetHour,
+    );
+  }
+
+  selectModalHour(time: string): void {
+    if (
+      !this.canBookSlot(this.targetDate, time) ||
+      !this.availableTimeSlots.some((slot) => slot.time === time && slot.available)
+    )
+      return;
+    this.selectedModalHour = this.selectedModalHour === time ? '' : time;
+    this.bookingTimeError.set('');
+  }
+
+  private scheduleClockUpdate(): void {
+    this.timeInterval = setTimeout(
+      () => {
+        this.updateCurrentTimeIndicator();
+        this.scheduleClockUpdate();
+      },
+      60000 - (Date.now() % 60000) + 5,
+    );
+  }
+
+  ngOnInit() {
+    try {
+      if (!localStorage.getItem(this.tutorialKey)) this.startTutorial();
+    } catch {}
+    this.branchSub = this.authService.branchChanged$.subscribe(() => {
+      this.appointmentsList.set([]);
+      if (this.tutorialOpen()) this.deferredCalendarLoad = true;
+      else void this.loadAppointments();
+    });
+    if (this.tutorialOpen()) this.deferredCalendarLoad = true;
+    else void this.loadAppointments();
     this.updateCurrentTimeIndicator();
 
     // 🔄 Suscribirse a los cambios emitidos por el servicio
@@ -94,14 +308,16 @@ ngOnInit() {
       this.cdr.detectChanges(); // Refrescar vista al instante
     });
 
-    this.timeInterval = setInterval(() => {
-      this.updateCurrentTimeIndicator();
-    }, 60000);
+    this.scheduleClockUpdate();
+    window.addEventListener('focus', this.onClockFocus);
   }
 
- ngOnDestroy() {
+  ngOnDestroy() {
+    this.loadSerial++;
+    this.branchSub?.unsubscribe();
+    window.removeEventListener('focus', this.onClockFocus);
     if (this.timeInterval) {
-      clearInterval(this.timeInterval);
+      clearTimeout(this.timeInterval);
     }
     // 🧹 Limpiar suscripción para evitar fugas de memoria
     if (this.appointmentsSub) {
@@ -118,6 +334,7 @@ ngOnInit() {
 
   // 🔎 Filtrar pacientes al escribir en el campo de nombre
   onPatientInput(event: any) {
+    this.selectedPatientId = '';
     const query = event.target.value.toLowerCase();
     this.patientForm.name = event.target.value;
 
@@ -127,9 +344,10 @@ ngOnInit() {
       this.filteredPatients = allPatients;
       this.showPatientDropdown = true;
     } else {
-      this.filteredPatients = allPatients.filter((p: any) =>
-        (p.nombre && p.nombre.toLowerCase().includes(query)) ||
-        (p.telefono && p.telefono.includes(query))
+      this.filteredPatients = allPatients.filter(
+        (p: any) =>
+          (p.nombre && p.nombre.toLowerCase().includes(query)) ||
+          (p.telefono && p.telefono.includes(query)),
       );
       this.showPatientDropdown = true;
     }
@@ -137,6 +355,7 @@ ngOnInit() {
 
   // ✨ Seleccionar un paciente del combo y autocompletar sus datos
   selectPatient(patient: any) {
+    this.selectedPatientId = patient.idPaciente || patient.idPatient || patient.id || '';
     this.patientForm.name = patient.nombre || '';
     this.patientForm.phone = patient.telefono || '';
     this.patientForm.email = patient.correo || '';
@@ -146,12 +365,14 @@ ngOnInit() {
 
   // 🔎 Filtrar servicios al escribir en el campo de motivo
   onReasonInput(event: any) {
+    if (this.reasonUnknown) return;
+    this.selectedServiceId = '';
     const query = event.target.value.toLowerCase();
     this.patientForm.reason = event.target.value;
 
     if (this.availableServices.length > 0) {
-      this.filteredServices = this.availableServices.filter((s: any) =>
-        s.nombre && s.nombre.toLowerCase().includes(query)
+      this.filteredServices = this.availableServices.filter(
+        (s: any) => s.nombre && s.nombre.toLowerCase().includes(query),
       );
       this.showServiceDropdown = true;
     } else {
@@ -161,14 +382,25 @@ ngOnInit() {
 
   // ✨ Seleccionar un servicio del combo y precargar su nombre
   selectServiceReason(service: any) {
+    this.reasonUnknown = false;
+    this.selectedServiceId = service.id || '';
     this.patientForm.reason = service.nombre || '';
     this.showServiceDropdown = false;
   }
 
   // 🔄 Cargar servicios de la sucursal activa al abrir cualquier modal de cita
   openAppointmentModal(dateStr: string, hour?: string) {
+    if (!this.permissions.can('calendar', 'write')) return;
+    if (!this.canBookDay(dateStr) || (hour !== undefined && !this.canBookSlot(dateStr, hour)))
+      return;
+    this.bookingTimeError.set('');
     this.targetDate = dateStr;
     this.selectedDurationMinutes = 60;
+    this.reasonUnknown = false;
+    this.previousReason = '';
+    this.previousServiceId = '';
+    this.selectedPatientId = '';
+    this.selectedServiceId = '';
     this.patientForm = { name: '', phone: '', email: '', reason: '' };
 
     // Limpiar estados de dropdowns
@@ -178,7 +410,7 @@ ngOnInit() {
 
     // Cargar servicios de la sucursal activa desde el AuthService
     const activeSucursal = this.authService.getSucursal();
-    this.availableServices = activeSucursal?.services || [];
+    this.availableServices = activeSucursal?.services || activeSucursal?.servicesInOffice || [];
     this.filteredServices = [...this.availableServices];
 
     if (hour) {
@@ -193,14 +425,20 @@ ngOnInit() {
     this.showAppointmentModal = true;
   }
 
-
-
   updateCurrentTimeIndicator() {
     const now = new Date();
+    this.bookingClock.set(now.getTime());
+    if (this.showAppointmentModal) {
+      const selected = this.isAdvancedModal ? this.selectedModalHour : this.targetHour;
+      const expired = !!selected && !this.canBookSlot(this.targetDate, selected);
+      if (this.isAdvancedModal) this.generateTimeSlots();
+      if (expired)
+        this.bookingTimeError.set('El horario elegido ya pasó. Selecciona un horario futuro.');
+    }
     const totalMinutes = now.getHours() * 60 + now.getMinutes();
     const PIXELS_PER_MINUTE = 64 / 60;
     // 6:00 AM es el inicio de la grilla (360 minutos)
-    const GRID_START_MINUTES = 6 * 60;
+    const GRID_START_MINUTES = this.calendarRange.start;
     const adjustedMinutes = Math.max(0, totalMinutes - GRID_START_MINUTES);
     this.currentTimeTopPx.set(adjustedMinutes * PIXELS_PER_MINUTE);
     this.cdr.detectChanges();
@@ -228,15 +466,17 @@ ngOnInit() {
   }
 
   get availableHoursCatalog(): string[] {
-    const sucursal = this.authService.getSucursal();
-    if (sucursal && sucursal.branchInfo && sucursal.branchInfo.schedulersStudio) {
-      return sucursal.branchInfo.schedulersStudio;
-    }
-    return ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '16:00', '17:00', '18:00', '19:00'];
+    return officeBookingSlots(
+      this.bookingOffice,
+      this.targetDate,
+      this.selectedDurationMinutes,
+    ).filter((time: string) => this.canBookSlot(this.targetDate, time));
   }
 
   get currentMonthYearLabel(): string {
-    return this.selectedDate.toLocaleString('es-MX', { month: 'long', year: 'numeric' }).toUpperCase();
+    return this.selectedDate
+      .toLocaleString('es-MX', { month: 'long', year: 'numeric' })
+      .toUpperCase();
   }
 
   navigate(direction: number) {
@@ -244,7 +484,7 @@ ngOnInit() {
     if (this.currentView() === 'month') {
       d.setMonth(d.getMonth() + direction);
     } else if (this.currentView() === 'week') {
-      d.setDate(d.getDate() + (direction * 7));
+      d.setDate(d.getDate() + direction * 7);
     } else {
       d.setDate(d.getDate() + direction);
     }
@@ -255,162 +495,174 @@ ngOnInit() {
   /**
    * Carga híbrida: Muestra datos locales y consulta solo los nuevos agregados en otras computadoras
    */
-  async loadAppointments() {
+  async loadAppointments(force = false) {
+    const serial = ++this.loadSerial,
+      session = this.authService.getSession();
     this.isLoading = true;
+    this.loadError.set('');
     this.cdr.detectChanges();
-
     try {
-      // 1️⃣ Cargar instantáneamente del caché local
-      const cachedApps = this.authService.getCachedAppointments();
-      if (cachedApps.length > 0) {
-        this.appointmentsList.set(cachedApps);
-      }
-
-      const sessionData = this.authService.getSession();
-      const jwtToken = sessionData?.sessionToken;
-      if (!jwtToken) {
-        this.isLoading = false;
-        this.cdr.detectChanges();
+      await this.officeSync.ensureOfficeContext();
+      if (serial !== this.loadSerial) return;
+      const branch = this.authService.getSucursal(),
+        office = branch?.idConsultorio || branch?.id;
+      if (!office || !this.permissions.can('calendar', 'read')) {
+        this.appointmentsList.set([]);
         return;
       }
+      this.appointmentsList.set(this.authService.getCachedAppointments());
+      if (force) await this.officeSync.refresh('appointments', false);
+      else await this.officeSync.ensureResource('appointments');
+      if (serial !== this.loadSerial) return;
+      const active = this.authService.getSucursal(),
+        current = this.authService.getSession();
+      if (
+        (active?.idConsultorio || active?.id) !== office ||
+        current?.email !== session?.email ||
+        current?.idDoctor !== session?.idDoctor ||
+        current?.sessionId !== session?.sessionId
+      )
+        return;
+      this.appointmentsList.set(this.authService.getCachedAppointments());
+    } catch (error) {
+      if (serial === this.loadSerial)
+        this.loadError.set(
+          error instanceof Error ? error.message : 'No se pudieron cargar las citas.',
+        );
+    } finally {
+      if (serial === this.loadSerial) {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    }
+  }
 
+  getRandomStrongColor(): string {
+    const strongColors = [
+      'bg-blue-600 border-blue-400',
+      'bg-purple-600 border-purple-400',
+      'bg-indigo-600 border-indigo-400',
+      'bg-emerald-600 border-emerald-400',
+      'bg-rose-600 border-rose-400',
+      'bg-amber-600 border-amber-400',
+      'bg-teal-600 border-teal-400',
+      'bg-cyan-600 border-cyan-400',
+      'bg-violet-600 border-violet-400',
+      'bg-fuchsia-600 border-fuchsia-400',
+    ];
+
+    // Si la cita ya tiene un color asignado previamente, podemos conservarlo para que no cambie al hacer scroll o refrescar.
+    // O podemos seleccionarlo aleatoriamente basado en su nombre o ID único.
+    const randomIndex = Math.floor(Math.random() * strongColors.length);
+    return strongColors[randomIndex];
+  }
+  async saveAppointment() {
+    if (this.isSaving) return;
+    const timeToUse = this.isAdvancedModal ? this.selectedModalHour : this.targetHour;
+    if (!this.targetDate || !timeToUse) {
+      alert('Por favor selecciona una fecha y un horario disponible.');
+      return;
+    }
+    if (!this.canBookSlot(this.targetDate, timeToUse)) {
+      if (this.isAdvancedModal) this.generateTimeSlots();
+      this.bookingTimeError.set(
+        'No puedes agendar citas en fechas u horarios que ya pasaron. Selecciona un horario futuro.',
+      );
+      return;
+    }
+    this.bookingTimeError.set('');
+    this.patientForm.reason = this.reasonUnknown ? 'Sin definir' : this.patientForm.reason.trim();
+    if (!this.patientForm.reason) {
+      alert('Indica el motivo de la cita o selecciona “No lo sé aún”.');
+      return;
+    }
+    if (!this.patientForm.name || !this.patientForm.phone) {
+      alert('Por favor ingresa al menos el nombre y teléfono del paciente.');
+      return;
+    }
+
+    try {
+      this.isSaving = true;
+      this.cdr.detectChanges();
+
+      const normalizedStartTime = this.convertTo24Hour(timeToUse);
+      const { endTime, durationLabel } = this.calculateEndTimeAndLabel(
+        normalizedStartTime,
+        Number(this.selectedDurationMinutes),
+      );
       const activeSucursal = this.authService.getSucursal();
-      const consultorioId = activeSucursal?.idConsultorio || 'default_consultorio';
-      const lastSync = this.authService.getLastSyncDateAppointments();
+      const idConsultorio = activeSucursal?.idConsultorio || 'default_consultorio';
 
-      // 2️⃣ Consultar al servidor solo los registros nuevos (sincronización incremental)
-      const payload = {
-        idConsultorio: consultorioId,
-        client_last_update: lastSync
+      const newAppointmentData: PatientAppointment = {
+        time: normalizedStartTime,
+        endTime: endTime,
+        durationMinutes: Number(this.selectedDurationMinutes),
+        durationLabel: durationLabel,
+        ...appointmentPatientLink(
+          this.authService.getCachedPatients().find((p) => patientId(p) === this.selectedPatientId),
+        ),
+        serviceId: this.selectedServiceId || undefined,
+        patientName: this.patientForm.name,
+        phone: this.patientForm.phone,
+        email: this.patientForm.email,
+        reason: this.patientForm.reason.trim(),
+        date: this.targetDate,
+        colorClass: this.getRandomStrongColor(),
       };
 
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+      const payload = {
+        idConsultorio: idConsultorio,
+        appointmentData: newAppointmentData,
+      };
 
-      const response = await fetch(this.GET_FOLLOWING_APPOINTMENTS_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular',
-          'Authorization': `Bearer ${jwtToken}`
-        },
-        body: JSON.stringify({ encryptedData: ciphertext })
+      const ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify(payload),
+        this.ENCRYPTION_KEY,
+      ).toString();
+
+      const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
+        if (!this.canBookSlot(newAppointmentData.date, newAppointmentData.time)) {
+          throw new Error('El horario elegido ya pasó. Selecciona un horario futuro.');
+        }
+        const fetchRes = await versionedFetch(this.SAVE_APPOINTMENT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-app-signature': this.APP_SECRET_HEADER,
+            'x-client-source': 'angular',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ encryptedData: ciphertext }),
+        });
+        return fetchRes;
       });
 
       const jsonRes = await response.json();
-      if (response.ok) {
-        const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-        const decryptedResponse = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-        if (decryptedResponse && decryptedResponse.success && Array.isArray(decryptedResponse.appointments) && decryptedResponse.appointments.length > 0) {
-          // Guardar en caché y combinar localmente
-          this.authService.saveCachedAppointments(decryptedResponse.appointments);
-          this.appointmentsList.set(this.authService.getCachedAppointments());
-        }
+      if (!response.ok) {
+        throw new Error(jsonRes.error || 'Error al registrar la cita en el servidor.');
       }
-    } catch (error) {
-      console.error('Error al sincronizar citas:', error);
+
+      const saved = JSON.parse(
+        CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY).toString(
+          CryptoJS.enc.Utf8,
+        ),
+      );
+      if (!saved.success) throw new Error(saved.error || 'No se pudo guardar la cita');
+      this.authService.saveCachedAppointments([saved.appointment || newAppointmentData]);
+      this.appointmentsList.set(this.authService.getCachedAppointments());
+
+      this.showAppointmentModal = false;
+      this.showSuccessModal = true;
+    } catch (error: any) {
+      console.error('❌ Error al guardar la cita:', error);
+      alert(error.message || 'Hubo un error al registrar la cita.');
     } finally {
-      this.isLoading = false;
+      this.isSaving = false;
       this.cdr.detectChanges();
     }
   }
-getRandomStrongColor(): string {
-  const strongColors = [
-    'bg-blue-600 border-blue-400',
-    'bg-purple-600 border-purple-400',
-    'bg-indigo-600 border-indigo-400',
-    'bg-emerald-600 border-emerald-400',
-    'bg-rose-600 border-rose-400',
-    'bg-amber-600 border-amber-400',
-    'bg-teal-600 border-teal-400',
-    'bg-cyan-600 border-cyan-400',
-    'bg-violet-600 border-violet-400',
-    'bg-fuchsia-600 border-fuchsia-400'
-  ];
 
-  // Si la cita ya tiene un color asignado previamente, podemos conservarlo para que no cambie al hacer scroll o refrescar.
-  // O podemos seleccionarlo aleatoriamente basado en su nombre o ID único.
-  const randomIndex = Math.floor(Math.random() * strongColors.length);
-  return strongColors[randomIndex];
-}
-async saveAppointment() {
-  const timeToUse = this.isAdvancedModal ? this.selectedModalHour : this.targetHour;
- if (!this.targetDate || !timeToUse) {
-    alert('Por favor selecciona una fecha y un horario disponible.');
-    return;
-  }
-  if (!this.patientForm.name || !this.patientForm.phone) {
-    alert('Por favor ingresa al menos el nombre y teléfono del paciente.');
-    return;
-  }
-
-  try {
-    this.isSaving = true;
-    this.cdr.detectChanges();
-
-    const normalizedStartTime = this.convertTo24Hour(timeToUse);
-    const { endTime, durationLabel } = this.calculateEndTimeAndLabel(normalizedStartTime, Number(this.selectedDurationMinutes));
-    const activeSucursal = this.authService.getSucursal();
-    const idConsultorio = activeSucursal?.idConsultorio || 'default_consultorio';
-
-    const newAppointmentData: PatientAppointment = {
-      time: normalizedStartTime,
-      endTime: endTime,
-      durationMinutes: Number(this.selectedDurationMinutes),
-      durationLabel: durationLabel,
-      patientName: this.patientForm.name,
-      phone: this.patientForm.phone,
-      email: this.patientForm.email,
-      reason: this.patientForm.reason,
-      date: this.targetDate,
-      colorClass: this.getRandomStrongColor(),
-
-      syncId: new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
-    };
-
-    const payload = {
-      idConsultorio: idConsultorio,
-      appointmentData: newAppointmentData
-    };
-
-    const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-    const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
-      const fetchRes = await fetch(this.SAVE_APPOINTMENT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ encryptedData: ciphertext })
-      });
-      return fetchRes;
-    });
-
-    const jsonRes = await response.json();
-    if (!response.ok) {
-      throw new Error(jsonRes.error || 'Error al registrar la cita en el servidor.');
-    }
-
-    this.authService.saveCachedAppointments([newAppointmentData]);
-    this.appointmentsList.set(this.authService.getCachedAppointments());
-
-    this.showAppointmentModal = false;
-    this.showSuccessModal = true;
-  } catch (error: any) {
-    console.error('❌ Error al guardar la cita:', error);
-    alert(error.message || 'Hubo un error al registrar la cita.');
-  } finally {
-    this.isSaving = false;
-    this.cdr.detectChanges();
-  }
-}
-
-
-reassignAppointment() {
+  reassignAppointment() {
     const appointment = this.selectedAppointment();
     if (!appointment) return;
 
@@ -419,86 +671,88 @@ reassignAppointment() {
 
     // 2. Abrir el modal de creación utilizando la misma fecha y hora de la cita cancelada
     // Usamos openAppointmentModal pasando la fecha y la hora (formato de 12 o 24 horas según maneje tu grilla)
-    this.openAppointmentModal(appointment.date, appointment.time);
+    if (this.canBookSlot(appointment.date, appointment.time))
+      this.openAppointmentModal(appointment.date, appointment.time);
+    else this.openAppointmentModal(localDateKey());
 
     // Opcional: Si quieres conservar el motivo de la consulta anterior para el nuevo paciente
     this.patientForm.reason = appointment.reason || '';
   }
-// Modal para las Vistas Semanal y Diaria (con selector de hora fija)
-openSlotAppointmentModal(dateStr: string, hour: string) {
-  this.targetDate = dateStr;
-  this.targetHour = this.convertTo24Hour(hour);
-  this.selectedDurationMinutes = 60;
-  this.patientForm = { name: '', phone: '', email: '', reason: '' };
+  // Modal para las Vistas Semanal y Diaria (con selector de hora fija)
+  openSlotAppointmentModal(dateStr: string, hour: string) {
+    this.openAppointmentModal(dateStr, hour);
+  }
 
-  // Indicamos que use el modal clásico de hora fija
-  this.isAdvancedModal = false;
-  this.showAppointmentModal = true;
-}
-
-get filteredAvailableTimeSlots() {
-  return this.availableTimeSlots.filter(slot => slot.available);
-}
+  get filteredAvailableTimeSlots() {
+    return this.availableTimeSlots.filter(
+      (slot) => slot.available && this.canBookSlot(this.targetDate, slot.time),
+    );
+  }
   private convertTo24Hour(timeStr: string): string {
     const totalMins = this.parseTimeToMinutes(timeStr);
     return this.formatMinutesToTime(totalMins);
   }
 
+  generateTimeSlots() {
+    this.bookingTimeError.set(
+      this.isPastBookingDay(this.targetDate)
+        ? 'No puedes agendar citas en días anteriores a hoy.'
+        : '',
+    );
+    const cachedApps = this.authService.getCachedAppointments() || [];
+    const signalApps = this.appointmentsList() || [];
 
-generateTimeSlots() {
-  const cachedApps = this.authService.getCachedAppointments() || [];
-  const signalApps = this.appointmentsList() || [];
-
-  const allAppsMap = new Map();
-  [...cachedApps, ...signalApps].forEach(app => {
-    const key = app.syncId || `${app.date}-${app.time}-${app.patientName}`;
-    allAppsMap.set(key, app);
-  });
-
-  const combinedApps = Array.from(allAppsMap.values());
-  const appsForDay = combinedApps.filter(app => app.date === this.targetDate);
-
-  const slots = [];
-  let currentMinutes = 8 * 60; // 08:00 AM
-  const endMinutes = 20 * 60;  // 20:00 PM
-  const interval = 30;         // Intervalos de 30 minutos
-
-  const durationMins = Number(this.selectedDurationMinutes) || 60;
-
-  while (currentMinutes + durationMins <= endMinutes) {
-    const startH = Math.floor(currentMinutes / 60);
-    const startM = currentMinutes % 60;
-    const timeStr = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
-
-    const slotEndMins = currentMinutes + durationMins;
-
-    let isOccupied = false;
-    for (const app of appsForDay) {
-      const appStartMins = this.parseTimeToMinutes(app.time);
-      const appEndMins = this.parseTimeToMinutes(app.endTime || this.calculateEndTimeAndLabel(app.time, app.durationMinutes || 60).endTime);
-
-      if (currentMinutes < appEndMins && slotEndMins > appStartMins) {
-        isOccupied = true;
-        break;
-      }
-    }
-
-    slots.push({
-      time: timeStr,
-      label: timeStr,
-      available: !isOccupied
+    const allAppsMap = new Map();
+    [...cachedApps, ...signalApps].forEach((app) => {
+      const key = app.syncId || `${app.date}-${app.time}-${app.patientName}`;
+      allAppsMap.set(key, app);
     });
 
-    currentMinutes += interval;
-  }
+    const combinedApps = Array.from(allAppsMap.values());
+    const appsForDay = combinedApps.filter((app) => app.date === this.targetDate);
 
-  this.availableTimeSlots = slots;
+    const slots = [];
+    const durationMins = Number(this.selectedDurationMinutes) || 60;
+    for (const allowedTime of officeBookingSlots(
+      this.bookingOffice,
+      this.targetDate,
+      durationMins,
+    )) {
+      const currentMinutes = timeMinutes(allowedTime);
+      const startH = Math.floor(currentMinutes / 60);
+      const startM = currentMinutes % 60;
+      const timeStr = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
 
-  const currentSelected = this.availableTimeSlots.find(s => s.time === this.selectedModalHour);
-  if (!currentSelected || !currentSelected.available) {
-    this.selectedModalHour = '';
+      const slotEndMins = currentMinutes + durationMins;
+
+      let isOccupied = false;
+      for (const app of appsForDay) {
+        if (Number(app.status) === 2) continue;
+        const appStartMins = this.parseTimeToMinutes(app.time);
+        const appEndMins = this.parseTimeToMinutes(
+          app.endTime || this.calculateEndTimeAndLabel(app.time, app.durationMinutes || 60).endTime,
+        );
+
+        if (currentMinutes < appEndMins && slotEndMins > appStartMins) {
+          isOccupied = true;
+          break;
+        }
+      }
+
+      slots.push({
+        time: timeStr,
+        label: timeStr,
+        available: !isOccupied && this.canBookSlot(this.targetDate, timeStr),
+      });
+    }
+
+    this.availableTimeSlots = slots;
+
+    const currentSelected = this.availableTimeSlots.find((s) => s.time === this.selectedModalHour);
+    if (!currentSelected || !currentSelected.available) {
+      this.selectedModalHour = '';
+    }
   }
-}
 
   get daysInMonthGrid() {
     const year = this.selectedDate.getFullYear();
@@ -515,18 +769,19 @@ generateTimeSlots() {
       const monthStr = (month + 1).toString().padStart(2, '0');
       const dateStr = `${year}-${monthStr}-${dayStr}`;
 
-      const appsForDay = this.appointmentsList().filter(a => a.date === dateStr);
+      const appsForDay = this.appointmentsList().filter((a) => a.date === dateStr);
       days.push({ dayNumber: i, dateStr, appointments: appsForDay });
     }
     return days;
   }
 
-
-
-
-
   formatDateHeader(): string {
-    return this.selectedDate.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return this.selectedDate.toLocaleDateString('es-MX', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
   }
 
   formatTo12Hour(time24: string): string {
@@ -553,7 +808,7 @@ generateTimeSlots() {
     if (isNaN(hours) || isNaN(minutes)) return 0;
     if (isPM && hours < 12) hours += 12;
     else if (isAM && hours === 12) hours = 0;
-    return (hours * 60) + minutes;
+    return hours * 60 + minutes;
   }
 
   private formatMinutesToTime(totalMins: number): string {
@@ -585,12 +840,12 @@ generateTimeSlots() {
     }
     const durationMinutes = Math.max(endTotalMinutes - startTotalMinutes, 30);
     const PIXELS_PER_MINUTE = 64 / 60;
-    const GRID_START_MINUTES = 6 * 60;
+    const GRID_START_MINUTES = this.calendarRange.start;
     const adjustedTopMinutes = Math.max(0, startTotalMinutes - GRID_START_MINUTES);
 
     return {
       topPx: adjustedTopMinutes * PIXELS_PER_MINUTE,
-      heightPx: durationMinutes * PIXELS_PER_MINUTE
+      heightPx: durationMinutes * PIXELS_PER_MINUTE,
     };
   }
 
@@ -626,29 +881,33 @@ generateTimeSlots() {
         patientName: cita.patientName || cita.name || '',
         phone: cita.phone || '',
         reason: cita.reason || cita.specialty || '',
+        appointmentId: cita.appointmentId,
         syncId: cita.syncId || '',
         time: cita.time || '',
         status: newStatus,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       const payload = {
         idConsultorio: idConsultorio,
         actionType: actionType,
-        appointmentData: appointmentDataPayload
+        appointmentData: appointmentDataPayload,
       };
 
       const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
-        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-        return await fetch(this.MODIFY_APPOINTMENT_URL, {
+        const ciphertext = CryptoJS.AES.encrypt(
+          JSON.stringify(payload),
+          this.ENCRYPTION_KEY,
+        ).toString();
+        return await versionedFetch(this.MODIFY_APPOINTMENT_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-app-signature': this.APP_SECRET_HEADER,
             'x-client-source': 'angular',
-            'Authorization': `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ encryptedData: ciphertext })
+          body: JSON.stringify({ encryptedData: ciphertext }),
         });
       });
 
@@ -667,7 +926,7 @@ generateTimeSlots() {
             return {
               ...item,
               status: newStatus,
-              updatedAt: appointmentDataPayload.updatedAt
+              updatedAt: appointmentDataPayload.updatedAt,
             };
           }
           return item;
@@ -704,7 +963,11 @@ generateTimeSlots() {
     if (item1.syncId && item2.syncId && item1.syncId === item2.syncId) {
       return true;
     }
-    return item1.date === item2.date && item1.time === item2.time && (item1.patientName === item2.patientName || item1.name === item2.name);
+    return (
+      item1.date === item2.date &&
+      item1.time === item2.time &&
+      (item1.patientName === item2.patientName || item1.name === item2.name)
+    );
   }
 
   get weekDaysGrid() {
@@ -722,7 +985,7 @@ generateTimeSlots() {
       const dayStr = nextDay.getDate().toString().padStart(2, '0');
       const dateStr = `${year}-${month}-${dayStr}`;
 
-      const existingApps = this.appointmentsList().filter(a => a.date === dateStr);
+      const existingApps = this.appointmentsList().filter((a) => a.date === dateStr);
 
       // 💡 Algoritmo para calcular solapamientos y acomodarlas hacia la derecha
       const mappedApps = this.processOverlappingAppointments(existingApps);
@@ -731,7 +994,7 @@ generateTimeSlots() {
         name: nextDay.toLocaleDateString('es-MX', { weekday: 'short' }).toUpperCase(),
         dayNumber: nextDay.getDate(),
         dateStr,
-        appointments: mappedApps
+        appointments: mappedApps,
       });
     }
     return week;
@@ -743,7 +1006,7 @@ generateTimeSlots() {
     const day = this.selectedDate.getDate().toString().padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
 
-    const existingApps = this.appointmentsList().filter(a => a.date === dateStr);
+    const existingApps = this.appointmentsList().filter((a) => a.date === dateStr);
 
     // 💡 Aplicar el mismo algoritmo para la vista diaria
     const mappedApps = this.processOverlappingAppointments(existingApps);
@@ -751,7 +1014,7 @@ generateTimeSlots() {
     return { dateStr, appointments: mappedApps };
   }
 
-/**
+  /**
    * 📐 Agrupa citas concurrentes, ordena las vigentes primero y prepara el scroll horizontal
    */
   private processOverlappingAppointments(apps: any[]) {
@@ -765,14 +1028,16 @@ generateTimeSlots() {
       return this.parseTimeToMinutes(a.time) - this.parseTimeToMinutes(b.time);
     });
 
-    const processed = sorted.map(app => {
+    const processed = sorted.map((app) => {
       const pos = this.calculateAppointmentPosition(app.time, app.endTime);
       return {
         ...app,
         topPx: pos.topPx,
         heightPx: pos.heightPx,
         startMins: this.parseTimeToMinutes(app.time),
-        endMins: this.parseTimeToMinutes(app.endTime || this.calculateEndTimeAndLabel(app.time, app.durationMinutes || 60).endTime)
+        endMins: this.parseTimeToMinutes(
+          app.endTime || this.calculateEndTimeAndLabel(app.time, app.durationMinutes || 60).endTime,
+        ),
       };
     });
 
@@ -788,14 +1053,16 @@ generateTimeSlots() {
 
       return {
         ...app,
-        colIndex: colIndex
+        colIndex: colIndex,
       };
     });
   }
 
   scrollDayHorizontally(event: MouseEvent, direction: number) {
     event.stopPropagation();
-    const target = (event.currentTarget as HTMLElement).parentElement?.querySelector('.scrollable-day-container');
+    const target = (event.currentTarget as HTMLElement).parentElement?.querySelector(
+      '.scrollable-day-container',
+    );
     if (target) {
       target.scrollBy({ left: direction * 190, behavior: 'smooth' });
     }
@@ -807,7 +1074,7 @@ generateTimeSlots() {
   getFocusedIndex(dateStr: string): number {
     return this.focusedIndices.get(dateStr) || 0;
   }
-/**
+  /**
    * 🎯 Establece el foco en un item específico al hacer clic, lo centra y maneja bucle circular si es necesario
    */
   focusAppointment(appointment: any, dayStr: string, event: MouseEvent) {
@@ -852,11 +1119,11 @@ generateTimeSlots() {
     containers.forEach((container: any) => {
       if (container.dataset.date === dayStr) {
         const cardWidth = 165; // Ancho de la tarjeta en píxeles
-        const cardLeft = 6 + (index * 175); // Posición left de la tarjeta según su índice
+        const cardLeft = 6 + index * 175; // Posición left de la tarjeta según su índice
         const containerWidth = container.clientWidth; // Ancho visible del contenedor del día
 
         // Calcular la posición exacta de scroll para que la tarjeta quede al centro
-        const scrollPosition = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+        const scrollPosition = cardLeft - containerWidth / 2 + cardWidth / 2;
 
         container.scrollTo({ left: Math.max(0, scrollPosition), behavior: 'smooth' });
       }
@@ -866,7 +1133,7 @@ generateTimeSlots() {
   getCarouselArrowsTop(dayAppointments: any[]): number {
     if (!dayAppointments || dayAppointments.length === 0) return 10;
     // Encontrar la posición 'top' más alta (menor en píxeles) entre las citas de ese horario
-    const minTop = Math.min(...dayAppointments.map(a => a.topPx || 0));
+    const minTop = Math.min(...dayAppointments.map((a) => a.topPx || 0));
     // Colocar las flechitas un poco arriba de la tarjeta (con un margen de 28px para que respire)
     return Math.max(10, minTop - 28);
   }

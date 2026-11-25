@@ -1,206 +1,198 @@
-import { Component, signal, OnInit, OnDestroy, inject } from '@angular/core';
+import { PaymentProviderBadgeComponent } from './payment-provider-badge.component';
+import {
+  LucideAngularModule,
+  Crown,
+  Gem,
+  Sparkles,
+  Zap,
+  Check,
+  ArrowUpRight,
+  LoaderCircle,
+  ShieldCheck,
+  CreditCard,
+  RefreshCw,
+} from 'lucide-angular';
+import { Component, inject, signal, computed, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { LucideAngularModule, Plus, MoreVertical, LayoutGrid, List, CheckCircle2, Trash2, Check, Sparkles, Shield, Zap, X, Loader2, Tag } from 'lucide-angular';
-import { AuthService } from '../auth/auth.service';
-import { TokenInterceptorService } from '../auth/token-interceptor.service';
-import CryptoJS from 'crypto-js';
-
+import { RouterLink } from '@angular/router';
+import { BillingService } from './billing.service';
+import { ClinicApiService } from '../reporting/clinic-api.service';
+import { API_URLS } from '../config/api-urls';
 @Component({
   selector: 'app-plans',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
-  templateUrl: './planes.component.html'
+  imports: [PaymentProviderBadgeComponent, CommonModule, RouterLink, LucideAngularModule],
+  templateUrl: './planes.component.html',
+  styleUrl: './billing.css',
 })
-export class PlansComponent implements OnInit, OnDestroy {
-  private headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-  private authService = inject(AuthService);
-  private tokenInterceptor = inject(TokenInterceptorService);
-  private http = inject(HttpClient);
-
-  readonly Plus = Plus;
-  readonly MoreVertical = MoreVertical;
-  readonly LayoutGrid = LayoutGrid;
-  readonly List = List;
-  readonly Trash2 = Trash2;
-  readonly CheckCircle2 = CheckCircle2;
-  readonly Check = Check;
-  readonly Sparkles = Sparkles;
-  readonly Shield = Shield;
-  readonly Zap = Zap;
-  readonly X = X;
-  readonly Loader2 = Loader2;
-  readonly Tag = Tag;
-
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
-  private readonly GET_SUBSCRIPTIONS_URL = 'https://getsubscriptions-o7vmreizjq-uc.a.run.app';
-  private readonly SUBSCRIBE_URL = 'https://createstripecheckoutsession-fjo7ia7ora-uc.a.run.app';
-
-  isLoading = signal<boolean>(true);
-  isGridMode = signal<boolean>(false);
-
-  showSubscribeModal = signal<boolean>(false);
-  selectedSubscriptionTier = signal<any>(null);
-
-  // 🔄 Señal para controlar el loader específico al procesar el pago o servicio de suscripción
-  isSubscribing = signal<boolean>(false);
-  subscribingPlanId = signal<string | null>(null); // Para saber exactamente cuál tarjeta está cargando
-
-  idBranch: string = 'BEAST-TESISTAN';
-  subscriptions = signal<any[]>([]);
-  userData: any = null;
-
-  selectedPlanId = signal<string | null>(null);
-
-  showSuccessDialog = signal<boolean>(false);
-  successMessage = signal<string>('');
-  showAiModal = signal<boolean>(false);
-
-  ngOnInit(): void {
-    this.userData = this.authService.getSession();
-    console.log('🔍 [PlansComponent] Sesión inicial del usuario:', this.userData);
-    this.cargarSuscripciones();
+export class PlansComponent implements OnInit {
+  readonly billing = inject(BillingService);
+  private readonly api = inject(ClinicApiService);
+  readonly loading = signal(true);
+  readonly busy = signal(false);
+  readonly error = signal('');
+  readonly plans = signal<any[]>([]);
+  readonly pending = signal<any>(null);
+  readonly selected = signal<any>(null);
+  readonly category = signal<'subscription' | 'credits'>('subscription');
+  readonly selectedInterval = signal(1);
+  readonly intervalOptions = signal([
+    { months: 1, label: 'Mensual' },
+    { months: 3, label: 'Trimestral' },
+    { months: 6, label: 'Semestral' },
+    { months: 12, label: 'Anual' },
+  ]);
+  readonly visiblePlans = computed(() =>
+    this.plans().filter(
+      (p) =>
+        p.kind === this.category() &&
+        (this.category() === 'credits' || this.months(p) === this.selectedInterval()),
+    ),
+  );
+  months(plan: any) {
+    return (plan.interval === 'year' ? 12 : 1) * (plan.intervalCount || 1);
   }
-
-  ngOnDestroy(): void {}
-
-  async cargarSuscripciones() {
-    this.isLoading.set(true);
+  readonly icons = {
+    Crown,
+    Gem,
+    Sparkles,
+    Zap,
+    Check,
+    ArrowUpRight,
+    LoaderCircle,
+    ShieldCheck,
+    CreditCard,
+    RefreshCw,
+  };
+  // Compare prices within the selected period and category, not annual totals against monthly ones.
+  priceLevel(plan: any): number {
+    const amount = Number(plan.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return 0;
+    const prices = [
+      ...new Set(
+        this.visiblePlans()
+          .map((item) => Number(item.amount))
+          .filter((value) => Number.isFinite(value) && value > 0),
+      ),
+    ].sort((a, b) => a - b);
+    return Math.min(3, Math.max(0, prices.indexOf(amount)));
+  }
+  planIcon(plan: any) {
+    const level = this.priceLevel(plan);
+    return [plan.kind === 'credits' ? Zap : ShieldCheck, Sparkles, Crown, Gem][level];
+  }
+  private requestId = '';
+  @ViewChild('confirmation') confirmation?: ElementRef<HTMLDialogElement>;
+  ngOnInit() {
+    void this.load();
+  }
+  async load() {
+    this.loading.set(true);
+    this.error.set('');
     try {
-      const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
-        const payload = {
-          idBranch: this.userData?.brancheInUser?.[0] || this.idBranch,
-          idDoctor: this.userData?.email || ''
-        };
-        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-        const fetchRes = await fetch(this.GET_SUBSCRIPTIONS_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ encryptedData: ciphertext })
-        });
-
-        return fetchRes;
-      });
-
-      const jsonRes = await response.json();
-
-      if (!response.ok) {
-        throw new Error(jsonRes.error || 'Error al obtener las suscripciones.');
-      }
-
-      const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-      console.log('📦 [PlansComponent] Suscripciones descargadas de la API:', decryptedData.subscriptions);
-
-      if (decryptedData.success && Array.isArray(decryptedData.subscriptions)) {
-        this.subscriptions.set(decryptedData.subscriptions);
-
-        if (decryptedData.subscriptions.length > 0) {
-          this.selectedPlanId.set(decryptedData.subscriptions[0].idSuscription);
-        }
-      }
-    } catch (err) {
-      console.error('❌ Error al cargar suscripciones:', err);
+      const r = await this.api.post(API_URLS.GETSUBSCRIPTIONS, {});
+      this.plans.set(r.subscriptions || []);
+      this.pending.set(r.pendingCheckout);
+      this.billing.accept(r.entitlements, r.canManage);
+    } catch (e: any) {
+      this.error.set(e.message);
     } finally {
-      this.isLoading.set(false);
+      this.loading.set(false);
     }
   }
-
-  selectPlan(subId: string) {
-    this.selectedPlanId.set(subId);
+  money(cents: number) {
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(
+      (cents || 0) / 100,
+    );
   }
-
-  abrirModalIa(event: Event) {
-    event.stopPropagation();
-    this.showAiModal.set(true);
-  }
-
-  abrirSuscripcion(sub: any, event: Event) {
-    event.stopPropagation();
-    this.selectedSubscriptionTier.set(sub);
-    this.showSubscribeModal.set(true);
-  }
-
-  async suscribirsePlanMedico() {
-    const sub = this.selectedSubscriptionTier();
-    if (!sub) return;
-
-    const body = {
-      priceId: sub.stripePriceId || sub.idSuscription,
-      customerEmail: this.userData?.email || 'doctor@tusistema.com',
-      type: sub.type
+  period(p: any) {
+    if (p.kind === 'credits') return 'Pago único · sin vencimiento';
+    const count = p.intervalCount || 1;
+    const months = this.months(p);
+    const labels: Record<number, string> = {
+      1: 'Mensual',
+      3: 'Trimestral',
+      6: 'Semestral',
+      12: 'Anual',
     };
-
-    this.isSubscribing.set(true);
-    this.subscribingPlanId.set(sub.idSuscription);
-
-    this.http.post<any>(this.SUBSCRIBE_URL, body, { headers: this.headers }).subscribe({
-      next: (response) => {
-        this.isSubscribing.set(false);
-        this.subscribingPlanId.set(null);
-        this.showSubscribeModal.set(false);
-
-        if (response && response.success && response.url) {
-          window.location.href = response.url;
-        } else {
-          alert('No se pudo iniciar la pasarela de pago.');
-        }
-      },
-      error: (err) => {
-        this.isSubscribing.set(false);
-        this.subscribingPlanId.set(null);
-        this.showSubscribeModal.set(false);
-        console.error('Error de conexión al procesar el pago:', err);
-        alert('Hubo un error al procesar la solicitud de pago.');
-      }
-    });
+    if (['month', 'year'].includes(p.interval) && labels[months])
+      return (
+        labels[months] + ' · cobro ' + (months === 1 ? 'cada mes' : 'cada ' + months + ' meses')
+      );
+    const units: Record<string, string[]> = {
+      day: ['día', 'días'],
+      week: ['semana', 'semanas'],
+      month: ['mes', 'meses'],
+      year: ['año', 'años'],
+    };
+    return 'Cada ' + count + ' ' + (units[p.interval]?.[count === 1 ? 0 : 1] || p.interval);
   }
 
-// 🌟 Evaluación precisa con LOGS detallados de comparación
-  getSubscriptionStatus(subId: string): { label: string; actionType: 'current' | 'renew' | 'acquire'; disabled: boolean } {
-    const session = this.authService.getSession();
-
-    const currentId = session?.currentIdSuscription;
-    const isPlanActive = session?.statusSuscription === true;
-    const expirationDateStr = session?.expirationSuscription;
-
-    console.log(`🔎 [Evaluando Plan Card] ID de tarjeta: "${subId}" | ID en Sesión (currentIdSuscription): "${currentId}" | ¿Son iguales?: ${currentId === subId}`);
-    console.log(`📊 [Estatus de Sesión] statusSuscription:`, session?.statusSuscription, `| Expiración:`, expirationDateStr);
-
-    const isCurrentPlan = currentId === subId;
-
-    if (!isCurrentPlan) {
-      return { label: 'Adquirir plan', actionType: 'acquire', disabled: false };
+  unavailableMessage(plan: any): string {
+    if (plan.configurationErrorCode === 'STRIPE_AMOUNT_MISMATCH') return plan.configurationError;
+    if (plan.configurationErrorCode === 'NO_CHECKOUT_PROVIDER')
+      return 'Proveedor configurado. El cobro por esta opción estará disponible cuando se conecte su integración.';
+    if (plan.configurationErrorCode === 'CREDIT_AMOUNT_NOT_CONFIGURED') {
+      return 'Esta recarga no tiene configurada la cantidad de créditos que incluye. Contacta a soporte.';
     }
-
-    if (!isPlanActive) {
-      console.warn(`⚠️ [PlansComponent] El plan coincide (${subId}), pero 'statusSuscription' no es true.`);
-      return { label: 'Renovar plan', actionType: 'renew', disabled: false };
+    return plan.kind === 'credits'
+      ? 'No se pudo verificar esta recarga. Actualiza las opciones o contacta a soporte.'
+      : 'No se pudo verificar este plan. Actualiza las opciones o contacta a soporte.';
+  }
+  choose(p: any) {
+    if (this.busy() || !p.available || !this.billing.canManage()) return;
+    this.error.set('');
+    this.selected.set(p);
+    this.requestId = crypto.randomUUID();
+    this.confirmation?.nativeElement.showModal();
+  }
+  close() {
+    if (!this.busy()) this.confirmation?.nativeElement.close();
+  }
+  async checkout() {
+    const p = this.selected();
+    if (!p || this.busy()) return;
+    this.busy.set(true);
+    this.error.set('');
+    try {
+      const r = await this.api.post(API_URLS.CREATESTRIPECHECKOUTSESSION, {
+        planId: p.id,
+        requestId: this.requestId,
+      });
+      this.openStripe(r.url, 'checkout.stripe.com');
+    } catch (e: any) {
+      this.error.set(e.message);
+    } finally {
+      this.busy.set(false);
     }
-
-    if (expirationDateStr) {
-      try {
-        const expirationDate = new Date(expirationDateStr);
-        const now = new Date();
-        if (now > expirationDate) {
-          console.warn(`⚠️ [PlansComponent] El plan coincide (${subId}), pero ya expiró con fecha: ${expirationDateStr}`);
-          return { label: 'Renovar plan', actionType: 'renew', disabled: false };
-        }
-      } catch (e) {
-        console.error('Error al parsear fecha de expiración', e);
-      }
+  }
+  async resume() {
+    const p = this.pending();
+    if (!p || this.busy()) return;
+    if (p.url) {
+      this.openStripe(p.url, 'checkout.stripe.com');
+      return;
     }
-
-    console.log(`🎉 [PlansComponent] ¡Plan actual detectado y vigente! Coincide con: ${subId}`);
-    return { label: 'PLAN ACTUAL', actionType: 'current', disabled: true };
+    this.selected.set(this.plans().find((x) => x.id === p.planId));
+    this.requestId = p.requestId;
+    await this.checkout();
+  }
+  async portal() {
+    this.busy.set(true);
+    this.error.set('');
+    try {
+      const r = await this.api.post(API_URLS.CREATE_STRIPE_BILLING_PORTAL, {});
+      this.openStripe(r.url, 'billing.stripe.com');
+    } catch (e: any) {
+      this.error.set(e.message);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+  private openStripe(value: string, host: string) {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' || url.hostname !== host)
+      throw new Error('Enlace de pago no válido.');
+    window.location.assign(url.href);
   }
 }

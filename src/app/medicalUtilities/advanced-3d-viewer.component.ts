@@ -1,10 +1,18 @@
 import {
-  Component, signal, input, output, computed,
-  CUSTOM_ELEMENTS_SCHEMA, ViewChild, ElementRef, AfterViewInit, OnDestroy
+  Component,
+  signal,
+  input,
+  output,
+  computed,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Camera } from 'lucide-angular';
+import { LucideAngularModule, Camera, Paperclip } from 'lucide-angular';
 
 export interface ModelItem {
   id: string;
@@ -19,11 +27,18 @@ export interface ModelItem {
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-   templateUrl: './advanced-3d-viewer.component.html'
+  templateUrl: './advanced-3d-viewer.component.html',
 })
 export class Advanced3DViewerComponent implements AfterViewInit, OnDestroy {
   readonly Math = Math;
   readonly CameraIcon = Camera;
+  readonly PaperclipIcon = Paperclip;
+  canAttach = input(false);
+  attachmentBusy = input(false);
+  attachmentError = input('');
+  captureAttached = output<File>();
+  capturing = signal(false);
+  captureError = signal('');
 
   // Entradas (Inputs) configurables desde cualquier especialidad
   models = input.required<ModelItem[]>();
@@ -58,7 +73,7 @@ export class Advanced3DViewerComponent implements AfterViewInit, OnDestroy {
 
   activeModel = computed(() => {
     const list = this.models();
-    return list.find(m => m.id === this.selectedModelId()) || list[0];
+    return list.find((m) => m.id === this.selectedModelId()) || list[0];
   });
 
   ngAfterViewInit() {
@@ -83,10 +98,16 @@ export class Advanced3DViewerComponent implements AfterViewInit, OnDestroy {
 
   private updateDateTime() {
     const now = new Date();
-    this.currentDateTime.set(now.toLocaleString('es-MX', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    }));
+    this.currentDateTime.set(
+      now.toLocaleString('es-MX', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
+    );
   }
 
   onModelLoaded() {
@@ -153,7 +174,7 @@ export class Advanced3DViewerComponent implements AfterViewInit, OnDestroy {
     const text = this.activeTextDraft().trim();
     const pos = this.draftPosition();
     if (text && pos) {
-      this.textAnnotations.update(current => [...current, { x: pos.x, y: pos.y, text }]);
+      this.textAnnotations.update((current) => [...current, { x: pos.x, y: pos.y, text }]);
       this.activeTextDraft.set('');
       this.draftPosition.set(null);
     }
@@ -172,81 +193,107 @@ export class Advanced3DViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   toggleDrawingMode() {
-    this.isDrawingMode.update(v => !v);
+    this.isDrawingMode.update((v) => !v);
     if (this.isDrawingMode()) this.isTextMode.set(false);
   }
 
   toggleTextMode() {
-    this.isTextMode.update(v => !v);
+    this.isTextMode.update((v) => !v);
     if (this.isTextMode()) this.isDrawingMode.set(false);
   }
 
-  async takeScreenshot() {
+  async takeScreenshot(attach = false) {
+    if (this.capturing() || this.attachmentBusy() || (attach && !this.canAttach())) return;
+    this.capturing.set(true);
+    this.captureError.set('');
     try {
-      const container = this.exportContainerRef.nativeElement;
-      const modelViewer = container.querySelector('model-viewer') as any;
-      const canvasDraw = this.drawingCanvasRef.nativeElement;
-
-      let modelDataUrl = '';
-      if (modelViewer && typeof modelViewer.toDataURL === 'function') {
-        modelDataUrl = await modelViewer.toDataURL('image/png');
+      const file = await this.captureFile();
+      if (attach) {
+        this.captureAttached.emit(file);
+      } else {
+        const url = URL.createObjectURL(file);
+        const link = document.createElement('a');
+        link.download = file.name;
+        link.href = url;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
-
-      const masterCanvas = document.createElement('canvas');
-      masterCanvas.width = container.offsetWidth;
-      masterCanvas.height = container.offsetHeight;
-      const mCtx = masterCanvas.getContext('2d');
-
-      if (!mCtx) return;
-
-      if (modelDataUrl) {
-        await new Promise<void>((resolve) => {
-          const img = new Image();
-          img.onload = () => {
-            mCtx.drawImage(img, 0, 0, masterCanvas.width, masterCanvas.height);
-            resolve();
-          };
-          img.src = modelDataUrl;
-        });
-      }
-
-      mCtx.drawImage(canvasDraw, 0, 0);
-
-      mCtx.font = 'bold 12px sans-serif';
-      this.textAnnotations().forEach(ann => {
-        mCtx.fillStyle = '#134e4a';
-        mCtx.fillRect(ann.x - 5, ann.y - 15, mCtx.measureText(ann.text).width + 20, 24);
-        mCtx.strokeStyle = '#2dd4bf';
-        mCtx.strokeRect(ann.x - 5, ann.y - 15, mCtx.measureText(ann.text).width + 20, 24);
-        mCtx.fillStyle = '#ccfbf1';
-        mCtx.fillText(ann.text, ann.x + 5, ann.y + 2);
-      });
-
-      // Sellos de información en la captura
-      mCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-      mCtx.fillRect(masterCanvas.width - 280, 15, 265, 55);
-      mCtx.fillStyle = '#2dd4bf';
-      mCtx.font = 'bold 11px sans-serif';
-      mCtx.fillText(`Dr. ${this.doctorName()}`, masterCanvas.width - 270, 32);
-      mCtx.fillStyle = '#cbd5e1';
-      mCtx.font = '10px sans-serif';
-      mCtx.fillText(`Consultorio: ${this.officeName()}`, masterCanvas.width - 270, 46);
-      mCtx.fillText(this.currentDateTime(), masterCanvas.width - 270, 60);
-
-      mCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-      mCtx.fillRect(15, masterCanvas.height - 45, 200, 30);
-      mCtx.fillStyle = '#2dd4bf';
-      mCtx.font = 'bold 11px sans-serif';
-      mCtx.fillText(`Especialista: Dr. ${this.doctorName()}`, 25, masterCanvas.height - 25);
-
-      const link = document.createElement('a');
-      link.download = `Infografia_3D_${this.activeModel().name.replace(/\s+/g, '_')}.png`;
-      link.href = masterCanvas.toDataURL('image/png');
-      link.click();
-    } catch (e) {
-      console.error('Error al generar screenshot:', e);
-      alert('No se pudo capturar la pantalla. Inténtalo de nuevo.');
+    } catch {
+      this.captureError.set('No se pudo capturar el modelo. Inténtalo de nuevo.');
+    } finally {
+      this.capturing.set(false);
     }
+  }
+
+  async captureFile(): Promise<File> {
+    const container = this.exportContainerRef.nativeElement;
+    const modelViewer = container.querySelector('model-viewer') as any;
+    const canvasDraw = this.drawingCanvasRef.nativeElement;
+
+    let modelDataUrl = '';
+    if (modelViewer && typeof modelViewer.toDataURL === 'function') {
+      modelDataUrl = await modelViewer.toDataURL('image/png');
+    }
+
+    const masterCanvas = document.createElement('canvas');
+    masterCanvas.width = container.offsetWidth;
+    masterCanvas.height = container.offsetHeight;
+    const mCtx = masterCanvas.getContext('2d');
+
+    if (!mCtx) throw new Error('No se pudo crear la captura.');
+
+    if (modelDataUrl) {
+      await new Promise<void>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          mCtx.drawImage(img, 0, 0, masterCanvas.width, masterCanvas.height);
+          resolve();
+        };
+        img.onerror = () => reject(new Error('No se pudo capturar el modelo.'));
+        img.src = modelDataUrl;
+      });
+    }
+
+    mCtx.drawImage(canvasDraw, 0, 0);
+
+    mCtx.font = 'bold 12px sans-serif';
+    this.textAnnotations().forEach((ann) => {
+      mCtx.fillStyle = '#134e4a';
+      mCtx.fillRect(ann.x - 5, ann.y - 15, mCtx.measureText(ann.text).width + 20, 24);
+      mCtx.strokeStyle = '#2dd4bf';
+      mCtx.strokeRect(ann.x - 5, ann.y - 15, mCtx.measureText(ann.text).width + 20, 24);
+      mCtx.fillStyle = '#ccfbf1';
+      mCtx.fillText(ann.text, ann.x + 5, ann.y + 2);
+    });
+
+    // Sellos de información en la captura
+    mCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    mCtx.fillRect(masterCanvas.width - 280, 15, 265, 55);
+    mCtx.fillStyle = '#2dd4bf';
+    mCtx.font = 'bold 11px sans-serif';
+    mCtx.fillText(`Dr. ${this.doctorName()}`, masterCanvas.width - 270, 32);
+    mCtx.fillStyle = '#cbd5e1';
+    mCtx.font = '10px sans-serif';
+    mCtx.fillText(`Consultorio: ${this.officeName()}`, masterCanvas.width - 270, 46);
+    mCtx.fillText(this.currentDateTime(), masterCanvas.width - 270, 60);
+
+    mCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    mCtx.fillRect(15, masterCanvas.height - 45, 200, 30);
+    mCtx.fillStyle = '#2dd4bf';
+    mCtx.font = 'bold 11px sans-serif';
+    mCtx.fillText(`Especialista: Dr. ${this.doctorName()}`, 25, masterCanvas.height - 25);
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      masterCanvas.toBlob(
+        (value) => (value ? resolve(value) : reject(new Error('No se pudo generar la imagen.'))),
+        'image/png',
+      );
+    });
+    return new File(
+      [blob],
+      `Infografia_3D_${this.activeModel().name.replace(/\s+/g, '_')}_${Date.now()}.png`,
+      { type: 'image/png' },
+    );
   }
 
   private getPointerPos(event: MouseEvent | TouchEvent) {
@@ -265,7 +312,7 @@ export class Advanced3DViewerComponent implements AfterViewInit, OnDestroy {
 
     return {
       x: clientX - rect.left,
-      y: clientY - rect.top
+      y: clientY - rect.top,
     };
   }
 }

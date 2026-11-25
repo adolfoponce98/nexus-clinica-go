@@ -5,11 +5,12 @@ import { CommonModule } from '@angular/common';
   selector: 'app-specialty-chart',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './speciality-chart.component.html'
+  templateUrl: './speciality-chart.component.html',
 })
 export class SpecialtyChartComponent {
   // Recibe la lista completa de motivos procesados
-  data = input.required<Array<{ name: string; count: number; percentage: number; color: string }>>();
+  data =
+    input.required<Array<{ name: string; count: number; percentage: number; color: string }>>();
 
   // Estado para controlar la apertura del diálogo modal de pantalla completa
   isExpanded = signal<boolean>(false);

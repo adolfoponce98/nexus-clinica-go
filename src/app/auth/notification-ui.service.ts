@@ -7,22 +7,26 @@ export interface AppNotification {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationUiService {
   // Signal para almacenar la notificación actual que se mostrará en pantalla
   activeNotification = signal<AppNotification | null>(null);
 
+  private timer?: ReturnType<typeof setTimeout>;
+
   show(title: string, body: string, data?: any) {
+    if (this.timer) clearTimeout(this.timer);
     this.activeNotification.set({ title, body, data });
 
     // Ocultar automáticamente el popup después de 6 segundos (opcional)
-    setTimeout(() => {
+    this.timer = setTimeout(() => {
       this.dismiss();
-    }, 20000);
+    }, 10000);
   }
 
   dismiss() {
+    if (this.timer) clearTimeout(this.timer);
     this.activeNotification.set(null);
   }
 }

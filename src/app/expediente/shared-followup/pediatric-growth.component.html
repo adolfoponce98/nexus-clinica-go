@@ -1,0 +1,63 @@
+<section class="clinical-section">
+  <div class="section-title">
+    <span class="letter teal">P</span>
+    <div>
+      <h3>Crecimiento · referencias OMS</h3>
+      <p>Percentiles y puntaje Z a partir de la edad exacta y las mediciones registradas.</p>
+    </div>
+  </div>
+  @if (message()) {
+    <p class="muted" role="status">{{ message() }}</p>
+  }
+  @for (c of charts(); track c.metric) {
+    <div class="growth-card">
+      <h4>{{ c.label }}</h4>
+      @if (c.unavailable) {
+        <p class="muted">{{ c.unavailable }}</p>
+      } @else {
+        <div class="growth-stat">
+          <span>Z {{ c.z | number: '1.2-2' }}</span
+          ><span>Percentil {{ c.p | number: '1.1-1' }}</span>
+          @if (c.outside) {
+            <span class="risk-badge">Revisar medición y contexto clínico</span>
+          }
+        </div>
+        <svg
+          class="growth-chart"
+          viewBox="0 0 510 200"
+          role="img"
+          [attr.aria-label]="c.label + ' · curvas OMS y medición actual'"
+        >
+          <path d="M35 15 V170 H480" stroke="#7b9bb7" opacity=".35" fill="none" />
+          @for (curve of c.curves; track curve.z) {
+            <polyline
+              [attr.points]="curve.points"
+              fill="none"
+              [attr.stroke]="curve.color"
+              stroke-width="2"
+              [attr.stroke-dasharray]="curve.z === 0 ? '0' : '4 5'"
+            />
+          }
+          <circle
+            [attr.cx]="c.x"
+            [attr.cy]="c.y"
+            r="5"
+            fill="#f59e0b"
+            stroke="white"
+            stroke-width="2"
+          />
+          <text x="35" y="191" class="growth-label">{{ c.lower }}</text>
+          <text x="475" y="191" text-anchor="end" class="growth-label">{{ c.upper }}</text>
+        </svg>
+        <p class="growth-note">
+          Curvas: −2, 0 y +2 DE · Punto ámbar: medición actual. La talla se ajusta 0.7 cm cuando la
+          posición no corresponde a la edad.
+        </p>
+      }
+    </div>
+  }
+  <p class="growth-note">
+    Fuente: OMS 2006 / referencia 2007. Los resultados complementan la valoración pediátrica. No se
+    extrapolan edades fuera de las tablas.
+  </p>
+</section>

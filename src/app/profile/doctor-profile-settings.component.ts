@@ -1,10 +1,26 @@
+import { PermissionDirective } from '../auth/permission.directive';
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  LucideAngularModule, User, ShieldCheck, Award, Stethoscope,
-  Briefcase, Image as ImageIcon, Share2, CheckCircle2, Building2, Plus, Trash2,
-  Facebook, Instagram, Linkedin, Twitter, Youtube, Video
+  LucideAngularModule,
+  User,
+  ShieldCheck,
+  Award,
+  Stethoscope,
+  Briefcase,
+  Image as ImageIcon,
+  Share2,
+  CheckCircle2,
+  Building2,
+  Plus,
+  Trash2,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Twitter,
+  Youtube,
+  Video,
 } from 'lucide-angular';
 
 interface Consultorio {
@@ -42,14 +58,28 @@ interface Consultorio {
 @Component({
   selector: 'app-doctor-profile-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
-  templateUrl: './doctor-profile-settings.component.html'
+  imports: [PermissionDirective, CommonModule, FormsModule, LucideAngularModule],
+  templateUrl: './doctor-profile-settings.component.html',
 })
 export class DoctorProfileSettingsComponent {
   readonly icons = {
-    User, ShieldCheck, Award, Stethoscope,
-    Briefcase, ImageIcon, Share2, CheckCircle2, Building2, Plus, Trash2,
-    Facebook, Instagram, Linkedin, Twitter, Youtube, Video
+    User,
+    ShieldCheck,
+    Award,
+    Stethoscope,
+    Briefcase,
+    ImageIcon,
+    Share2,
+    CheckCircle2,
+    Building2,
+    Plus,
+    Trash2,
+    Facebook,
+    Instagram,
+    Linkedin,
+    Twitter,
+    Youtube,
+    Video,
   };
 
   // Pestañas de configuración (Incluye la nueva de Consultorios)
@@ -59,7 +89,7 @@ export class DoctorProfileSettingsComponent {
     { id: 'clinics', name: 'Consultorios', icon: Building2 },
     { id: 'experience', name: 'Experiencia y Trayectoria', icon: Briefcase },
     { id: 'media', name: 'Fotos y Videos', icon: ImageIcon },
-    { id: 'social', name: 'Redes Sociales', icon: Share2 }
+    { id: 'social', name: 'Redes Sociales', icon: Share2 },
   ];
 
   activeTab = signal('basic');
@@ -76,16 +106,27 @@ export class DoctorProfileSettingsComponent {
       website: 'https://clinicatesistan.com',
       phoneMain: '+52 33 1122 3344',
       phoneSecondary: '+52 33 5566 7788',
-      accessibility: { wheelchair: true, pregnantOrKids: true, visualDisability: false, hearingDisability: true },
+      accessibility: {
+        wheelchair: true,
+        pregnantOrKids: true,
+        visualDisability: false,
+        hearingDisability: true,
+      },
       directions: 'Frente a la estación de tranvía, estacionamiento subterráneo disponible.',
-      paymentMethods: { creditCard: true, cash: true, paypal: false, debitCard: true, transfer: true },
+      paymentMethods: {
+        creditCard: true,
+        cash: true,
+        paypal: false,
+        debitCard: true,
+        transfer: true,
+      },
       services: [
         { name: 'Consulta Primera Vez', price: 800 },
-        { name: 'Sesión de Acupuntura', price: 600 }
+        { name: 'Sesión de Acupuntura', price: 600 },
       ],
       insurancePolicy: 'both',
-      patientTypes: { adults: true, children: true }
-    }
+      patientTypes: { adults: true, children: true },
+    },
   ]);
 
   setActiveTab(tabId: string) {
@@ -103,18 +144,29 @@ export class DoctorProfileSettingsComponent {
       website: '',
       phoneMain: '',
       phoneSecondary: '',
-      accessibility: { wheelchair: false, pregnantOrKids: false, visualDisability: false, hearingDisability: false },
+      accessibility: {
+        wheelchair: false,
+        pregnantOrKids: false,
+        visualDisability: false,
+        hearingDisability: false,
+      },
       directions: '',
-      paymentMethods: { creditCard: false, cash: true, paypal: false, debitCard: false, transfer: false },
+      paymentMethods: {
+        creditCard: false,
+        cash: true,
+        paypal: false,
+        debitCard: false,
+        transfer: false,
+      },
       services: [{ name: 'Consulta General', price: 500 }],
       insurancePolicy: 'privateOnly',
-      patientTypes: { adults: true, children: false }
+      patientTypes: { adults: true, children: false },
     };
-    this.consultorios.update(list => [...list, nuevo]);
+    this.consultorios.update((list) => [...list, nuevo]);
   }
 
   removeConsultorio(id: number) {
-    this.consultorios.update(list => list.filter(c => c.id !== id));
+    this.consultorios.update((list) => list.filter((c) => c.id !== id));
   }
 
   addService(consultorio: Consultorio) {

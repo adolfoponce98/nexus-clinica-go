@@ -1,0 +1,402 @@
+<main class="pricing-page">
+  <header class="page-heading">
+    <div>
+      <span class="eyebrow">CATÁLOGO DE LA PLATAFORMA</span>
+      <h1>Configuración de precios</h1>
+      <p>Productos, periodos y opciones de pago en un solo lugar.</p>
+    </div>
+    <div class="heading-actions">
+      <span class="environment">{{
+        environment() === 'test' ? 'Cobros en modo de prueba' : 'Cobros en producción'
+      }}</span>
+      @if (!selected) {
+        <button class="primary" type="button" (click)="create()" [disabled]="loading()">
+          <lucide-icon [img]="icons.Plus" [size]="16" />Nuevo producto
+        </button>
+      }
+    </div>
+  </header>
+  @if (error()) {
+    <p class="message error" role="alert">{{ error() }}</p>
+  }
+  @if (notice()) {
+    <p class="message success" role="status">{{ notice() }}</p>
+  }
+  @if (loading()) {
+    <div
+      class="skeleton-grid"
+      role="status"
+      aria-busy="true"
+      aria-label="Cargando catálogo de precios"
+    >
+      @for (item of [1, 2, 3]; track item) {
+        <div class="panel skeleton"><i></i><i></i><i></i></div>
+      }
+    </div>
+  } @else if (!selected) {
+    <div class="product-grid">
+      @for (product of products(); track product.id) {
+        <article class="panel product-card">
+          <div class="product-top">
+            <span class="product-icon"><lucide-icon [img]="icons.Package" /></span
+            ><span class="status" [class.inactive]="!product.active">{{
+              product.active ? 'Activo' : 'Inactivo'
+            }}</span>
+          </div>
+          <h2>{{ product.title }}</h2>
+          <p>{{ product.description || 'Sin descripción' }}</p>
+          <span class="kind">{{
+            product.kind === 'credits'
+              ? product.credits + ' créditos · pago único'
+              : 'Suscripción recurrente'
+          }}</span>
+          <p class="period-summary">{{ summary(product) }}</p>
+          <div class="provider-strip">
+            @for (provider of productProviders(product); track provider.id) {
+              <app-payment-provider-badge [provider]="provider.id" />
+            }
+          </div>
+          @if (product.legacy) {
+            <p class="legacy-note">
+              Catálogo anterior: revisa y guarda para administrar aquí sus periodos.
+            </p>
+          }
+          @if (product.configurationError) {
+            <p class="message error">{{ product.configurationError }}</p>
+          }
+          <button class="secondary" type="button" (click)="edit(product)">
+            <lucide-icon [img]="icons.Settings2" [size]="15" />Configurar producto
+          </button>
+        </article>
+      } @empty {
+        <section class="panel empty">
+          <lucide-icon [img]="icons.Package" />
+          <h2>Crea tu primer producto</h2>
+          <p>Agrega una suscripción o un paquete de créditos IA.</p>
+          <button type="button" class="primary" (click)="create()">Crear producto</button>
+        </section>
+      }
+    </div>
+
+    <section class="panel coupon-panel" aria-labelledby="coupon-heading">
+      <div class="section-title">
+        <span class="product-icon"><lucide-icon [img]="icons.TicketPercent" /></span>
+        <div>
+          <h2 id="coupon-heading">Cupones · referencia interna</h2>
+          <p>
+            Estos datos solo se consultan aquí. No se muestran en Planes ni crean o modifican
+            descuentos en Stripe.
+          </p>
+        </div>
+      </div>
+      <p class="legacy-note">
+        Registra el ID del cupón de {{ environment() === 'test' ? 'pruebas' : 'producción' }}. Para
+        que el cliente lo escriba al pagar, crea un código promocional asociado en Stripe.
+      </p>
+      <form (ngSubmit)="saveCoupon()" #couponEditor="ngForm">
+        <fieldset [disabled]="savingCoupon()">
+          <div class="form-grid">
+            <label
+              >ID del cupón<input
+                name="couponId"
+                [(ngModel)]="couponForm.couponId"
+                required
+                maxlength="200"
+                placeholder="ID registrado en Stripe"
+            /></label>
+            <label
+              >Título<input
+                name="couponTitle"
+                [(ngModel)]="couponForm.title"
+                required
+                maxlength="120"
+                placeholder="Ej. Promoción de bienvenida"
+            /></label>
+          </div>
+          <label
+            >Descripción<textarea
+              name="couponDescription"
+              [(ngModel)]="couponForm.description"
+              required
+              maxlength="2000"
+              rows="3"
+              placeholder="Descripción interna del descuento"
+            ></textarea>
+          </label>
+          <button type="submit" class="primary" [disabled]="savingCoupon() || couponEditor.invalid">
+            <lucide-icon
+              [img]="savingCoupon() ? icons.LoaderCircle : icons.Save"
+              [class.spin]="savingCoupon()"
+              [size]="16"
+            />
+            {{ savingCoupon() ? 'Guardando…' : 'Guardar referencia de cupón' }}
+          </button>
+        </fieldset>
+      </form>
+      @if (couponError()) {
+        <p class="message error" role="alert">{{ couponError() }}</p>
+      }
+      @if (couponNotice()) {
+        <p class="message success" role="status">{{ couponNotice() }}</p>
+      }
+      <div class="coupon-list">
+        @for (coupon of coupons(); track coupon.id) {
+          <article class="coupon-item">
+            <span class="product-icon"
+              ><lucide-icon [img]="icons.TicketPercent" [size]="20"
+            /></span>
+            <div>
+              <h3>{{ coupon.title }}</h3>
+              <code>{{ coupon.couponId }}</code>
+              <p>{{ coupon.description }}</p>
+            </div>
+            <button
+              type="button"
+              class="secondary"
+              (click)="editCoupon(coupon)"
+              [disabled]="savingCoupon()"
+            >
+              <lucide-icon [img]="icons.Settings2" [size]="15" />Editar
+            </button>
+          </article>
+        } @empty {
+          <p class="legacy-note">Aún no hay cupones registrados para este entorno.</p>
+        }
+      </div>
+    </section>
+  } @else {
+    <div class="editor-toolbar">
+      <button type="button" class="back" (click)="back()" [disabled]="saving()">
+        <lucide-icon [img]="icons.ArrowLeft" [size]="16" />Volver al catálogo</button
+      ><span>{{
+        selected.legacy
+          ? 'Editar y migrar producto existente'
+          : selected.id
+            ? 'Editar producto'
+            : 'Nuevo producto'
+      }}</span>
+    </div>
+    <fieldset [disabled]="saving()">
+      <section class="panel">
+        <div class="section-title">
+          <span class="product-icon"><lucide-icon [img]="icons.Package" /></span>
+          <div>
+            <h2>Datos del producto</h2>
+            <p>Define lo que recibirá el doctor al contratar.</p>
+          </div>
+          <label class="active-toggle"
+            ><input type="checkbox" [(ngModel)]="selected.active" />Publicado</label
+          >
+        </div>
+        <div class="form-grid">
+          <label
+            >Nombre del producto *<input
+              [(ngModel)]="selected.title"
+              maxlength="120"
+              placeholder="Ej. Profesional o 100 créditos IA" /></label
+          ><label
+            >Tipo de producto<select
+              [ngModel]="selected.kind"
+              (ngModelChange)="changeKind($event)"
+              [disabled]="!!selected.revision || selected.legacy"
+            >
+              <option value="subscription">Suscripción recurrente</option>
+              <option value="credits">Paquete de créditos · pago único</option>
+            </select></label
+          >
+          @if (selected.kind === 'credits') {
+            <label
+              >Créditos incluidos *<input
+                type="number"
+                min="1"
+                step="1"
+                [(ngModel)]="selected.credits"
+            /></label>
+          }
+          <label class="wide"
+            >Descripción<textarea
+              [(ngModel)]="selected.description"
+              rows="2"
+              maxlength="2000"
+              placeholder="Describe este producto"
+            ></textarea></label
+          ><label class="wide"
+            >Beneficios <small>Uno por línea</small
+            ><textarea
+              [(ngModel)]="benefitsText"
+              rows="3"
+              placeholder="Beneficio incluido"
+            ></textarea>
+          </label>
+        </div>
+      </section>
+      <section class="panel provider-section">
+        <div class="section-title">
+          <span class="product-icon"><lucide-icon [img]="icons.Settings2" /></span>
+          <div>
+            <h2>Proveedores y medios de pago</h2>
+            <p>Selecciona las opciones y configura los periodos que acepta cada una.</p>
+          </div>
+        </div>
+        <div class="provider-choices">
+          @for (provider of providers; track provider.id) {
+            <label
+              [class.chosen]="providerSelected(provider.id)"
+              [class.unavailable]="selected.kind === 'subscription' && !provider.recurring"
+              ><input
+                type="checkbox"
+                [checked]="providerSelected(provider.id)"
+                (change)="toggleProvider(provider.id, $any($event.target).checked)"
+                [disabled]="selected.kind === 'subscription' && !provider.recurring"
+              /><app-payment-provider-badge [provider]="provider.id" /><small>{{
+                selected.kind === 'subscription' && !provider.recurring
+                  ? 'Solo pagos únicos'
+                  : provider.implemented
+                    ? 'Cobro integrado'
+                    : 'Configurable · integración pendiente'
+              }}</small></label
+            >
+          }
+        </div>
+        <p class="hint">
+          <lucide-icon [img]="icons.Info" [size]="16" />OXXO y SPEI son medios de pago. Guardar sus
+          datos no activa una pasarela ni crea productos externos.
+        </p>
+      </section>
+      @for (provider of providers; track provider.id) {
+        @if (providerSelected(provider.id)) {
+          <section class="panel provider-editor">
+            <div class="provider-heading">
+              <app-payment-provider-badge [provider]="provider.id" />
+              <div>
+                <h2>Periodos y precios</h2>
+                <p>
+                  {{
+                    provider.implemented
+                      ? 'Vincula los precios ya creados en Stripe.'
+                      : 'Esta configuración se conserva para conectar después su integración de cobro.'
+                  }}
+                </p>
+              </div>
+            </div>
+            <div class="period-choices">
+              @for (period of periods; track period.id) {
+                <label [class.selected]="periodSelected(provider.id, period.id)"
+                  ><input
+                    type="checkbox"
+                    [checked]="periodSelected(provider.id, period.id)"
+                    (change)="togglePeriod(provider.id, period.id, $any($event.target).checked)"
+                  />{{ period.name }}</label
+                >
+              }
+            </div>
+            @for (period of periods; track period.id) {
+              @if (periodSelected(provider.id, period.id)) {
+                <div class="period-editor">
+                  <div class="period-heading">
+                    <h3>{{ period.name }}</h3>
+                    <label
+                      ><input type="checkbox" [(ngModel)]="priceFor(period.id).active" />Periodo
+                      publicado</label
+                    >
+                  </div>
+                  <div class="environment-grid">
+                    @for (env of environments; track env.id) {
+                      @let item = binding(provider.id, period.id, env.id);
+                      <section class="environment-card" [class.production]="env.id === 'live'">
+                        <header>
+                          <span>{{ env.label }}</span
+                          ><label
+                            ><input type="checkbox" [(ngModel)]="item.enabled" />Habilitado</label
+                          >
+                        </header>
+                        <div class="form-grid">
+                          <label
+                            >Precio en pesos MXN *<input
+                              type="number"
+                              step="0.01"
+                              min="0.01"
+                              [ngModel]="item.amountCents / 100"
+                              (ngModelChange)="item.amountCents = toCents($event)"
+                              [disabled]="!item.enabled"
+                          /></label>
+                          @if (provider.id === 'stripe') {
+                            <label
+                              >ID del producto *<input
+                                [(ngModel)]="item.productId"
+                                placeholder="prod_…"
+                                [disabled]="!item.enabled" /></label
+                            ><label class="wide"
+                              >ID del precio *<input
+                                [(ngModel)]="item.priceId"
+                                placeholder="price_…"
+                                [disabled]="!item.enabled"
+                            /></label>
+                          } @else if (provider.id === 'oxxo' || provider.id === 'spei') {
+                            <label
+                              >Pasarela que lo procesará<select
+                                [(ngModel)]="item.processor"
+                                [disabled]="!item.enabled"
+                              >
+                                <option value="">Seleccionar después</option>
+                                @for (processor of providers; track processor.id) {
+                                  @if (processor.recurring) {
+                                    <option [value]="processor.id">{{ processor.name }}</option>
+                                  }
+                                }
+                              </select></label
+                            ><label class="wide"
+                              >Referencia de configuración<input
+                                [(ngModel)]="item.reference"
+                                placeholder="Identificador o referencia externa"
+                                [disabled]="!item.enabled"
+                            /></label>
+                          } @else {
+                            <label
+                              >ID del producto<input
+                                [(ngModel)]="item.productId"
+                                placeholder="Identificador externo"
+                                [disabled]="!item.enabled" /></label
+                            ><label class="wide"
+                              >{{
+                                selected.kind === 'subscription'
+                                  ? 'ID del plan'
+                                  : 'ID de precio o referencia'
+                              }}<input
+                                [ngModel]="
+                                  selected.kind === 'subscription' ? item.planId : item.reference
+                                "
+                                (ngModelChange)="
+                                  selected.kind === 'subscription'
+                                    ? (item.planId = $event)
+                                    : (item.reference = $event)
+                                "
+                                [disabled]="!item.enabled"
+                            /></label>
+                          }
+                        </div>
+                      </section>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </section>
+        }
+      }
+    </fieldset>
+    <footer class="save-bar">
+      <p>
+        <lucide-icon [img]="icons.Info" [size]="16" />Los cambios de precio conservan las versiones
+        anteriores y las compras existentes.
+      </p>
+      <button type="button" class="primary" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          <lucide-icon [img]="icons.LoaderCircle" [size]="16" class="spin" />Guardando…
+        } @else {
+          <lucide-icon [img]="icons.Save" [size]="16" />Guardar producto
+        }
+      </button>
+    </footer>
+  }
+</main>

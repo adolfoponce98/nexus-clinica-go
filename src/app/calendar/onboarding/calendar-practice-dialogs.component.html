@@ -1,0 +1,784 @@
+<!-- Presentation copied from CalendarComponent; handlers below use only the practice model. -->
+@if (p.stage === 'booking') {
+  <div class="simulation-stage">
+    @if (isAdvancedModal) {
+      <div
+        class="booking-card appointment-booking-dialog border w-full max-w-5xl rounded-[2.5rem] p-5 shadow-2xl relative space-y-3"
+        style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+      >
+        <button
+          (click)="showAppointmentModal = false"
+          class="absolute right-6 top-6 cursor-pointer z-10"
+          style="color: var(--text-muted)"
+        >
+          <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+        </button>
+
+        <div>
+          <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main)">
+            Agendar Cita de Paciente
+          </h3>
+          <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted)">
+            Selecciona la fecha, duración y horario disponible
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Columna Izquierda: Datos -->
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest"
+                  style="color: var(--text-muted)"
+                  >Fecha</label
+                >
+                <app-practice-booking-date-picker
+                  [(date)]="targetDate"
+                  [office]="bookingOffice"
+                  [duration]="selectedDurationMinutes"
+                  (dateChange)="generateTimeSlots()"
+                />
+              </div>
+              <div class="space-y-1">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest"
+                  style="color: var(--text-muted)"
+                  >Duración</label
+                >
+                <select
+                  [(ngModel)]="selectedDurationMinutes"
+                  (change)="generateTimeSlots()"
+                  class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                  style="
+                    background-color: var(--bg-primary);
+                    border-color: var(--border-color);
+                    color: var(--text-main);
+                  "
+                >
+                  <option [value]="30">30 min</option>
+                  <option [value]="60">1 hr</option>
+                  <option [value]="90">1:30 hr</option>
+                  <option [value]="120">2 hrs</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Buscador Híbrido de Paciente con Caché -->
+            <div class="space-y-1 relative">
+              <label
+                class="text-[10px] font-black uppercase tracking-widest"
+                style="color: var(--text-muted)"
+                >Nombre del Paciente</label
+              >
+              <input
+                [ngModel]="patientForm.name"
+                (input)="onPatientInput($event)"
+                (focus)="onPatientFocus()"
+                data-practice-patient
+                data-coach="patient-name"
+                type="text"
+                placeholder="Ej. Carlos Ramírez o selecciona del caché..."
+                class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+              />
+              @if (showPatientDropdown && filteredPatients.length > 0) {
+                <div
+                  role="listbox"
+                  class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1"
+                  style="background-color: var(--bg-primary); border-color: var(--border-color)"
+                >
+                  @for (p of filteredPatients; track p.id) {
+                    <button
+                      type="button"
+                      role="option"
+                      data-coach="patient-option"
+                      (click)="selectPatient(p)"
+                      class="w-full text-left px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                      style="color: var(--text-main)"
+                    >
+                      <span>{{ p.nombre }}</span>
+                      <span class="text-[10px]" style="color: var(--text-muted)">{{
+                        p.telefono
+                      }}</span>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest"
+                  style="color: var(--text-muted)"
+                  >Teléfono</label
+                >
+                <input
+                  data-coach="phone"
+                  (focus)="p.focusContact('phone')"
+                  [(ngModel)]="patientForm.phone"
+                  type="text"
+                  placeholder="Ej. 33 1234 5678"
+                  class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                  style="
+                    background-color: var(--bg-primary);
+                    border-color: var(--border-color);
+                    color: var(--text-main);
+                  "
+                />
+              </div>
+              <div class="space-y-1">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest"
+                  style="color: var(--text-muted)"
+                  >Correo</label
+                >
+                <input
+                  data-coach="email"
+                  (focus)="p.focusContact('email')"
+                  [(ngModel)]="patientForm.email"
+                  type="email"
+                  placeholder="correo@email.com"
+                  class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                  style="
+                    background-color: var(--bg-primary);
+                    border-color: var(--border-color);
+                    color: var(--text-main);
+                  "
+                />
+              </div>
+            </div>
+
+            <!-- Motivo Híbrido (Servicios) -->
+            <div class="space-y-1 relative">
+              <label
+                class="text-[10px] font-black uppercase tracking-widest"
+                style="color: var(--text-muted)"
+                >Motivo *</label
+              >
+              <input
+                [ngModel]="patientForm.reason"
+                required
+                [readOnly]="reasonUnknown"
+                [attr.aria-required]="true"
+                (input)="onReasonInput($event)"
+                (focus)="onServiceFocus()"
+                data-practice-reason
+                data-coach="reason"
+                type="text"
+                placeholder="Ej. Dolor agudo o selecciona servicio..."
+                class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+              />
+              <label
+                class="mt-2 flex items-center gap-2 text-xs cursor-pointer"
+                style="color: var(--text-main)"
+              >
+                <input
+                  type="checkbox"
+                  role="switch"
+                  [ngModel]="reasonUnknown"
+                  (ngModelChange)="toggleUnknownReason($event)"
+                  class="accent-blue-600"
+                />
+                <span>No lo sé aún</span>
+              </label>
+              @if (showServiceDropdown && filteredServices.length > 0) {
+                <div
+                  role="listbox"
+                  class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1"
+                  style="background-color: var(--bg-primary); border-color: var(--border-color)"
+                >
+                  @for (s of filteredServices; track s.id) {
+                    <button
+                      type="button"
+                      role="option"
+                      data-coach="service-option"
+                      (click)="selectServiceReason(s)"
+                      class="w-full text-left px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                      style="color: var(--text-main)"
+                    >
+                      <span>{{ s.nombre }}</span>
+                      <span class="text-[10px] font-semibold text-blue-500"
+                        >${{ s.precioFinal }}</span
+                      >
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Chips de Horarios Libres -->
+          <div class="space-y-2 flex flex-col">
+            <label
+              class="text-[10px] font-black uppercase tracking-widest flex justify-between items-center"
+              style="color: var(--text-muted)"
+            >
+              <span>Horarios Libres Disponibles</span>
+              @if (selectedModalHour) {
+                <span class="text-blue-500 font-bold lowercase"
+                  >Seleccionado: {{ selectedModalHour }}</span
+                >
+              }
+            </label>
+
+            <div
+              class="min-w-0 grid grid-cols-3 gap-2.5 p-3 border rounded-2xl shadow-inner flex-1 content-start max-h-[310px] overflow-y-auto"
+              style="background-color: var(--bg-primary); border-color: var(--border-color)"
+            >
+              @for (slot of filteredAvailableTimeSlots; track slot.time) {
+                <button
+                  type="button"
+                  data-coach="time-slot"
+                  (click)="selectModalHour(slot.time)"
+                  [disabled]="!slot.available || !canBookSlot(targetDate, slot.time)"
+                  [attr.aria-pressed]="selectedModalHour === slot.time"
+                  [style.background-color]="
+                    selectedModalHour === slot.time ? '#2563eb' : 'var(--bg-secondary)'
+                  "
+                  [style.color]="selectedModalHour === slot.time ? '#ffffff' : 'var(--text-main)'"
+                  [style.border-color]="
+                    selectedModalHour === slot.time ? '#2563eb' : 'var(--border-color)'
+                  "
+                  class="py-2.5 px-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center cursor-pointer hover:border-blue-500"
+                >
+                  {{ slot.label }}
+                </button>
+              } @empty {
+                <p class="col-span-3 text-center text-xs py-8" style="color: var(--text-muted)">
+                  No hay horarios libres
+                </p>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (bookingTimeError()) {
+          <p role="alert" class="text-xs text-rose-500">{{ bookingTimeError() }}</p>
+        }
+        <button
+          data-coach="save"
+          (click)="saveAppointment()"
+          [disabled]="!canSaveBookingTime()"
+          class="w-full bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-500 text-white py-2.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 mt-2"
+        >
+          @if (isSaving) {
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
+            <span>Guardando cita...</span>
+          } @else {
+            <span>Guardar Cita</span>
+          }
+        </button>
+      </div>
+    } @else {
+      <!-- Si es el modal clásico (Semanal / Diario con hora fija ya seleccionada) -->
+      <div
+        class="booking-card appointment-booking-dialog border w-full max-w-3xl rounded-[2.5rem] p-5 shadow-2xl relative space-y-3"
+        style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+      >
+        <button
+          (click)="showAppointmentModal = false"
+          class="absolute right-6 top-6 cursor-pointer"
+          style="color: var(--text-muted)"
+        >
+          <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+        </button>
+
+        <div>
+          <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main)">
+            Agendar Cita de Paciente
+          </h3>
+          <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted)">
+            Fecha: {{ targetDate }}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1.5">
+            <label
+              class="text-[10px] font-black uppercase tracking-widest"
+              style="color: var(--text-muted)"
+              >Hora de Inicio</label
+            >
+            <input
+              type="text"
+              [value]="targetHour"
+              disabled
+              class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold opacity-75 cursor-not-allowed shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            />
+          </div>
+
+          <div class="space-y-1.5">
+            <label
+              class="text-[10px] font-black uppercase tracking-widest"
+              style="color: var(--text-muted)"
+              >Duración</label
+            >
+            <select
+              [(ngModel)]="selectedDurationMinutes"
+              class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            >
+              <option [value]="30">30 min</option>
+              <option [value]="60">1 hr</option>
+              <option [value]="90">1:30 hr</option>
+              <option [value]="120">2 hrs</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Campos del formulario clásico -->
+        <div class="space-y-3 pt-1">
+          <!-- Buscador Híbrido de Paciente con Caché -->
+          <div class="space-y-1 relative">
+            <label
+              class="text-[10px] font-black uppercase tracking-widest"
+              style="color: var(--text-muted)"
+              >Nombre Completo del Paciente</label
+            >
+            <input
+              [ngModel]="patientForm.name"
+              (input)="onPatientInput($event)"
+              (focus)="onPatientFocus()"
+              data-practice-patient
+              data-coach="patient-name"
+              type="text"
+              placeholder="Ej. Carlos Ramírez o selecciona del caché..."
+              class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            />
+            @if (showPatientDropdown && filteredPatients.length > 0) {
+              <div
+                role="listbox"
+                class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1"
+                style="background-color: var(--bg-primary); border-color: var(--border-color)"
+              >
+                @for (p of filteredPatients; track p.id) {
+                  <button
+                    type="button"
+                    role="option"
+                    data-coach="patient-option"
+                    (click)="selectPatient(p)"
+                    class="w-full text-left px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                    style="color: var(--text-main)"
+                  >
+                    <span>{{ p.nombre }}</span>
+                    <span class="text-[10px]" style="color: var(--text-muted)">{{
+                      p.telefono
+                    }}</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label
+                class="text-[10px] font-black uppercase tracking-widest"
+                style="color: var(--text-muted)"
+                >Teléfono</label
+              >
+              <input
+                data-coach="phone"
+                (focus)="p.focusContact('phone')"
+                [(ngModel)]="patientForm.phone"
+                type="text"
+                placeholder="Ej. 33 1234 5678"
+                class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+              />
+            </div>
+            <div class="space-y-1">
+              <label
+                class="text-[10px] font-black uppercase tracking-widest"
+                style="color: var(--text-muted)"
+                >Correo Electrónico</label
+              >
+              <input
+                data-coach="email"
+                (focus)="p.focusContact('email')"
+                [(ngModel)]="patientForm.email"
+                type="email"
+                placeholder="Ej. correo@email.com"
+                class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+              />
+            </div>
+          </div>
+
+          <!-- Motivo Híbrido (Servicios) -->
+          <div class="space-y-1 relative">
+            <label
+              class="text-[10px] font-black uppercase tracking-widest"
+              style="color: var(--text-muted)"
+              >Motivo de la Consulta *</label
+            >
+            <input
+              [ngModel]="patientForm.reason"
+              required
+              [readOnly]="reasonUnknown"
+              [attr.aria-required]="true"
+              (input)="onReasonInput($event)"
+              (focus)="onServiceFocus()"
+              data-practice-reason
+              data-coach="reason"
+              type="text"
+              placeholder="Ej. Dolor agudo o selecciona servicio..."
+              class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            />
+            <label
+              class="mt-2 flex items-center gap-2 text-xs cursor-pointer"
+              style="color: var(--text-main)"
+            >
+              <input
+                type="checkbox"
+                role="switch"
+                [ngModel]="reasonUnknown"
+                (ngModelChange)="toggleUnknownReason($event)"
+                class="accent-blue-600"
+              />
+              <span>No lo sé aún</span>
+            </label>
+            @if (showServiceDropdown && filteredServices.length > 0) {
+              <div
+                role="listbox"
+                class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1"
+                style="background-color: var(--bg-primary); border-color: var(--border-color)"
+              >
+                @for (s of filteredServices; track s.id) {
+                  <button
+                    type="button"
+                    role="option"
+                    data-coach="service-option"
+                    (click)="selectServiceReason(s)"
+                    class="w-full text-left px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                    style="color: var(--text-main)"
+                  >
+                    <span>{{ s.nombre }}</span>
+                    <span class="text-[10px] font-semibold text-blue-500"
+                      >${{ s.precioFinal }}</span
+                    >
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        @if (bookingTimeError()) {
+          <p role="alert" class="text-xs text-rose-500">{{ bookingTimeError() }}</p>
+        }
+        <button
+          data-coach="save"
+          (click)="saveAppointment()"
+          [disabled]="!canSaveBookingTime()"
+          class="w-full bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-500 text-white py-2.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+        >
+          @if (isSaving) {
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
+            <span>Guardando cita...</span>
+          } @else {
+            <span>Guardar Cita</span>
+          }
+        </button>
+      </div>
+    }
+  </div>
+}
+@if (p.stage === 'detail' || p.stage === 'cancel') {
+  <div class="simulation-stage">
+    <div
+      class="detail-card border w-full max-w-md rounded-[2.5rem] p-7 shadow-2xl relative space-y-4"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
+      <button
+        (click)="closeAppointmentDetailModal()"
+        class="absolute right-6 top-6 cursor-pointer"
+        style="color: var(--text-muted)"
+      >
+        <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+      </button>
+
+      <div>
+        <h3 class="text-lg font-black uppercase tracking-tight text-blue-500">
+          Detalles de la Cita
+        </h3>
+        <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted)">
+          Fecha: {{ selectedAppointment()?.date }}
+        </p>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <span
+            class="text-[10px] font-black uppercase tracking-widest"
+            style="color: var(--text-muted)"
+            >Paciente</span
+          >
+          <p class="font-black text-sm" style="color: var(--text-main)">
+            {{ selectedAppointment()?.patientName }}
+          </p>
+        </div>
+
+        <div>
+          <span
+            class="text-[10px] font-black uppercase tracking-widest"
+            style="color: var(--text-muted)"
+            >Horario Reservado</span
+          >
+          <p class="font-bold text-blue-400">
+            {{ selectedAppointment()?.time }} hrs –
+            {{ selectedAppointment()?.endTime || 'N/A' }} hrs ({{
+              selectedAppointment()?.durationLabel
+            }})
+          </p>
+        </div>
+
+        <div>
+          <span
+            class="text-[10px] font-black uppercase tracking-widest"
+            style="color: var(--text-muted)"
+            >Teléfono de Contacto</span
+          >
+          <p class="font-medium" style="color: var(--text-main)">
+            {{ selectedAppointment()?.phone || 'No registrado' }}
+          </p>
+        </div>
+
+        <div>
+          <span
+            class="text-[10px] font-black uppercase tracking-widest"
+            style="color: var(--text-muted)"
+            >Correo Electrónico</span
+          >
+          <p class="font-medium" style="color: var(--text-main)">
+            {{ selectedAppointment()?.email || 'No registrado' }}
+          </p>
+        </div>
+
+        <div>
+          <span
+            class="text-[10px] font-black uppercase tracking-widest"
+            style="color: var(--text-muted)"
+            >Motivo de Consulta</span
+          >
+          <p class="font-medium" style="color: var(--text-main)">
+            {{ selectedAppointment()?.reason || 'Sin motivo especificado' }}
+          </p>
+        </div>
+      </div>
+
+      <section
+        class="p-3 border rounded-2xl space-y-3 text-xs"
+        style="border-color: var(--border-color); background: var(--bg-primary)"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p class="font-bold">Costo y pago de la consulta</p>
+            <p style="color: var(--text-muted)">
+              Cobrado: {{ appointment?.amountPaid ?? 0 | currency: 'MXN' : 'symbol' : '1.2-2' }}
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="begin()"
+            class="px-3 py-2 rounded-xl bg-blue-600 text-white font-bold"
+          >
+            Asignar costo
+          </button>
+        </div>
+        @if (appointment?.finalCost !== null && appointment?.finalCost !== undefined) {
+          <p>Costo final: {{ appointment.finalCost | currency: 'MXN' : 'symbol' : '1.2-2' }}</p>
+        } @else if (appointment?.quotedCost !== null && appointment?.quotedCost !== undefined) {
+          <p>
+            Precio de catálogo:
+            {{ appointment.quotedCost | currency: 'MXN' : 'symbol' : '1.2-2' }} · pendiente de costo
+            final
+          </p>
+        } @else {
+          <p style="color: var(--text-muted)">Costo pendiente de asignar</p>
+        }
+        @if (editing()) {
+          <div class="grid grid-cols-2 gap-2">
+            <label
+              >Costo final (MXN)<input
+                type="number"
+                min="0"
+                max="100000000"
+                step="0.01"
+                [(ngModel)]="cost"
+                class="block w-full mt-1 px-2 py-2 border rounded-xl"
+                style="background: var(--bg-secondary); border-color: var(--border-color)" /></label
+            ><label
+              >Monto pagado total (MXN)<input
+                type="number"
+                min="0"
+                max="100000000"
+                step="0.01"
+                [(ngModel)]="paid"
+                class="block w-full mt-1 px-2 py-2 border rounded-xl"
+                style="background: var(--bg-secondary); border-color: var(--border-color)"
+            /></label>
+          </div>
+          <p style="color: var(--text-muted)">
+            Registra el total pagado hasta ahora, no un abono adicional. El costo no se cuenta como
+            ingreso automáticamente.
+          </p>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              [disabled]="saving()"
+              (click)="save()"
+              class="px-3 py-2 bg-blue-600 text-white rounded-xl disabled:opacity-50"
+            >
+              {{ saving() ? 'Guardando…' : 'Guardar costo y pago' }}</button
+            ><button
+              type="button"
+              [disabled]="saving()"
+              (click)="editing.set(false)"
+              class="px-3 py-2 border rounded-xl"
+            >
+              Cancelar
+            </button>
+          </div>
+        }
+        @if (error()) {
+          <p role="alert" class="text-rose-500">{{ error() }}</p>
+        }
+        @if (success()) {
+          <p role="status" class="text-emerald-500">Costo y pago guardados</p>
+        }
+      </section>
+      <!-- 💡 Botones de acción dinámicos -->
+      <div class="flex flex-col gap-2 pt-2">
+        @if (selectedAppointment()?.status === 2) {
+          <button
+            (click)="reassignAppointment()"
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20"
+          >
+            Reasignar Horario
+          </button>
+        } @else {
+          <button
+            data-coach="cancel"
+            (click)="promptCancelAppointment()"
+            class="w-full bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 border border-amber-500/30 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            Cancelar Cita
+          </button>
+        }
+        <button
+          (click)="closeAppointmentDetailModal()"
+          class="w-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+@if (p.stage === 'cancel') {
+  <div
+    class="practice-confirmation"
+    role="alertdialog"
+    aria-modal="true"
+    aria-label="Cancelar cita de práctica"
+  >
+    <div
+      class="cancel-card border w-full max-w-sm rounded-[2.5rem] p-7 shadow-2xl relative space-y-5 text-center"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
+      <div
+        class="w-14 h-14 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-sm"
+      >
+        <lucide-icon [img]="icons.Clock" class="w-7 h-7"></lucide-icon>
+      </div>
+      <div>
+        <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main)">
+          ¿Cancelar Cita?
+        </h3>
+        <p class="text-xs font-medium mt-1" style="color: var(--text-muted)">
+          Estás a punto de cancelar la cita de
+          <span class="font-bold" style="color: var(--text-main)">{{
+            selectedAppointment()?.patientName
+          }}</span
+          >.
+        </p>
+      </div>
+
+      @if (cancelSuccessMessage()) {
+        <div
+          class="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 rounded-2xl text-xs font-black animate-in fade-in"
+        >
+          {{ cancelSuccessMessage() }}
+        </div>
+      }
+
+      <div class="flex gap-2">
+        <button
+          (click)="showCancelConfirmModal = false"
+          [disabled]="isCancelling"
+          class="min-w-0 flex-1 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer"
+        >
+          Volver
+        </button>
+        <button
+          data-coach="confirm-cancel"
+          (click)="executeCancelAppointment()"
+          [disabled]="isCancelling"
+          class="min-w-0 flex-1 bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2"
+        >
+          @if (isCancelling) {
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
+            <span>Cancelando...</span>
+          } @else {
+            <span>Sí, Cancelar</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

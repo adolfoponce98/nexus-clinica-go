@@ -1,0 +1,257 @@
+<div class="min-w-0 p-4 sm:p-6 space-y-5 font-sans" style="color: var(--text-main)">
+  <header class="flex flex-wrap items-start justify-between gap-4">
+    <div class="flex items-start gap-3 min-w-0">
+      <a
+        routerLink="/home"
+        aria-label="Volver al inicio"
+        class="shrink-0 p-3 border rounded-2xl"
+        style="border-color: var(--border-color); background: var(--bg-secondary)"
+      >
+        <lucide-icon [img]="icons.ArrowLeft" class="w-5 h-5" />
+      </a>
+      <div class="min-w-0">
+        <h1 class="text-xl sm:text-2xl font-black">{{ title() }}</h1>
+        <p class="text-sm mt-1" style="color: var(--text-muted)">
+          {{
+            patientsOnly()
+              ? 'Consultas con asistencia registrada, de la más reciente a la más antigua.'
+              : 'Todas las citas del periodo, ordenadas por fecha y hora.'
+          }}
+        </p>
+      </div>
+    </div>
+    <button
+      type="button"
+      (click)="load()"
+      [disabled]="loading()"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-bold disabled:opacity-50"
+      style="border-color: var(--border-color); background: var(--bg-secondary)"
+    >
+      <lucide-icon
+        [img]="icons.RefreshCw"
+        class="w-4 h-4"
+        [class.animate-spin]="loading()"
+      />Actualizar
+    </button>
+  </header>
+
+  <section
+    aria-label="Filtros de fechas"
+    class="p-4 rounded-3xl border space-y-4"
+    style="background: var(--bg-secondary); border-color: var(--border-color)"
+  >
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap gap-2" role="group" aria-label="Periodo">
+        <button
+          type="button"
+          (click)="setMode('day')"
+          [attr.aria-pressed]="mode() === 'day'"
+          [class.bg-blue-600]="mode() === 'day'"
+          [class.text-white]="mode() === 'day'"
+          class="px-4 py-2 rounded-xl border text-sm font-bold"
+          style="border-color: var(--border-color)"
+        >
+          Día
+        </button>
+        <button
+          type="button"
+          (click)="setMode('week')"
+          [attr.aria-pressed]="mode() === 'week'"
+          [class.bg-blue-600]="mode() === 'week'"
+          [class.text-white]="mode() === 'week'"
+          class="px-4 py-2 rounded-xl border text-sm font-bold"
+          style="border-color: var(--border-color)"
+        >
+          Semana
+        </button>
+        <button
+          type="button"
+          (click)="setMode('custom')"
+          [attr.aria-pressed]="mode() === 'custom'"
+          [class.bg-blue-600]="mode() === 'custom'"
+          [class.text-white]="mode() === 'custom'"
+          class="px-4 py-2 rounded-xl border text-sm font-bold"
+          style="border-color: var(--border-color)"
+        >
+          Personalizado
+        </button>
+      </div>
+      <div class="flex flex-wrap gap-2 items-center">
+        <button
+          type="button"
+          (click)="step(-1)"
+          aria-label="Periodo anterior"
+          class="p-2.5 border rounded-xl"
+          style="border-color: var(--border-color)"
+        >
+          <lucide-icon [img]="icons.ChevronLeft" class="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          (click)="goToToday()"
+          class="px-4 py-2 rounded-xl border text-sm font-bold"
+          style="border-color: var(--border-color)"
+        >
+          Hoy
+        </button>
+        <button
+          type="button"
+          (click)="step(1)"
+          aria-label="Periodo siguiente"
+          class="p-2.5 border rounded-xl"
+          style="border-color: var(--border-color)"
+        >
+          <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-end gap-3">
+      @if (mode() === 'custom') {
+        <label class="space-y-1 text-xs font-bold"
+          >Desde
+          <input
+            type="date"
+            [ngModel]="customStart()"
+            (ngModelChange)="customStart.set($event)"
+            [max]="customEnd()"
+            class="block px-3 py-2.5 border rounded-xl"
+            style="background: var(--bg-primary); border-color: var(--border-color)"
+          />
+        </label>
+        <label class="space-y-1 text-xs font-bold"
+          >Hasta
+          <input
+            type="date"
+            [ngModel]="customEnd()"
+            (ngModelChange)="customEnd.set($event)"
+            [min]="customStart()"
+            class="block px-3 py-2.5 border rounded-xl"
+            style="background: var(--bg-primary); border-color: var(--border-color)"
+          />
+        </label>
+        <button
+          type="button"
+          (click)="applyCustom()"
+          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-blue-600 text-white"
+        >
+          Aplicar rango
+        </button>
+      } @else {
+        <label class="space-y-1 text-xs font-bold"
+          >{{ mode() === 'week' ? 'Semana que contiene' : 'Fecha' }}
+          <input
+            type="date"
+            [ngModel]="anchor()"
+            (ngModelChange)="setAnchor($event)"
+            class="block px-3 py-2.5 border rounded-xl"
+            style="background: var(--bg-primary); border-color: var(--border-color)"
+          />
+        </label>
+      }
+      <label class="space-y-1 text-xs font-bold min-w-0 flex-1 basis-64"
+        >Buscar paciente, motivo o teléfono
+        <input
+          type="search"
+          [ngModel]="search()"
+          (ngModelChange)="setSearch($event)"
+          placeholder="Buscar en el periodo seleccionado"
+          class="block w-full px-3 py-2.5 border rounded-xl font-normal"
+          style="background: var(--bg-primary); border-color: var(--border-color)"
+        />
+      </label>
+    </div>
+    @if (validationError()) {
+      <p role="alert" class="text-sm text-rose-500">{{ validationError() }}</p>
+    }
+    <p class="text-sm font-bold break-words" aria-live="polite">{{ rangeLabel() }}</p>
+    @if (mode() === 'week') {
+      <p class="text-xs" style="color: var(--text-muted)">Las semanas van de lunes a domingo.</p>
+    }
+  </section>
+
+  @if (error()) {
+    <p role="alert" class="p-4 border border-amber-500/40 bg-amber-500/10 rounded-2xl text-sm">
+      {{ error() }}
+    </p>
+  }
+  <div class="flex flex-wrap items-center justify-between gap-2 text-sm" aria-live="polite">
+    <p>{{ filtered().length }} {{ patientsOnly() ? 'atenciones' : 'citas' }} en el periodo</p>
+    @if (loading()) {
+      <p role="status" style="color: var(--text-muted)">Consultando citas…</p>
+    }
+  </div>
+  @for (group of groups(); track group.date) {
+    <section class="space-y-3" [attr.aria-label]="formatDate(group.date)">
+      <h2 class="text-sm font-black text-blue-500">{{ formatDate(group.date) }}</h2>
+      <div class="space-y-3">
+        @for (item of group.appointments; track item.id) {
+          <article
+            class="flex flex-col sm:flex-row gap-4 p-4 rounded-2xl border"
+            style="background: var(--bg-secondary); border-color: var(--border-color)"
+          >
+            <div class="shrink-0 sm:w-28">
+              <p class="text-lg font-black">{{ item.time }}</p>
+              <p class="text-xs" style="color: var(--text-muted)">
+                {{ item.endTime ? 'a ' + item.endTime : '' }}
+              </p>
+            </div>
+            <div class="min-w-0 flex-1 space-y-1 break-words">
+              <h3 class="font-bold text-sm">{{ item.patientName }}</h3>
+              <p class="text-sm" style="color: var(--text-muted)">{{ item.reason }}</p>
+              @if (item.phone) {
+                <p class="text-xs" style="color: var(--text-muted)">Tel. {{ item.phone }}</p>
+              }
+            </div>
+            <span
+              class="self-start text-xs font-bold px-3 py-1.5 rounded-xl border"
+              [class.text-amber-500]="+item.status === 0"
+              [class.text-blue-500]="+item.status === 1"
+              [class.text-rose-500]="+item.status === 2"
+              [class.text-emerald-500]="+item.status === 3"
+              style="border-color: var(--border-color)"
+              >{{ statusLabel(item.status) }}</span
+            >
+          </article>
+        }
+      </div>
+    </section>
+  } @empty {
+    @if (!loading()) {
+      <div
+        class="p-10 text-center border border-dashed rounded-3xl space-y-2"
+        style="border-color: var(--border-color); background: var(--bg-secondary)"
+      >
+        <h2 class="font-bold">
+          {{ patientsOnly() ? 'No hay pacientes con asistencia registrada' : 'No hay citas' }}
+        </h2>
+        <p class="text-sm" style="color: var(--text-muted)">
+          Prueba otro día, semana o rango de fechas.
+        </p>
+      </div>
+    }
+  }
+  @if (totalPages() > 1) {
+    <nav aria-label="Paginación" class="flex flex-wrap justify-between items-center gap-3 text-sm">
+      <p>Página {{ visiblePage() }} de {{ totalPages() }}</p>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          (click)="changePage(visiblePage() - 1)"
+          [disabled]="visiblePage() === 1"
+          class="px-4 py-2 border rounded-xl disabled:opacity-40"
+          style="border-color: var(--border-color)"
+        >
+          Anterior</button
+        ><button
+          type="button"
+          (click)="changePage(visiblePage() + 1)"
+          [disabled]="visiblePage() === totalPages()"
+          class="px-4 py-2 border rounded-xl disabled:opacity-40"
+          style="border-color: var(--border-color)"
+        >
+          Siguiente
+        </button>
+      </div>
+    </nav>
+  }
+</div>

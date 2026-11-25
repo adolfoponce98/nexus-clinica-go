@@ -1,0 +1,200 @@
+@if (showActions) {
+  <section class="note-conservation">
+    <div class="conservation-heading">
+      <span class="conservation-icon"><lucide-icon [img]="icons.ShieldCheck" [size]="24" /></span>
+      <div>
+        <span class="review-kicker">CONTINUIDAD DEL EXPEDIENTE</span>
+        <h3>Cierre y conservación de la nota</h3>
+        <p>
+          {{
+            isSigned
+              ? 'La consulta está firmada y protegida contra cambios.'
+              : 'Revisa la versión guardada antes de firmar y cerrar la consulta.'
+          }}
+        </p>
+      </div>
+      <span class="conservation-status">{{
+        isSigned ? 'Firmada y conservada' : 'Revisión del documento'
+      }}</span>
+    </div>
+    <div class="conservation-action">
+      <span class="conservation-pen"><lucide-icon [img]="icons.PenLine" [size]="22" /></span>
+      <div>
+        <h4>
+          {{
+            isSigned
+              ? '¿Necesitas agregar información a esta consulta?'
+              : 'Revisar el contenido de la consulta'
+          }}
+        </h4>
+        <p>
+          {{
+            isSigned
+              ? 'Agrega una nota adicional o aclaración firmada. Quedará vinculada a esta consulta, sin modificar la nota original.'
+              : 'Comprueba los datos registrados. Después del cierre podrás agregar aclaraciones por separado.'
+          }}
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="review()"
+        [disabled]="!followUpId || busy()"
+        class="review-primary"
+      >
+        @if (busy()) {
+          <lucide-icon [img]="icons.LoaderCircle" [size]="17" class="review-spinner" />
+        } @else {
+          <lucide-icon [img]="icons.PenLine" [size]="17" />
+        }
+        {{
+          busy()
+            ? 'Consultando…'
+            : isSigned
+              ? 'Ver nota y agregar aclaración'
+              : 'Revisar nota guardada'
+        }}
+      </button>
+    </div>
+    @if (error()) {
+      <p role="alert" class="review-error">{{ error() }}</p>
+    }
+  </section>
+}
+
+@if (opened()) {
+  <div class="app-dialog-overlay review-overlay">
+    <section
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="clinical-review-title"
+      aria-label="Revisión de nota clínica"
+      class="review-dialog"
+    >
+      <header class="review-header">
+        <span class="review-icon"><lucide-icon [img]="icons.FileCheck2" [size]="23" /></span>
+        <div>
+          <span class="review-kicker">EXPEDIENTE CLÍNICO</span>
+          <h2 id="clinical-review-title">
+            {{ note()?.state === 'LOCKED' ? 'Nota firmada' : 'Revisar y firmar consulta' }}
+          </h2>
+          <p>Versión guardada · {{ note()?.numeroDeConsulta || 'Consulta' }}</p>
+        </div>
+        <span class="reading-badge"><lucide-icon [img]="icons.Eye" [size]="14" />Solo lectura</span
+        ><button
+          type="button"
+          class="review-close"
+          (click)="opened.set(false)"
+          [disabled]="busy()"
+          aria-label="Cerrar revisión"
+        >
+          <lucide-icon [img]="icons.X" [size]="19" />
+        </button>
+      </header>
+      <div class="review-body">
+        <div class="review-hint">
+          <lucide-icon [img]="icons.ShieldCheck" [size]="17" />
+          <p>
+            {{
+              note()?.state === 'DRAFT'
+                ? 'Revisa la información registrada en todas las pestañas. Para corregirla, cierra esta revisión y edita la consulta antes de firmar.'
+                : 'Esta versión se conserva sin edición. Cualquier aclaración se registra como una nota independiente.'
+            }}
+          </p>
+        </div>
+        <app-clinical-document-view [note]="note()" />
+        @if (note()?.state === 'LOCKED') {
+          <section class="addenda-section">
+            <h3><lucide-icon [img]="icons.PenLine" [size]="18" />Notas aclaratorias</h3>
+            @for (item of addenda(); track item.followUpId) {
+              <app-clinical-document-view [note]="item" />
+            }
+            <label class="addendum-label"
+              >Nueva aclaración<textarea
+                [(ngModel)]="text"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="busy()"
+                placeholder="Describe la aclaración. La nota original no se modificará."
+              ></textarea></label
+            ><label class="review-acknowledgment"
+              ><input
+                type="checkbox"
+                [(ngModel)]="acknowledged"
+                [disabled]="busy()"
+                [ngModelOptions]="{ standalone: true }"
+              />Confirmo la firma de esta aclaración</label
+            ><button
+              type="button"
+              (click)="addendum()"
+              [disabled]="busy() || !acknowledged || !text.trim()"
+              class="review-primary"
+            >
+              <lucide-icon [img]="icons.PenLine" [size]="16" />Agregar aclaración firmada
+            </button>
+          </section>
+        }
+      </div>
+      <footer class="review-footer">
+        @if (error()) {
+          <p role="alert" class="review-error">{{ error() }}</p>
+        }
+        @if (note()?.state === 'DRAFT') {
+          <label class="review-acknowledgment"
+            ><input
+              type="checkbox"
+              [(ngModel)]="acknowledged"
+              [disabled]="busy()"
+              [ngModelOptions]="{ standalone: true }"
+            /><span
+              >He revisado esta versión y confirmo su cierre con mi identidad y firma
+              digitalizada.<small
+                >Al firmar, las correcciones posteriores se registrarán mediante notas
+                aclaratorias.</small
+              ></span
+            ></label
+          >
+        }
+        <div class="review-actions">
+          <button type="button" (click)="exportPDF()" [disabled]="busy()" class="review-secondary">
+            <lucide-icon [img]="icons.Download" [size]="16" />{{
+              note()?.state === 'LOCKED' ? 'Descargar PDF firmado' : 'Descargar PDF de borrador'
+            }}
+          </button>
+          <div>
+            <button
+              type="button"
+              (click)="opened.set(false)"
+              [disabled]="busy()"
+              class="review-secondary"
+            >
+              {{ note()?.state === 'DRAFT' ? 'Volver a la consulta' : 'Cerrar' }}
+            </button>
+            @if (note()?.state === 'DRAFT') {
+              <button
+                type="button"
+                (click)="finalize()"
+                [disabled]="busy() || !acknowledged"
+                class="review-primary"
+              >
+                @if (busy()) {
+                  <lucide-icon [img]="icons.LoaderCircle" [size]="16" class="review-spinner" />
+                } @else {
+                  <lucide-icon [img]="icons.PenLine" [size]="16" />
+                }
+                {{ busy() ? 'Procesando…' : 'Firmar y cerrar consulta' }}
+              </button>
+            } @else if (note()?.state === 'LOCKED') {
+              <button
+                type="button"
+                (click)="exportFHIR()"
+                [disabled]="busy()"
+                class="review-secondary"
+              >
+                Exportar resumen FHIR
+              </button>
+            }
+          </div>
+        </div>
+      </footer>
+    </section>
+  </div>
+}

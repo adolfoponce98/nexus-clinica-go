@@ -1,7 +1,10 @@
 @if (isOpen) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md">
-    <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-
+  <div
+    class="app-dialog-overlay fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md"
+  >
+    <div
+      class="bg-white rounded-[2.5rem] p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 relative"
+    >
       <!-- Lado Izquierdo: Formulario (Crear / Editar) -->
       <div>
         <div class="flex justify-between items-center mb-6">
@@ -9,26 +12,57 @@
             {{ editingIndex !== null ? 'Editar Tipo de Clase' : 'Nuevo Tipo de Clase' }}
           </h3>
           @if (editingIndex !== null) {
-            <button (click)="resetForm()" class="text-[10px] font-bold text-rose-500 uppercase underline cursor-pointer">Cancelar Edición</button>
+            <button
+              (click)="resetForm()"
+              class="text-[10px] font-bold text-rose-500 uppercase underline cursor-pointer"
+            >
+              Cancelar Edición
+            </button>
           }
         </div>
 
         <form [formGroup]="typeClassForm" (ngSubmit)="onSave()" class="space-y-4">
-          <input formControlName="name" placeholder="Nombre (ej. Power Spin)" class="w-full bg-zinc-50 p-4 rounded-xl text-sm font-bold outline-none">
-          <textarea formControlName="descripcion" placeholder="Descripción" class="w-full bg-zinc-50 p-4 rounded-xl text-sm font-bold outline-none"></textarea>
-          <input formControlName="duracion" placeholder="Duración (ej. 45 min)" class="w-full bg-zinc-50 p-4 rounded-xl text-sm font-bold outline-none">
+          <input
+            formControlName="name"
+            placeholder="Nombre (ej. Power Spin)"
+            class="w-full bg-zinc-50 p-4 rounded-xl text-sm font-bold outline-none"
+            appPermission="home:write"
+          />
+          <textarea
+            formControlName="descripcion"
+            placeholder="Descripción"
+            class="w-full bg-zinc-50 p-4 rounded-xl text-sm font-bold outline-none"
+            appPermission="home:write"
+          ></textarea>
+          <input
+            formControlName="duracion"
+            placeholder="Duración (ej. 45 min)"
+            class="w-full bg-zinc-50 p-4 rounded-xl text-sm font-bold outline-none"
+            appPermission="home:write"
+          />
 
           <label class="text-[10px] font-black uppercase text-zinc-400">Dificultad</label>
           <div class="grid grid-cols-4 gap-2">
-            @for (d of [1,2,3,4]; track d) {
-              <button type="button" (click)="typeClassForm.patchValue({dificultad: d})"
-                      [class]="typeClassForm.value.dificultad === d ? getDificultadColor(d) + ' text-white shadow-md' : 'bg-zinc-100 text-zinc-500'"
-                      class="py-2 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer">
+            @for (d of [1, 2, 3, 4]; track d) {
+              <button
+                type="button"
+                (click)="typeClassForm.patchValue({ dificultad: d })"
+                [class]="
+                  typeClassForm.value.dificultad === d
+                    ? getDificultadColor(d) + ' text-white shadow-md'
+                    : 'bg-zinc-100 text-zinc-500'
+                "
+                class="py-2 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer"
+              >
                 {{ d === 1 ? 'Fácil' : d === 2 ? 'Media' : d === 3 ? 'Retadora' : 'Difícil' }}
               </button>
             }
           </div>
-          <button type="submit" [disabled]="typeClassForm.invalid" class="w-full bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-black py-4 rounded-xl uppercase tracking-widest text-xs mt-4 cursor-pointer transition-all">
+          <button
+            type="submit"
+            [disabled]="typeClassForm.invalid"
+            class="w-full bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-black py-4 rounded-xl uppercase tracking-widest text-xs mt-4 cursor-pointer transition-all"
+          >
             {{ editingIndex !== null ? 'Actualizar Clase' : 'Guardar Clase' }}
           </button>
         </form>
@@ -36,33 +70,65 @@
 
       <!-- Lado Derecho: Lista de Clases Existentes -->
       <div class="bg-zinc-50 p-6 rounded-3xl border border-zinc-100 flex flex-col">
-        <h4 class="text-sm font-black uppercase mb-4 text-zinc-700">Clases Agregadas ({{ typeClasses().length }})</h4>
+        <h4 class="text-sm font-black uppercase mb-4 text-zinc-700">
+          Clases Agregadas ({{ typeClasses().length }})
+        </h4>
         <div class="space-y-3 overflow-y-auto max-h-[350px] pr-1">
           @for (tc of typeClasses(); track $index) {
-            <div (click)="seleccionarParaEditar($index)" class="bg-white p-4 rounded-xl border border-zinc-100 flex justify-between items-center shadow-sm hover:border-rose-300 transition-all cursor-pointer group">
+            <div
+              (click)="seleccionarParaEditar($index)"
+              class="bg-white p-4 rounded-xl border border-zinc-100 flex justify-between items-center shadow-sm hover:border-rose-300 transition-all cursor-pointer group"
+              appPermission="home:write"
+            >
               <div>
-                <p class="font-black text-xs text-zinc-900 group-hover:text-rose-500 transition-colors">{{ tc.name }}</p>
+                <p
+                  class="font-black text-xs text-zinc-900 group-hover:text-rose-500 transition-colors"
+                >
+                  {{ tc.name }}
+                </p>
                 <p class="text-[9px] text-zinc-400 mt-0.5">
                   {{ tc.duracion }} •
-                  <span [class]="getDificultadColor(tc.dificultad)" class="w-2 h-2 rounded-full inline-block ml-1"></span>
+                  <span
+                    [class]="getDificultadColor(tc.dificultad)"
+                    class="w-2 h-2 rounded-full inline-block ml-1"
+                  ></span>
                 </p>
               </div>
               <div class="flex items-center gap-1">
-                <button type="button" (click)="$event.stopPropagation(); seleccionarParaEditar($index)" class="p-1.5 text-zinc-300 hover:text-zinc-600 rounded-lg transition-colors cursor-pointer" title="Editar">
+                <button
+                  type="button"
+                  (click)="$event.stopPropagation(); seleccionarParaEditar($index)"
+                  class="p-1.5 text-zinc-300 hover:text-zinc-600 rounded-lg transition-colors cursor-pointer"
+                  title="Editar"
+                  appPermission="home:write"
+                >
                   <lucide-icon [img]="icons.Edit2" class="w-3.5 h-3.5"></lucide-icon>
                 </button>
-                <button type="button" (click)="$event.stopPropagation(); deleteItem($index)" class="p-1.5 text-zinc-300 hover:text-rose-500 rounded-lg transition-colors cursor-pointer" title="Eliminar">
+                <button
+                  type="button"
+                  (click)="$event.stopPropagation(); deleteItem($index)"
+                  class="p-1.5 text-zinc-300 hover:text-rose-500 rounded-lg transition-colors cursor-pointer"
+                  title="Eliminar"
+                  appPermission="home:delete"
+                >
                   <lucide-icon [img]="icons.X" class="w-4 h-4"></lucide-icon>
                 </button>
               </div>
             </div>
           } @empty {
-            <p class="text-center text-xs font-bold text-zinc-400 py-12 uppercase tracking-widest">No hay clases registradas</p>
+            <p class="text-center text-xs font-bold text-zinc-400 py-12 uppercase tracking-widest">
+              No hay clases registradas
+            </p>
           }
         </div>
       </div>
 
-      <button (click)="onClose()" class="md:col-span-2 text-zinc-400 hover:text-zinc-600 underline text-xs font-bold cursor-pointer text-center mt-2">Cerrar Ventana</button>
+      <button
+        (click)="onClose()"
+        class="md:col-span-2 text-zinc-400 hover:text-zinc-600 underline text-xs font-bold cursor-pointer text-center mt-2"
+      >
+        Cerrar Ventana
+      </button>
     </div>
   </div>
 }

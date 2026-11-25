@@ -1,0 +1,402 @@
+:host {
+  display: block;
+  min-width: 0;
+  color: #253346;
+}
+[data-layout='wave'] {
+  .rx-header {
+    border-top: 4px solid var(--c);
+    padding-top: 18px;
+  }
+  .rx-brand {
+    border-left: 1px solid #e2e8ed;
+    padding-left: 16px;
+  }
+  .rx-footer {
+    border-top: 1px solid var(--a);
+    padding-top: 14px;
+  }
+}
+[data-layout='rail'] {
+  border-left: 5px solid var(--c);
+  padding-left: 40px;
+  .rx-folio {
+    order: 18;
+    justify-content: flex-start;
+    border-bottom: 1px solid #e8edf1;
+  }
+  .rx-office {
+    order: 25;
+  }
+  .rx-patient {
+    border-left: 3px solid var(--a);
+    padding-left: 14px;
+  }
+  .rx-signature {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .rx-verification {
+    grid-column: 1;
+    grid-row: 1;
+    border: 0;
+    padding-left: 0;
+  }
+}
+[data-layout='serif'] {
+  .rx-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-bottom: 3px double var(--c);
+  }
+  .rx-prescriber {
+    justify-content: center;
+  }
+  .rx-brand {
+    align-items: center;
+    max-width: none;
+  }
+  .rx-brand br {
+    display: none;
+  }
+  .rx-office {
+    text-align: center;
+  }
+  h1 {
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .rx-footer {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    border-top: 3px double var(--c);
+    padding-top: 15px;
+  }
+  .rx-signature {
+    width: 260px;
+  }
+  .rx-verification {
+    width: 310px;
+    max-width: 100%;
+    border: 0;
+    padding: 0;
+  }
+}
+[data-layout='split'] {
+  .rx-folio {
+    order: 5;
+    border-bottom: 1px solid var(--a);
+    padding-top: 0;
+  }
+  .rx-header {
+    padding-top: 18px;
+    border: 0;
+  }
+  .rx-brand {
+    border-left: 2px solid var(--a);
+    padding-left: 16px;
+  }
+  .rx-office {
+    order: 55;
+    border-top: 1px solid var(--a);
+    border-bottom: 0;
+  }
+  .rx-footer {
+    margin-top: 12px;
+  }
+  .rx-footer-reference {
+    color: var(--c);
+  }
+}
+[data-layout='edge'] {
+  border-right: 5px solid var(--c);
+  .rx-prescriber {
+    flex-direction: row-reverse;
+  }
+  .rx-brand {
+    display: none;
+  }
+  .rx-header {
+    grid-template-columns: 1fr;
+    border-bottom-color: #e8edf1;
+  }
+  .rx-eyebrow {
+    text-align: left;
+  }
+  .rx-signature {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+  }
+  .rx-verification {
+    grid-column: 1;
+    grid-row: 1;
+    border: 0;
+    border-right: 2px solid var(--a);
+    padding: 8px 16px 8px 0;
+  }
+  .rx-legal {
+    order: 65;
+  }
+}
+[data-layout='dark'] {
+  .rx-header {
+    background: #f4f6f8;
+    padding: 18px;
+    border-top: 2px solid #334155;
+    border-bottom: 0;
+  }
+  h1 {
+    color: #273548;
+  }
+  .rx-folio {
+    order: 45;
+    border-top: 1px solid #cbd5e1;
+    padding-bottom: 0;
+    margin-top: 14px;
+  }
+  .rx-patient {
+    border: 1px solid #cbd5e1;
+    padding: 13px;
+  }
+  .rx-footer {
+    border-top: 3px solid #334155;
+    padding-top: 12px;
+  }
+  .rx-footer-reference {
+    background: #f4f6f8;
+    padding: 9px;
+    margin-bottom: 0;
+  }
+}
+[data-layout='frame'] {
+  border: 1px solid #a3b6a5;
+  outline: 1px solid #e6ece7;
+  outline-offset: -8px;
+  padding: 38px;
+  .rx-header {
+    border-bottom: 1px solid #c3d0c5;
+  }
+  .rx-office {
+    order: 55;
+    border: 0;
+    text-align: center;
+  }
+  .rx-footer {
+    border-top: 1px solid #c3d0c5;
+    padding-top: 15px;
+    margin-top: 8px;
+  }
+  .rx-verification {
+    border: 1px solid #c3d0c5;
+    padding: 12px;
+    border-radius: 8px;
+  }
+}
+[data-layout='soft'] {
+  .rx-header {
+    padding: 18px;
+    background: #fcf5f8;
+    border: 0;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .rx-brand {
+    align-self: flex-end;
+  }
+  .rx-brand br {
+    display: none;
+  }
+  .rx-office {
+    background: #fcf5f8;
+    padding: 0 18px 14px;
+    border: 0;
+    border-radius: 0 0 16px 16px;
+  }
+  .rx-folio {
+    order: 35;
+  }
+  .rx-patient {
+    margin-top: 17px;
+    border-block: 1px solid #e6cdd5;
+  }
+  .rx-signature {
+    background: #fcf5f8;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .rx-verification {
+    border: 0;
+    padding-left: 0;
+  }
+}
+[data-layout='band'] {
+  .rx-folio {
+    order: 5;
+    background: #eff5ff;
+    border-top: 3px solid var(--c);
+    padding: 10px 12px;
+    margin-bottom: 20px;
+  }
+  .rx-header {
+    border-bottom: 3px solid var(--c);
+  }
+  .rx-office {
+    order: 55;
+    border: 0;
+  }
+  .rx-signature {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .rx-verification {
+    grid-column: 1;
+    grid-row: 2;
+    border: 0;
+    padding-left: 0;
+  }
+  .rx-footer-reference {
+    border-bottom: 2px solid var(--c);
+    color: var(--c);
+  }
+}
+[data-layout='minimal'] {
+  .rx-header {
+    border: 0;
+  }
+  .rx-symbol {
+    display: none;
+  }
+  h1 {
+    font-weight: 300;
+    font-size: 27px;
+  }
+  .rx-office {
+    order: 55;
+    border: 0;
+    border-top: 1px solid var(--a);
+  }
+  .rx-brand {
+    display: none;
+  }
+  .rx-header {
+    grid-template-columns: 1fr;
+  }
+  .rx-verification {
+    border: 0;
+    padding-left: 0;
+  }
+  .rx-legal {
+    order: 65;
+    border-top-color: var(--a);
+  }
+  .rx-footer {
+    margin-top: 14px;
+  }
+}
+.rx-sheet[data-orientation='landscape'] {
+  min-height: 590px;
+  padding: 26px;
+  --rx-qr-size: 112px;
+  .rx-clinical-body {
+    display: grid;
+    order: 40;
+    grid-template-columns: minmax(150px, 0.65fr) minmax(0, 1.8fr);
+    gap: 26px;
+    align-items: start;
+  }
+  .rx-patient {
+    flex-direction: column;
+    border: 0;
+    padding: 16px 18px 16px 0;
+  }
+  .rx-patient > div:last-child {
+    text-align: left;
+  }
+  .rx-treatment {
+    border-left: 1px solid #e8edf1;
+    padding: 8px 0 0 26px;
+    min-height: 160px;
+  }
+  .rx-footer {
+    grid-template-columns: 1fr 1fr;
+    margin-top: 14px;
+  }
+  .rx-watermark img {
+    width: 40%;
+    max-height: 65%;
+  }
+  .rx-doctor-logo {
+    width: 90px;
+    height: 76px;
+    flex-basis: 90px;
+  }
+  .rx-office-logo {
+    width: 60px;
+    height: 48px;
+  }
+  .rx-header {
+    padding-block: 12px;
+  }
+  h1 {
+    font-size: 21px;
+    margin: 3px 0;
+  }
+  .rx-office {
+    padding-block: 7px;
+  }
+  .rx-folio {
+    padding-block: 8px;
+  }
+  .rx-demo {
+    font-size: 7px;
+    padding: 4px;
+    margin-bottom: 10px;
+  }
+  .rx-section-title p {
+    display: none;
+  }
+  .rx-rp {
+    font-size: 26px;
+  }
+  .rx-medicine {
+    padding-block: 10px;
+  }
+  .rx-quantity {
+    padding-block: 6px;
+  }
+  .rx-extra {
+    margin-top: 12px;
+  }
+  .rx-legal {
+    margin-top: 14px;
+  }
+  &[data-layout='serif'] .rx-verification {
+    width: auto;
+  }
+  &[data-layout='serif'] .rx-signature {
+    width: 100%;
+  }
+}
+@media print {
+  .rx-sheet {
+    border: 0;
+    min-height: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    transform: none !important;
+    width: 100% !important;
+  }
+  .rx-paper-frame {
+    height: auto !important;
+    max-width: none !important;
+    overflow: visible;
+  }
+  .rx-sheet[data-layout='frame'] {
+    border: 1px solid #a3b6a5;
+  }
+}

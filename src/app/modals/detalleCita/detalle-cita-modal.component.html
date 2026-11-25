@@ -1,19 +1,25 @@
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-
-  <div class="relative bg-zinc-900 border border-zinc-800 w-full max-w-4xl rounded-[2.5rem] p-8 shadow-2xl text-white space-y-6">
-
+<div
+  class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+>
+  <div
+    class="relative bg-zinc-900 border border-zinc-800 w-full max-w-4xl rounded-[2.5rem] p-8 shadow-2xl text-white space-y-6"
+  >
     <!-- ================================================================= -->
     <!-- HEADER DEL MODAL                                                  -->
     <!-- ================================================================= -->
     <div class="flex items-center justify-between border-b border-zinc-800 pb-5">
       <div class="flex items-center gap-3">
-        <div class="w-12 h-12 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-2xl flex items-center justify-center shadow">
+        <div
+          class="w-12 h-12 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-2xl flex items-center justify-center shadow"
+        >
           <lucide-icon [img]="icons.Calendar" class="w-6 h-6"></lucide-icon>
         </div>
         <div>
           <div class="flex items-center gap-2.5">
             <h3 class="text-xl font-black uppercase tracking-tight text-white">Detalle de Cita</h3>
-            <span class="px-2.5 py-0.5 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-mono font-bold border border-zinc-700">
+            <span
+              class="px-2.5 py-0.5 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-mono font-bold border border-zinc-700"
+            >
               {{ citaData.id }}
             </span>
           </div>
@@ -25,67 +31,111 @@
           </p>
         </div>
       </div>
-      <button (click)="onClose()" class="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-2xl flex items-center justify-center transition-all cursor-pointer">
+      <button
+        (click)="onClose()"
+        class="w-10 h-10 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-2xl flex items-center justify-center transition-all cursor-pointer"
+      >
         <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
       </button>
     </div>
-
 
     <!-- ================================================================= -->
     <!-- GRID SUPERIOR: INFORMACIÓN DE CLIENTE Y HORARIO                    -->
     <!-- ================================================================= -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
       <!-- CARD CLIENTE (7 Columnas) -->
-      <div class="lg:col-span-7 bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl flex flex-col justify-between shadow-inner space-y-4">
+      <div
+        class="lg:col-span-7 bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl flex flex-col justify-between shadow-inner space-y-4"
+      >
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             <div class="relative">
-              <img src="https://ui-avatars.com/api/?name=Sofia+Valenzuela&background=1e1b4b&color=93c5fd" class="w-14 h-14 rounded-2xl object-cover border-2 border-zinc-700 shadow" alt="Avatar">
-              <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-zinc-950"></span>
+              <img
+                src="https://ui-avatars.com/api/?name=Sofia+Valenzuela&background=1e1b4b&color=93c5fd"
+                class="w-14 h-14 rounded-2xl object-cover border-2 border-zinc-700 shadow"
+                alt="Avatar"
+              />
+              <span
+                class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-zinc-950"
+              ></span>
             </div>
             <div>
               <div class="flex items-center gap-2">
                 <h4 class="text-base font-black text-white">{{ citaData.clientName }}</h4>
                 @if (citaData.isVip) {
-                  <span class="px-2.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-[9px] font-black uppercase tracking-wider">Cliente VIP</span>
+                  <span
+                    class="px-2.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-[9px] font-black uppercase tracking-wider"
+                    >Cliente VIP</span
+                  >
                 }
               </div>
               <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-zinc-400 mt-1">
-                <span class="flex items-center gap-1"><lucide-icon [img]="icons.Phone" class="w-3.5 h-3.5 text-zinc-500"></lucide-icon> {{ citaData.clientPhone }}</span>
-                <span class="flex items-center gap-1"><lucide-icon [img]="icons.Mail" class="w-3.5 h-3.5 text-zinc-500"></lucide-icon> {{ citaData.clientEmail }}</span>
+                <span class="flex items-center gap-1"
+                  ><lucide-icon [img]="icons.Phone" class="w-3.5 h-3.5 text-zinc-500"></lucide-icon>
+                  {{ citaData.clientPhone }}</span
+                >
+                <span class="flex items-center gap-1"
+                  ><lucide-icon [img]="icons.Mail" class="w-3.5 h-3.5 text-zinc-500"></lucide-icon>
+                  {{ citaData.clientEmail }}</span
+                >
               </div>
             </div>
           </div>
 
           <div class="flex gap-2 w-full sm:w-auto">
-            <button (click)="copyPhone()" class="flex-1 sm:flex-none bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-              <lucide-icon [img]="icons.Copy" class="w-3.5 h-3.5 text-zinc-400"></lucide-icon> Copiar Tel.
+            <button
+              (click)="copyPhone()"
+              class="min-w-0 flex-1 sm:flex-none bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <lucide-icon [img]="icons.Copy" class="w-3.5 h-3.5 text-zinc-400"></lucide-icon>
+              Copiar Tel.
             </button>
-            <button class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-emerald-600/20">
+            <button
+              class="min-w-0 flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-emerald-600/20"
+            >
               <lucide-icon [img]="icons.MessageSquare" class="w-3.5 h-3.5"></lucide-icon> WhatsApp
             </button>
           </div>
         </div>
 
         <div class="flex items-center gap-6 pt-3 border-t border-zinc-800 text-xs">
-          <span class="text-zinc-400">Historial: <strong class="text-white font-black">{{ citaData.clientHistoryCount }} citas</strong></span>
+          <span class="text-zinc-400"
+            >Historial:
+            <strong class="text-white font-black"
+              >{{ citaData.clientHistoryCount }} citas</strong
+            ></span
+          >
           <span class="text-zinc-500">•</span>
-          <span class="text-zinc-400 flex items-center gap-1">Calificación: <strong class="text-amber-400 font-black flex items-center gap-0.5"><lucide-icon [img]="icons.Star" class="w-3.5 h-3.5 fill-amber-400"></lucide-icon> {{ citaData.clientRating }}</strong></span>
+          <span class="text-zinc-400 flex items-center gap-1"
+            >Calificación:
+            <strong class="text-amber-400 font-black flex items-center gap-0.5"
+              ><lucide-icon [img]="icons.Star" class="w-3.5 h-3.5 fill-amber-400"></lucide-icon>
+              {{ citaData.clientRating }}</strong
+            ></span
+          >
         </div>
       </div>
 
       <!-- CARD ESTADO DE RESERVA (5 Columnas) -->
-      <div class="lg:col-span-5 bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl flex flex-col justify-between shadow-inner space-y-3">
+      <div
+        class="lg:col-span-5 bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl flex flex-col justify-between shadow-inner space-y-3"
+      >
         <div class="flex justify-between items-start">
-          <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Estado de Reserva</span>
-          <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-            <lucide-icon [img]="icons.CheckCircle2" class="w-3.5 h-3.5"></lucide-icon> Confirmada por WhatsApp
+          <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500"
+            >Estado de Reserva</span
+          >
+          <span
+            class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1"
+          >
+            <lucide-icon [img]="icons.CheckCircle2" class="w-3.5 h-3.5"></lucide-icon> Confirmada
+            por WhatsApp
           </span>
         </div>
 
         <div>
-          <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Horario confirmado</p>
+          <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+            Horario confirmado
+          </p>
           <h3 class="text-lg font-black text-white mt-0.5">{{ citaData.timeText }}</h3>
           <p class="text-xs text-blue-400 font-semibold">{{ citaData.dateText }}</p>
         </div>
@@ -95,40 +145,57 @@
           <span class="font-black text-zinc-300">{{ citaData.durationMinutes }} min</span>
         </div>
       </div>
-
     </div>
-
 
     <!-- ================================================================= -->
     <!-- PESTAÑAS DE NAVEGACIÓN INTERNA                                    -->
     <!-- ================================================================= -->
     <div class="flex bg-zinc-950 p-1.5 rounded-2xl border border-zinc-800 w-fit gap-1">
-      <button (click)="setActiveTab('resumen')"
-              [class]="activeTab() === 'resumen' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-lg shadow-blue-600/20' : 'text-zinc-400 hover:text-white font-bold'"
-              class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
+      <button
+        (click)="setActiveTab('resumen')"
+        [class]="
+          activeTab() === 'resumen'
+            ? 'bg-brand-gradient text-white font-black shadow-lg shadow-blue-600/20'
+            : 'text-zinc-400 hover:text-white font-bold'
+        "
+        class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2"
+      >
         <lucide-icon [img]="icons.Scissors" class="w-4 h-4"></lucide-icon> Resumen del Servicio
       </button>
-      <button (click)="setActiveTab('whatsapp')"
-              [class]="activeTab() === 'whatsapp' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-lg shadow-blue-600/20' : 'text-zinc-400 hover:text-white font-bold'"
-              class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
-        <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon> Historial WhatsApp AI <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+      <button
+        (click)="setActiveTab('whatsapp')"
+        [class]="
+          activeTab() === 'whatsapp'
+            ? 'bg-brand-gradient text-white font-black shadow-lg shadow-blue-600/20'
+            : 'text-zinc-400 hover:text-white font-bold'
+        "
+        class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2"
+      >
+        <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon> Historial WhatsApp
+        AI <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
       </button>
-      <button (click)="setActiveTab('notas')"
-              [class]="activeTab() === 'notas' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-lg shadow-blue-600/20' : 'text-zinc-400 hover:text-white font-bold'"
-              class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2">
+      <button
+        (click)="setActiveTab('notas')"
+        [class]="
+          activeTab() === 'notas'
+            ? 'bg-brand-gradient text-white font-black shadow-lg shadow-blue-600/20'
+            : 'text-zinc-400 hover:text-white font-bold'
+        "
+        class="px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2"
+      >
         <lucide-icon [img]="icons.FileText" class="w-4 h-4"></lucide-icon> Notas & Auditoría
       </button>
     </div>
-
 
     <!-- ================================================================= -->
     <!-- CONTENIDO DE LAS PESTAÑAS                                         -->
     <!-- ================================================================= -->
     @if (activeTab() === 'resumen') {
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 animate-in fade-in duration-200">
-
         <!-- SERVICIO CONTRATADO (7 Columnas) -->
-        <div class="lg:col-span-7 bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl space-y-4 shadow-inner">
+        <div
+          class="lg:col-span-7 bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl space-y-4 shadow-inner"
+        >
           <div class="flex items-center gap-2 text-amber-400">
             <lucide-icon [img]="icons.Scissors" class="w-4 h-4"></lucide-icon>
             <h4 class="text-xs font-black uppercase tracking-widest">Servicio Contratado</h4>
@@ -136,12 +203,16 @@
 
           <div>
             <h3 class="text-base font-black text-white">{{ citaData.serviceName }}</h3>
-            <p class="text-xs text-zinc-400 mt-0.5">Categoría: <strong class="text-blue-400 font-bold">{{ citaData.category }}</strong></p>
+            <p class="text-xs text-zinc-400 mt-0.5">
+              Categoría: <strong class="text-blue-400 font-bold">{{ citaData.category }}</strong>
+            </p>
           </div>
 
           <div class="grid grid-cols-2 gap-4 pt-3 border-t border-zinc-800 text-xs">
             <div>
-              <p class="text-[10px] text-zinc-500 uppercase tracking-widest">Especialista asignada:</p>
+              <p class="text-[10px] text-zinc-500 uppercase tracking-widest">
+                Especialista asignada:
+              </p>
               <p class="font-black text-white mt-0.5">{{ citaData.staffName }}</p>
               <p class="text-[11px] text-zinc-400">{{ citaData.staffRole }}</p>
             </div>
@@ -153,13 +224,18 @@
         </div>
 
         <!-- DESGLOSE DE PAGO (5 Columnas) -->
-        <div class="lg:col-span-5 bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl space-y-4 shadow-inner">
+        <div
+          class="lg:col-span-5 bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl space-y-4 shadow-inner"
+        >
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-2 text-emerald-400">
               <lucide-icon [img]="icons.DollarSign" class="w-4 h-4"></lucide-icon>
               <h4 class="text-xs font-black uppercase tracking-widest">Desglose de Pago</h4>
             </div>
-            <span class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[9px] font-black uppercase tracking-wider">Seña abonada (Web)</span>
+            <span
+              class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[9px] font-black uppercase tracking-wider"
+              >Seña abonada (Web)</span
+            >
           </div>
 
           <div class="space-y-2 text-xs pt-1">
@@ -173,20 +249,27 @@
             </div>
             <div class="flex justify-between items-center pt-3 border-t border-zinc-800 text-sm">
               <span class="font-black text-white">Saldo pendiente a pagar en local:</span>
-              <span class="font-black text-amber-400 text-base">${{ citaData.pendingBalance | number }}</span>
+              <span class="font-black text-amber-400 text-base"
+                >${{ citaData.pendingBalance | number }}</span
+              >
             </div>
           </div>
 
           <p class="text-[10px] text-zinc-500 flex items-center gap-1 pt-1">
-            <lucide-icon [img]="icons.ShieldCheck" class="w-3.5 h-3.5 text-zinc-400"></lucide-icon> Transacción procesada vía Stripe • Factura electrónica disponible
+            <lucide-icon [img]="icons.ShieldCheck" class="w-3.5 h-3.5 text-zinc-400"></lucide-icon>
+            Transacción procesada vía Stripe • Factura electrónica disponible
           </p>
         </div>
-
       </div>
     } @else if (activeTab() === 'whatsapp') {
-      <div class="bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl space-y-3 shadow-inner animate-in fade-in duration-200">
-        <h4 class="text-xs font-black uppercase tracking-widest text-emerald-400 flex items-center gap-2">
-          <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon> Registro de Conversación con el Asistente AI
+      <div
+        class="bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl space-y-3 shadow-inner animate-in fade-in duration-200"
+      >
+        <h4
+          class="text-xs font-black uppercase tracking-widest text-emerald-400 flex items-center gap-2"
+        >
+          <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon> Registro de
+          Conversación con el Asistente AI
         </h4>
         <div class="space-y-3 text-xs pt-2">
           <div class="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-1">
@@ -194,37 +277,51 @@
               <span>🤖 Nexus Bot v2.4</span>
               <span>Hace 10 min</span>
             </div>
-            <p class="text-zinc-200">"Hola Sofía, tu cita para Balayage Premium el jueves 24 a las 15:30 hrs ha quedado confirmada con éxito. Recibirás un recordatorio 2 horas antes."</p>
+            <p class="text-zinc-200">
+              "Hola Sofía, tu cita para Balayage Premium el jueves 24 a las 15:30 hrs ha quedado
+              confirmada con éxito. Recibirás un recordatorio 2 horas antes."
+            </p>
           </div>
           <div class="p-3.5 rounded-2xl bg-blue-950/20 border border-blue-500/20 space-y-1">
             <div class="flex justify-between text-[10px] text-blue-400 font-bold">
               <span>👤 Sofía Valenzuela</span>
               <span>Hace 12 min</span>
             </div>
-            <p class="text-zinc-200">"Perfecto, ya realicé el pago de la seña por el enlace. ¡Gracias!"</p>
+            <p class="text-zinc-200">
+              "Perfecto, ya realicé el pago de la seña por el enlace. ¡Gracias!"
+            </p>
           </div>
         </div>
       </div>
     } @else {
-      <div class="bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl space-y-3 shadow-inner animate-in fade-in duration-200">
-        <h4 class="text-xs font-black uppercase tracking-widest text-purple-400 flex items-center gap-2">
-          <lucide-icon [img]="icons.FileText" class="w-4 h-4"></lucide-icon> Notas Internas y Auditoría de Sistema
+      <div
+        class="bg-zinc-950/80 border border-zinc-800/80 p-6 rounded-3xl space-y-3 shadow-inner animate-in fade-in duration-200"
+      >
+        <h4
+          class="text-xs font-black uppercase tracking-widest text-purple-400 flex items-center gap-2"
+        >
+          <lucide-icon [img]="icons.FileText" class="w-4 h-4"></lucide-icon> Notas Internas y
+          Auditoría de Sistema
         </h4>
         <p class="text-xs text-zinc-300 leading-relaxed">
-          Registro interno: Auditoría limpia sin conflictos de horario en cabina 3. Se verificó el stock de productos para coloración capilar previo a la cita.
+          Registro interno: Auditoría limpia sin conflictos de horario en cabina 3. Se verificó el
+          stock de productos para coloración capilar previo a la cita.
         </p>
       </div>
     }
 
-
     <!-- ================================================================= -->
     <!-- WIDGET INFORMATIVO INFERIOR (ASISTENTE VIRTUAL)                   -->
     <!-- ================================================================= -->
-    <div class="bg-gradient-to-r from-emerald-950/30 to-zinc-950 border border-emerald-500/20 p-4 rounded-2xl flex items-start gap-3.5">
-      <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20 mt-0.5">
+    <div
+      class="bg-gradient-to-r from-emerald-950/30 to-zinc-950 border border-emerald-500/20 p-4 rounded-2xl flex items-start gap-3.5"
+    >
+      <div
+        class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20 mt-0.5"
+      >
         <lucide-icon [img]="icons.Sparkles" class="w-4 h-4"></lucide-icon>
       </div>
-      <div class="flex-1 text-xs space-y-0.5">
+      <div class="min-w-0 flex-1 text-xs space-y-0.5">
         <div class="flex justify-between items-center">
           <span class="font-black text-white">Asistente Virtual Nexus sincronizado</span>
           <span class="text-[10px] text-zinc-500 font-bold">Confirmado 10:14 hrs</span>
@@ -233,34 +330,42 @@
       </div>
     </div>
 
-
     <!-- ================================================================= -->
     <!-- BOTONES DE ACCIÓN INFERIOR                                        -->
     <!-- ================================================================= -->
     <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-zinc-800">
-
       <!-- Izquierda: Cancelar Cita -->
-      <button (click)="triggerAction('cancel')" class="px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all cursor-pointer flex items-center gap-2">
+      <button
+        (click)="triggerAction('cancel')"
+        class="px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all cursor-pointer flex items-center gap-2"
+      >
         <lucide-icon [img]="icons.X" class="w-4 h-4"></lucide-icon> Cancelar cita
       </button>
 
       <!-- Derecha: Acciones Principales -->
       <div class="flex flex-wrap items-center gap-3">
-        <button (click)="triggerAction('reschedule')" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border border-zinc-700 cursor-pointer flex items-center gap-2">
+        <button
+          (click)="triggerAction('reschedule')"
+          class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border border-zinc-700 cursor-pointer flex items-center gap-2"
+        >
           <lucide-icon [img]="icons.Calendar" class="w-4 h-4"></lucide-icon> Reagendar
         </button>
 
-        <button (click)="triggerAction('whatsapp')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+        <button
+          (click)="triggerAction('whatsapp')"
+          class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+        >
           <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4"></lucide-icon> Mensaje WhatsApp
         </button>
 
-        <button (click)="triggerAction('attend')" class="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-orange-600/30">
+        <button
+          (click)="triggerAction('attend')"
+          class="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-orange-600/30"
+        >
           <span>Marcar como Atendida</span>
           <lucide-icon [img]="icons.ArrowRight" class="w-4 h-4"></lucide-icon>
         </button>
       </div>
-
     </div>
-
   </div>
 </div>

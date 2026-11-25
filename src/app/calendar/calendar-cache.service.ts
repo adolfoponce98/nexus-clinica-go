@@ -8,7 +8,7 @@ interface CachedMonthData {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CalendarCacheService {
   private dbName = 'BeastCalendarDB';
@@ -33,29 +33,39 @@ export class CalendarCacheService {
   }
 
   // Obtener la copia local de un mes específico
- async getLocalMonth(yearMonthKey: string): Promise<CachedMonthData | null> {
-   console.log('EMPIEZO CONSULTA LOCAL');
-  const db = await this.openDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(this.storeName, 'readonly');
-    const store = transaction.objectStore(this.storeName);
-    const request = store.get(yearMonthKey);
-    request.onsuccess = () => {
-      const result = request.result;
-      if (result) {
-        console.log(`%c[CACHE HIT] Datos de ${yearMonthKey} encontrados en IndexedDB local.`, 'color: #10b981; font-weight: bold;');
-      } else {
-        console.log(`%c[CACHE MISS] No hay datos locales para ${yearMonthKey}.`, 'color: #f59e0b; font-weight: bold;');
-      }
+  async getLocalMonth(yearMonthKey: string): Promise<CachedMonthData | null> {
+    console.log('EMPIEZO CONSULTA LOCAL');
+    const db = await this.openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(this.storeName, 'readonly');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.get(yearMonthKey);
+      request.onsuccess = () => {
+        const result = request.result;
+        if (result) {
+          console.log(
+            `%c[CACHE HIT] Datos de ${yearMonthKey} encontrados en IndexedDB local.`,
+            'color: #10b981; font-weight: bold;',
+          );
+        } else {
+          console.log(
+            `%c[CACHE MISS] No hay datos locales para ${yearMonthKey}.`,
+            'color: #f59e0b; font-weight: bold;',
+          );
+        }
 
-      resolve(result || null);
-    };
-    request.onerror = () => reject(request.error);
-  });
-}
+        resolve(result || null);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
 
   // Guardar o actualizar la copia local de un mes junto con su timestamp
-  async saveLocalMonth(yearMonthKey: string, ultimaActualizacion: number, classes: any[]): Promise<void> {
+  async saveLocalMonth(
+    yearMonthKey: string,
+    ultimaActualizacion: number,
+    classes: any[],
+  ): Promise<void> {
     const db = await this.openDB();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(this.storeName, 'readwrite');
@@ -67,7 +77,7 @@ export class CalendarCacheService {
     });
   }
 
-// Consultar únicamente el metadato 'ultimaActualizacion' en la raíz del mes en Firestore
+  // Consultar únicamente el metadato 'ultimaActualizacion' en la raíz del mes en Firestore
   async getRemoteUltimaActualizacion(idBranch: string, yearMonthKey: string): Promise<number> {
     try {
       const db = getFirestore();
@@ -95,7 +105,10 @@ export class CalendarCacheService {
       }
       return Date.now(); // Si no existe el campo, forzamos la descarga
     } catch (e) {
-      console.warn('No se pudo obtener el metadato de actualización, procediendo a descarga normal:', e);
+      console.warn(
+        'No se pudo obtener el metadato de actualización, procediendo a descarga normal:',
+        e,
+      );
       return Date.now();
     }
   }

@@ -5,7 +5,8 @@
   }
 
   /* Hace visible únicamente el ticket térmico oculto */
-  #ticket-impresion, #ticket-impresion * {
+  #ticket-impresion,
+  #ticket-impresion * {
     visibility: visible !important;
   }
 

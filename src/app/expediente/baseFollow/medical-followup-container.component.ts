@@ -1,42 +1,51 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { AuthService } from '../../auth/auth.service'; // Ajusta la ruta según tu estructura de carpetas
-import { MedicalFollowupComponent } from '../traumatologic/follow/new/medical-followup.component'; // Tu componente existente de Traumatología
-import { OdontologyFollowupComponent } from '../dentist/follow/new/odontology-followup.component'; // El componente de Odontología que creamos
-
+import { ClinicalPageSkeletonComponent } from '../../shared/clinical-page-skeleton.component';
+import { ClinicApiService } from '../../reporting/clinic-api.service';
+import { API_URLS } from '../../config/api-urls';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { AuthService } from '../../auth/auth.service';
+import { resolveFollowupSpecialty } from '../shared-followup/followup-utils';
+import { GeneralFollowupComponent } from '../general/follow/new/general-followup.component';
+import { GynecologyFollowupComponent } from '../gynecology/follow/new/gynecology-followup.component';
+import { PediatricsFollowupComponent } from '../pediatrics/follow/new/pediatrics-followup.component';
+import { MedicalFollowupComponent } from '../traumatologic/follow/new/medical-followup.component';
+import { DermatologyFollowupComponent } from '../dermatology/follow/new/dermatology-followup.component';
+import { OdontologyFollowupComponent } from '../dentist/follow/new/odontology-followup.component';
+import { NutritionFollowupComponent } from '../nutrition/follow/new/nutrition-followup.component';
+import { PsychologyFollowupComponent } from '../psychology/follow/new/psychology-followup.component';
+import { PhysiotherapyFollowupComponent } from '../physiotherapy/follow/new/physiotherapy-followup.component';
+import { OphthalmologyFollowupComponent } from '../oftamologic/follow/new/ophthalmology-followup.component';
 @Component({
   selector: 'app-medical-followup-container',
   standalone: true,
   imports: [
-    CommonModule,
+    ClinicalPageSkeletonComponent,
+    GeneralFollowupComponent,
+    GynecologyFollowupComponent,
+    PediatricsFollowupComponent,
     MedicalFollowupComponent,
-    OdontologyFollowupComponent
+    DermatologyFollowupComponent,
+    OdontologyFollowupComponent,
+    NutritionFollowupComponent,
+    PsychologyFollowupComponent,
+    PhysiotherapyFollowupComponent,
+    OphthalmologyFollowupComponent,
   ],
-  templateUrl: './medical-followup-container.component.html'
+  templateUrl: './medical-followup-container.component.html',
 })
 export class MedicalFollowupContainerComponent implements OnInit {
-  private authService = inject(AuthService);
-  private route = inject(ActivatedRoute);
-
-  currentSpecialtyCode: string = 'GEN'; // Valor por defecto
-  patientId: string = '';
-
-  ngOnInit(): void {
-    // 1. Opcional: Puedes capturar el ID del paciente si lo necesitas a nivel general o pasarlo por @Input
-    this.route.paramMap.subscribe(params => {
-      this.patientId = params.get('id') || '';
-    });
-
-    // 2. Obtenemos los datos de la sesión para identificar la especialidad del médico logueado
-    const sessionData = this.authService.getSession();
-
-    if (sessionData) {
-      // Extraemos el código de especialidad (puedes adaptarlo según cómo guardes tu sesión)
-      this.currentSpecialtyCode = sessionData?.especialidades?.[0] || sessionData?.especialidad || 'GEN';
-
-      // Normalizamos a mayúsculas por seguridad
-      this.currentSpecialtyCode = this.currentSpecialtyCode.trim().toUpperCase();
+  private auth = inject(AuthService);
+  private api = inject(ClinicApiService);
+  currentSpecialtyCode = 'GEN';
+  loading = signal(true);
+  async ngOnInit() {
+    const session = this.auth.getSession();
+    try {
+      const result = await this.api.post(API_URLS.GET_CLINICAL_IDENTITY, {});
+      this.currentSpecialtyCode = resolveFollowupSpecialty(session, result.profile);
+    } catch {
+      this.currentSpecialtyCode = resolveFollowupSpecialty(session);
+    } finally {
+      this.loading.set(false);
     }
   }
 }

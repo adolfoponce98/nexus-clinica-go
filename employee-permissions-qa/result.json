@@ -1,0 +1,155 @@
+{
+  "results": [
+    "Three profile choices load correct checked modules, administrator actions and custom permissions are saved",
+    "Assistant session shows exactly the five permitted main menus and can enter Nexus IA without clinical note privileges"
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "url": "https://clinica-go.com/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getemployees-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "typeUser"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://saveorupdateemployee-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "id",
+        "name",
+        "email",
+        "phone",
+        "role",
+        "resetPassword",
+        "consultoriosIds",
+        "permissions"
+      ]
+    },
+    {
+      "url": "https://clinica-go.com/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    }
+  ]
+}

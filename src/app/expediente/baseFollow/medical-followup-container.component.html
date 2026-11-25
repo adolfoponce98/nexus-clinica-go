@@ -1,18 +1,44 @@
-<div class="w-full h-full">
+@if (loading()) {
+  <div class="p-4 sm:p-6">
+    <app-clinical-page-skeleton
+      kind="consultation"
+      label="Preparando la nueva consulta y tu especialidad…"
+    />
+  </div>
+} @else {
   @switch (currentSpecialtyCode) {
-    <!-- Odontología / Ortodoncia -->
-    @case ('DENT') {
-      <app-odontology-followup></app-odontology-followup>
+    @case ('GEN') {
+      <app-general-followup />
     }
-
-    <!-- Traumatología y Ortopedia (Formulario original) -->
+    @case ('GINE') {
+      <app-gynecology-followup />
+    }
+    @case ('PED') {
+      <app-pediatrics-followup />
+    }
     @case ('TRAUM') {
-      <app-medical-followup></app-medical-followup>
+      <app-medical-followup />
     }
-
-    <!-- Por defecto (Si es medicina general o cualquier otra especialidad sin formulario específico aún) -->
+    @case ('DER') {
+      <app-dermatology-followup />
+    }
+    @case ('DENT') {
+      <app-odontology-followup />
+    }
+    @case ('NUT') {
+      <app-nutrition-followup />
+    }
+    @case ('PSI') {
+      <app-psychology-followup />
+    }
+    @case ('FIS') {
+      <app-physiotherapy-followup />
+    }
+    @case ('OFTA') {
+      <app-ophthalmology-followup />
+    }
     @default {
-      <app-medical-followup></app-medical-followup>
+      <app-general-followup />
     }
   }
-</div>
+}

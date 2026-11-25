@@ -1,0 +1,255 @@
+@if (note) {
+  <article class="clinical-document">
+    <header class="document-masthead">
+      <div class="document-emblem"><lucide-icon [img]="icons.FileText" [size]="24" /></div>
+      <div>
+        <span class="eyebrow"
+          >NOTA CLÍNICA · {{ note.header?.author?.specialty || 'CONSULTA MÉDICA' }}</span
+        >
+        <h2>{{ note.numeroDeConsulta || note.followUpDisplayId || 'Consulta' }}</h2>
+        <p>{{ note.header?.office?.name || 'Registro clínico' }}</p>
+      </div>
+      <span class="document-status" [class.signed]="note.state === 'LOCKED'">{{
+        note.state === 'LOCKED'
+          ? 'Firmada y cerrada'
+          : note.state === 'DRAFT'
+            ? 'Pendiente de firma'
+            : 'Registro histórico'
+      }}</span>
+    </header>
+    <div class="document-dates">
+      <span
+        ><lucide-icon [img]="icons.CalendarDays" [size]="14" />Elaborada:
+        {{ note.createdAt ? (note.createdAt | date: 'dd/MM/yyyy · HH:mm') : 'No registrado' }}</span
+      >
+      @if (note.closedAt) {
+        <span>Cerrada: {{ note.closedAt | date: 'dd/MM/yyyy · HH:mm' }}</span>
+      }
+    </div>
+    @if (note.header; as h) {
+      <div class="identity-grid">
+        <section class="identity-panel">
+          <h3><lucide-icon [img]="icons.User" [size]="17" />Paciente</h3>
+          <strong>{{ h.patient?.fullName || 'No registrado' }}</strong>
+          <dl>
+            <div class="wide">
+              <dt>Expediente</dt>
+              <dd>
+                {{ h.patient?.numeroDeExpediente || note.numeroDeExpediente || 'No registrado' }}
+              </dd>
+            </div>
+            <div>
+              <dt>Sexo</dt>
+              <dd>{{ h.patient?.sex || 'No registrado' }}</dd>
+            </div>
+            <div>
+              <dt>Edad</dt>
+              <dd>{{ h.patient?.age ?? 'No registrado' }}</dd>
+            </div>
+            <div class="wide">
+              <dt>Fecha de nacimiento</dt>
+              <dd>{{ h.patient?.birthDate || 'No registrado' }}</dd>
+            </div>
+            @if (h.patient?.address) {
+              <div class="wide">
+                <dt>Domicilio</dt>
+                <dd>{{ h.patient.address }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+        <section class="identity-panel">
+          <h3><lucide-icon [img]="icons.Stethoscope" [size]="17" />Profesional tratante</h3>
+          <strong>{{ h.author?.fullName || note.registeredBy || 'No registrado' }}</strong>
+          <dl>
+            <div class="wide">
+              <dt>Especialidad</dt>
+              <dd>{{ h.author?.specialty || 'No registrada' }}</dd>
+            </div>
+            <div>
+              <dt>Cédula profesional</dt>
+              <dd>{{ h.author?.professionalLicense || 'No registrada' }}</dd>
+            </div>
+            @if (h.author?.specialtyLicense) {
+              <div>
+                <dt>Cédula de especialidad</dt>
+                <dd>{{ h.author.specialtyLicense }}</dd>
+              </div>
+            }
+          </dl>
+          <div class="office-line">
+            <lucide-icon [img]="icons.Building2" [size]="16" />
+            <div>
+              <strong>{{ h.office?.name || 'Consultorio' }}</strong>
+              <p>{{ h.office?.establishmentType }}</p>
+              <p>{{ h.office?.address }} {{ h.office?.city }} {{ h.office?.postalCode }}</p>
+              @if (h.office?.clues) {
+                <p>CLUES: {{ h.office.clues }}</p>
+              }
+            </div>
+          </div>
+        </section>
+      </div>
+    }
+    @if (note.text) {
+      <section class="reading-section">
+        <h3><lucide-icon [img]="icons.FileText" [size]="18" />Nota aclaratoria</h3>
+        <p class="narrative">{{ note.text }}</p>
+      </section>
+    }
+    @if (note.medicalSummary) {
+      <section class="reading-section summary-reading">
+        <h3><lucide-icon [img]="icons.FileText" [size]="18" />Resumen médico</h3>
+        <p class="narrative">{{ note.medicalSummary }}</p>
+      </section>
+    }
+    @if (note.clinicalCore; as core) {
+      <section class="reading-section">
+        <h3><lucide-icon [img]="icons.ClipboardList" [size]="18" />Evaluación clínica</h3>
+        <dl class="reading-grid">
+          @for (field of textFields; track field.key) {
+            @if (field) {
+              <div>
+                <dt><lucide-icon [img]="fieldIcon(field)" [size]="14" />{{ field.label }}</dt>
+                <dd><app-clinical-read-value [value]="core[field.key]" /></dd>
+              </div>
+            }
+          }
+        </dl>
+      </section>
+      <section class="reading-section">
+        <h3><lucide-icon [img]="icons.HeartPulse" [size]="18" />Signos vitales y somatometría</h3>
+        @if (core.vitalsNotRequired) {
+          <p class="narrative">
+            Omisión justificada: {{ core.vitalsOmissionReason || 'No registrada' }}
+          </p>
+        } @else {
+          <dl class="vitals-reading">
+            @for (v of vitalFields; track v.key) {
+              <div>
+                <dt>{{ v.label }}</dt>
+                <dd>{{ core.vitals?.[v.key] ?? 'No registrado' }}</dd>
+              </div>
+            }
+          </dl>
+        }
+      </section>
+      <section class="reading-section">
+        <h3><lucide-icon [img]="icons.Stethoscope" [size]="18" />Diagnóstico y pronóstico</h3>
+        @for (d of core.diagnoses; track $index) {
+          <div class="diagnosis-reading">
+            <span>{{ d.code }}</span>
+            <p>{{ d.description }}</p>
+            <small>{{ d.type || 'Sin clasificación' }}</small>
+          </div>
+        } @empty {
+          <p class="empty-reading">No registrado.</p>
+        }
+        <dl class="reading-grid prognosis">
+          <div>
+            <dt>Pronóstico para la vida</dt>
+            <dd>{{ core.prognosisLife || 'No registrado' }}</dd>
+          </div>
+          <div>
+            <dt>Pronóstico para la función</dt>
+            <dd>{{ core.prognosisFunction || 'No registrado' }}</dd>
+          </div>
+        </dl>
+      </section>
+      @if (core.medications?.length) {
+        <section class="reading-section">
+          <h3>Medicamentos</h3>
+          @for (m of core.medications; track $index) {
+            <div class="medication-reading">
+              <strong>{{ m.genericName || m.name }}</strong>
+              <p>
+                {{ m.cnisCode }} · {{ m.dose }} · {{ m.route }} · {{ m.frequency }} ·
+                {{ m.duration }}
+              </p>
+            </div>
+          }
+        </section>
+      }
+      @for (section of groupedSections; track section.key) {
+        @if (entries(core[section.key]).length) {
+          <section class="reading-section">
+            <h3><lucide-icon [img]="icons.ClipboardList" [size]="18" />{{ section.label }}</h3>
+            <dl class="reading-grid">
+              @for (item of entries(core[section.key]); track item.key) {
+                <div>
+                  <dt>{{ label(item.key) }}</dt>
+                  <dd>
+                    <app-clinical-read-value
+                      [field]="{ key: item.key, label: label(item.key) }"
+                      [value]="item.value"
+                    />
+                  </dd>
+                </div>
+              }
+            </dl>
+          </section>
+        }
+      }
+    }
+    @for (section of specialtySections; track section.title) {
+      <section class="reading-section">
+        <h3><lucide-icon [img]="icons.Stethoscope" [size]="18" />{{ section.title }}</h3>
+        <dl class="reading-grid">
+          @for (field of section.fields; track field.key) {
+            <div [class.wide]="field.type === 'table'">
+              <dt><lucide-icon [img]="fieldIcon(field)" [size]="14" />{{ field.label }}</dt>
+              <dd>
+                <app-clinical-read-value
+                  [field]="field"
+                  [value]="note.specialtyData?.[field.key]"
+                />
+              </dd>
+            </div>
+          }
+        </dl>
+      </section>
+    }
+    @if (attachments.length) {
+      <section class="reading-section">
+        <h3>
+          <lucide-icon [img]="icons.Paperclip" [size]="18" />Archivos de la consulta
+          <small>{{ attachments.length }}</small>
+        </h3>
+        <div class="reading-attachments">
+          @for (file of attachments; track $index) {
+            <a [href]="file.url" target="_blank" rel="noopener noreferrer"
+              ><lucide-icon [img]="icons.Paperclip" [size]="16" /><span>{{
+                file.name || 'Archivo adjunto'
+              }}</span></a
+            >
+          }
+        </div>
+      </section>
+    }
+    @if (note.header?.author?.signatureImage) {
+      <section class="signature-reading">
+        <lucide-icon [img]="icons.PenLine" [size]="19" />
+        <div>
+          <span>{{
+            note.state === 'LOCKED'
+              ? 'Firma digitalizada vinculada a esta nota'
+              : 'Firma digitalizada disponible para el cierre'
+          }}</span
+          ><img
+            [src]="note.header.author.signatureImage"
+            alt="Firma digitalizada del médico"
+          /><strong>{{ note.header.author.fullName }}</strong>
+        </div>
+      </section>
+    }
+    @if (note.state === 'LOCKED') {
+      <p class="integrity-reading">
+        <lucide-icon [img]="icons.ShieldCheck" [size]="18" />Documento cerrado. La nota original se
+        conserva; las aclaraciones se registran por separado.
+        @if (integrityHash) {
+          <span class="integrity-hash">SHA-256: {{ integrityHash }}</span>
+        }
+      </p>
+    }
+  </article>
+}

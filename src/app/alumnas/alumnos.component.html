@@ -1,23 +1,33 @@
 <div class="space-y-6 animate-in fade-in duration-500 text-white font-sans pb-16">
-
   <!-- ================================================================= -->
   <!-- VISTA 1: LISTADO DE ALUMNOS (ORIGINAL CON TARJETAS COLAPSIBLES)    -->
   <!-- ================================================================= -->
   @if (!selectedAlumnoForDetail()) {
-
     <!-- Barra Superior: Buscador y Filtros -->
-    <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4 backdrop-blur-md">
+    <div
+      class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4 backdrop-blur-md"
+    >
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="relative w-full flex-1">
-          <lucide-icon [img]="icons.Search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></lucide-icon>
-          <input type="text"
-                 [(ngModel)]="searchTerm"
-                 placeholder="Buscar alumno, grupo o tutor..."
-                 class="w-full bg-[#0a0f1d] border border-zinc-800 hover:border-zinc-700 focus:border-blue-500 py-3 pl-11 pr-10 rounded-2xl text-xs font-medium text-white outline-none transition-all shadow-inner">
-          <lucide-icon [img]="icons.Filter" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 cursor-pointer"></lucide-icon>
+        <div class="min-w-0 relative w-full flex-1">
+          <lucide-icon
+            [img]="icons.Search"
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+          ></lucide-icon>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Buscar alumno, grupo o tutor..."
+            class="w-full bg-[#0a0f1d] border border-zinc-800 hover:border-zinc-700 focus:border-blue-500 py-3 pl-11 pr-10 rounded-2xl text-xs font-medium text-white outline-none transition-all shadow-inner"
+          />
+          <lucide-icon
+            [img]="icons.Filter"
+            class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 cursor-pointer"
+          ></lucide-icon>
         </div>
 
-        <button class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-blue-600/20 cursor-pointer flex items-center justify-center gap-2 shrink-0">
+        <button
+          class="w-full sm:w-auto bg-brand-gradient hover:bg-brand-gradient-hover text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-blue-600/20 cursor-pointer flex items-center justify-center gap-2 shrink-0"
+        >
           <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon> Nuevo Alumno
         </button>
       </div>
@@ -25,9 +35,15 @@
       <!-- Filtros por Categoría -->
       <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
         @for (cat of ['Todos', 'Lactantes', 'Maternal', 'Preescolar']; track cat) {
-          <button (click)="setCategory(cat)"
-                  [class]="selectedCategory() === cat ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-md shadow-blue-600/30' : 'bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800 font-bold'"
-                  class="px-5 py-2.5 rounded-2xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0">
+          <button
+            (click)="setCategory(cat)"
+            [class]="
+              selectedCategory() === cat
+                ? 'bg-brand-gradient text-white font-black shadow-md shadow-blue-600/30'
+                : 'bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800 font-bold'
+            "
+            class="px-5 py-2.5 rounded-2xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0"
+          >
             {{ cat }}
           </button>
         }
@@ -43,39 +59,67 @@
     <!-- Listado de Alumnos -->
     <div class="space-y-4">
       @for (alumno of filteredAlumnos; track alumno.id) {
-        <div class="bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6 shadow-xl transition-all space-y-5">
-
+        <div
+          class="bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6 shadow-xl transition-all space-y-5"
+        >
           <!-- Cabecera de la Tarjeta -->
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4 cursor-pointer flex-1" (click)="toggleExpand(alumno.id)">
+            <div
+              class="min-w-0 flex items-center gap-4 cursor-pointer flex-1"
+              (click)="toggleExpand(alumno.id)"
+            >
               <div class="relative">
-                <img [src]="alumno.photo" class="w-14 h-14 rounded-2xl object-cover border-2 border-zinc-700 shadow" alt="Avatar">
-                <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-zinc-900"
-                      [class]="alumno.estatus === 'PRESENTE' ? 'bg-emerald-500' : 'bg-zinc-500'"></span>
+                <img
+                  [src]="alumno.photo"
+                  class="w-14 h-14 rounded-2xl object-cover border-2 border-zinc-700 shadow"
+                  alt="Avatar"
+                />
+                <span
+                  class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-zinc-900"
+                  [class]="alumno.estatus === 'PRESENTE' ? 'bg-emerald-500' : 'bg-zinc-500'"
+                ></span>
               </div>
               <div>
                 <div class="flex items-center gap-3">
-                  <h3 class="text-base font-black text-white hover:text-blue-400 transition-colors">{{ alumno.name }}</h3>
-                  <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border"
-                        [class]="alumno.estatus === 'PRESENTE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-zinc-800 text-zinc-400 border-zinc-700'">
+                  <h3 class="text-base font-black text-white hover:text-blue-400 transition-colors">
+                    {{ alumno.name }}
+                  </h3>
+                  <span
+                    class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border"
+                    [class]="
+                      alumno.estatus === 'PRESENTE'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                    "
+                  >
                     {{ alumno.estatus }}
                   </span>
                 </div>
                 <p class="text-xs text-zinc-400 font-semibold mt-0.5 flex items-center gap-1.5">
-                  <lucide-icon [img]="icons.Users" class="w-3.5 h-3.5 text-blue-400"></lucide-icon> {{ alumno.grupo }}
+                  <lucide-icon [img]="icons.Users" class="w-3.5 h-3.5 text-blue-400"></lucide-icon>
+                  {{ alumno.grupo }}
                 </p>
               </div>
             </div>
 
             <!-- Botones Derecha: Ver Detalle y Expansión -->
             <div class="flex items-center gap-3">
-              <button (click)="verDetalleAlumno(alumno)" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-blue-600/20 cursor-pointer flex items-center gap-1.5">
+              <button
+                (click)="verDetalleAlumno(alumno)"
+                class="bg-brand-gradient hover:bg-brand-gradient-hover text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-blue-600/20 cursor-pointer flex items-center gap-1.5"
+              >
                 <span>Ver Detalle</span>
                 <lucide-icon [img]="icons.ArrowRight" class="w-3.5 h-3.5"></lucide-icon>
               </button>
 
-              <button (click)="toggleExpand(alumno.id)" class="w-9 h-9 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl flex items-center justify-center transition-all">
-                <lucide-icon [img]="alumno.expanded ? icons.ChevronUp : icons.ChevronDown" class="w-4 h-4"></lucide-icon>
+              <button
+                (click)="toggleExpand(alumno.id)"
+                class="w-9 h-9 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl flex items-center justify-center transition-all"
+              >
+                <lucide-icon
+                  [img]="alumno.expanded ? icons.ChevronUp : icons.ChevronDown"
+                  class="w-4 h-4"
+                ></lucide-icon>
               </button>
             </div>
           </div>
@@ -83,19 +127,24 @@
           <!-- CONTENIDO DESPLEGABLE ORIGINAL -->
           @if (alumno.expanded) {
             <div class="space-y-5 pt-4 border-t border-zinc-800 animate-in fade-in duration-200">
-
               @if (alumno.alergias || alumno.medicamentoPendiente) {
                 <div class="flex flex-wrap gap-2">
                   @if (alumno.alergias) {
                     @for (alergia of alumno.alergias; track alergia) {
-                      <div class="px-3 py-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                        <lucide-icon [img]="icons.AlertCircle" class="w-3.5 h-3.5"></lucide-icon> {{ alergia }}
+                      <div
+                        class="px-3 py-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl text-xs font-bold flex items-center gap-1.5"
+                      >
+                        <lucide-icon [img]="icons.AlertCircle" class="w-3.5 h-3.5"></lucide-icon>
+                        {{ alergia }}
                       </div>
                     }
                   }
                   @if (alumno.medicamentoPendiente) {
-                    <div class="px-3 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                      <lucide-icon [img]="icons.Clock" class="w-3.5 h-3.5"></lucide-icon> {{ alumno.medicamentoPendiente }}
+                    <div
+                      class="px-3 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl text-xs font-bold flex items-center gap-1.5"
+                    >
+                      <lucide-icon [img]="icons.Clock" class="w-3.5 h-3.5"></lucide-icon>
+                      {{ alumno.medicamentoPendiente }}
                     </div>
                   }
                 </div>
@@ -103,24 +152,42 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-[#0a0f1d] border border-zinc-800 p-4 rounded-2xl space-y-2">
-                  <p class="text-[10px] uppercase font-black tracking-widest text-zinc-500 flex items-center gap-1.5">
-                    <lucide-icon [img]="icons.UserCheck" class="w-3.5 h-3.5 text-blue-400"></lucide-icon> Tutores
+                  <p
+                    class="text-[10px] uppercase font-black tracking-widest text-zinc-500 flex items-center gap-1.5"
+                  >
+                    <lucide-icon
+                      [img]="icons.UserCheck"
+                      class="w-3.5 h-3.5 text-blue-400"
+                    ></lucide-icon>
+                    Tutores
                   </p>
                   <div class="space-y-1">
                     @for (tutor of alumno.tutores; track tutor.nombre) {
-                      <p class="text-xs font-bold text-white">{{ tutor.nombre }} <span class="text-zinc-500 font-normal">({{ tutor.parentesco }})</span></p>
+                      <p class="text-xs font-bold text-white">
+                        {{ tutor.nombre }}
+                        <span class="text-zinc-500 font-normal">({{ tutor.parentesco }})</span>
+                      </p>
                     }
                   </div>
                 </div>
 
                 <div class="bg-[#0a0f1d] border border-zinc-800 p-4 rounded-2xl space-y-2">
-                  <p class="text-[10px] uppercase font-black tracking-widest text-zinc-500 flex items-center gap-1.5">
-                    <lucide-icon [img]="icons.Users" class="w-3.5 h-3.5 text-emerald-400"></lucide-icon> Autorizados para Recoger
+                  <p
+                    class="text-[10px] uppercase font-black tracking-widest text-zinc-500 flex items-center gap-1.5"
+                  >
+                    <lucide-icon
+                      [img]="icons.Users"
+                      class="w-3.5 h-3.5 text-emerald-400"
+                    ></lucide-icon>
+                    Autorizados para Recoger
                   </p>
                   <div class="space-y-1">
                     @if (alumno.autorizados.length > 0) {
                       @for (aut of alumno.autorizados; track aut.nombre) {
-                        <p class="text-[10px] font-bold text-white">{{ aut.nombre }} <span class="text-zinc-500 font-normal">({{ aut.parentesco }})</span></p>
+                        <p class="text-[10px] font-bold text-white">
+                          {{ aut.nombre }}
+                          <span class="text-zinc-500 font-normal">({{ aut.parentesco }})</span>
+                        </p>
                       }
                     } @else {
                       <p class="text-xs text-zinc-500 italic">No hay adicionales registrados</p>
@@ -131,73 +198,121 @@
 
               <!-- Accesos rápidos -->
               <div class="grid grid-cols-3 gap-3">
-                <button (click)="verDetalleAlumno(alumno)" class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 transition-all cursor-pointer group">
-                  <lucide-icon [img]="icons.FileText" class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform mb-1"></lucide-icon>
+                <button
+                  (click)="verDetalleAlumno(alumno)"
+                  class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 transition-all cursor-pointer group"
+                >
+                  <lucide-icon
+                    [img]="icons.FileText"
+                    class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform mb-1"
+                  ></lucide-icon>
                   <span class="text-[11px] font-bold">Docs</span>
                 </button>
-                <button (click)="verDetalleAlumno(alumno)" class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 transition-all cursor-pointer group">
-                  <lucide-icon [img]="icons.Activity" class="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform mb-1"></lucide-icon>
+                <button
+                  (click)="verDetalleAlumno(alumno)"
+                  class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 transition-all cursor-pointer group"
+                >
+                  <lucide-icon
+                    [img]="icons.Activity"
+                    class="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform mb-1"
+                  ></lucide-icon>
                   <span class="text-[11px] font-bold">Historial</span>
                 </button>
-                <button (click)="verDetalleAlumno(alumno)" class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 transition-all cursor-pointer group">
-                  <lucide-icon [img]="icons.Camera" class="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform mb-1"></lucide-icon>
+                <button
+                  (click)="verDetalleAlumno(alumno)"
+                  class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 transition-all cursor-pointer group"
+                >
+                  <lucide-icon
+                    [img]="icons.Camera"
+                    class="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform mb-1"
+                  ></lucide-icon>
                   <span class="text-[11px] font-bold">Fotos</span>
                 </button>
               </div>
-
             </div>
           }
-
         </div>
       }
     </div>
-
   }
-
 
   <!-- ================================================================= -->
   <!-- VISTA 2: PANTALLA DE DETALLE COMPLETO DEL ALUMNO                  -->
   <!-- ================================================================= -->
   @else {
-
     <div class="space-y-6 animate-in fade-in duration-300">
-
       <!-- Botón Volver -->
-      <button (click)="regresarALista()" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-md">
-        <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-blue-400"></lucide-icon> Volver a la Lista
+      <button
+        (click)="regresarALista()"
+        class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-md"
+      >
+        <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-blue-400"></lucide-icon> Volver a
+        la Lista
       </button>
 
       <!-- Encabezado del Perfil -->
-      <div class="bg-zinc-900/90 border border-zinc-800 p-8 rounded-[2.5rem] shadow-xl text-center space-y-4 relative overflow-hidden backdrop-blur-md">
+      <div
+        class="bg-zinc-900/90 border border-zinc-800 p-8 rounded-[2.5rem] shadow-xl text-center space-y-4 relative overflow-hidden backdrop-blur-md"
+      >
         <div class="flex justify-center">
-          <img [src]="selectedAlumnoForDetail()!.photo" class="w-24 h-24 rounded-full object-cover border-4 border-zinc-800 shadow-2xl" alt="Foto Alumno">
+          <img
+            [src]="selectedAlumnoForDetail()!.photo"
+            class="w-24 h-24 rounded-full object-cover border-4 border-zinc-800 shadow-2xl"
+            alt="Foto Alumno"
+          />
         </div>
 
         <div class="space-y-1">
           <h2 class="text-2xl font-black text-white">{{ selectedAlumnoForDetail()!.name }}</h2>
-          <p class="text-xs text-zinc-400 font-medium">{{ selectedAlumnoForDetail()!.grupo }} • {{ selectedAlumnoForDetail()!.edad }}</p>
+          <p class="text-xs text-zinc-400 font-medium">
+            {{ selectedAlumnoForDetail()!.grupo }} • {{ selectedAlumnoForDetail()!.edad }}
+          </p>
         </div>
 
         <div class="flex justify-center gap-2 pt-1">
-          <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Presente</span>
-          <span class="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Recogido: 14:30</span>
+          <span
+            class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-wider"
+            >Presente</span
+          >
+          <span
+            class="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider"
+            >Recogido: 14:30</span
+          >
         </div>
 
         <!-- Botones de Acción Superior -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 max-w-lg mx-auto">
-          <button (click)="triggerAction('Tutor', selectedAlumnoForDetail()!.name)" class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 cursor-pointer">
+          <button
+            (click)="triggerAction('Tutor', selectedAlumnoForDetail()!.name)"
+            class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 cursor-pointer"
+          >
             <lucide-icon [img]="icons.Phone" class="w-4 h-4 text-blue-400 mb-1"></lucide-icon>
             <span class="text-[11px] font-bold">Tutor</span>
           </button>
-          <button (click)="triggerAction('WhatsApp', selectedAlumnoForDetail()!.name)" class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 cursor-pointer">
-            <lucide-icon [img]="icons.MessageSquare" class="w-4 h-4 text-emerald-400 mb-1"></lucide-icon>
+          <button
+            (click)="triggerAction('WhatsApp', selectedAlumnoForDetail()!.name)"
+            class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 cursor-pointer"
+          >
+            <lucide-icon
+              [img]="icons.MessageSquare"
+              class="w-4 h-4 text-emerald-400 mb-1"
+            ></lucide-icon>
             <span class="text-[11px] font-bold">WhatsApp</span>
           </button>
-          <button (click)="triggerAction('Incidente', selectedAlumnoForDetail()!.name)" class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 cursor-pointer">
-            <lucide-icon [img]="icons.AlertCircle" class="w-4 h-4 text-amber-400 mb-1"></lucide-icon>
+          <button
+            (click)="triggerAction('Incidente', selectedAlumnoForDetail()!.name)"
+            class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 cursor-pointer"
+          >
+            <lucide-icon
+              [img]="icons.AlertCircle"
+              class="w-4 h-4 text-amber-400 mb-1"
+            ></lucide-icon>
             <span class="text-[11px] font-bold">Incidente</span>
           </button>
-          <button (click)="triggerAction('Medicina', selectedAlumnoForDetail()!.name)" class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 cursor-pointer">
+          <button
+            (click)="triggerAction('Medicina', selectedAlumnoForDetail()!.name)"
+            class="bg-[#0a0f1d] hover:bg-zinc-800 border border-zinc-800 p-3 rounded-2xl flex flex-col items-center justify-center text-zinc-300 cursor-pointer"
+          >
             <lucide-icon [img]="icons.Pill" class="w-4 h-4 text-purple-400 mb-1"></lucide-icon>
             <span class="text-[11px] font-bold">Medicina</span>
           </button>
@@ -205,45 +320,77 @@
       </div>
 
       <!-- PESTAÑAS DE NAVEGACIÓN DE LAS 4 SECCIONES DE REFERENCIA -->
-      <div class="flex bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 w-full overflow-x-auto gap-1">
-        <button (click)="setActiveDetailTab('perfil')"
-                [class]="activeDetailTab() === 'perfil' ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-600/20' : 'text-zinc-400 hover:text-white font-bold'"
-                class="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0">
+      <div
+        class="flex bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 w-full overflow-x-auto gap-1"
+      >
+        <button
+          (click)="setActiveDetailTab('perfil')"
+          [class]="
+            activeDetailTab() === 'perfil'
+              ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-600/20'
+              : 'text-zinc-400 hover:text-white font-bold'
+          "
+          class="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0"
+        >
           📋 Perfil & Médico
         </button>
-        <button (click)="setActiveDetailTab('alimentacion')"
-                [class]="activeDetailTab() === 'alimentacion' ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-600/20' : 'text-zinc-400 hover:text-white font-bold'"
-                class="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0">
+        <button
+          (click)="setActiveDetailTab('alimentacion')"
+          [class]="
+            activeDetailTab() === 'alimentacion'
+              ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-600/20'
+              : 'text-zinc-400 hover:text-white font-bold'
+          "
+          class="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0"
+        >
           🍎 Menú & Descanso
         </button>
-        <button (click)="setActiveDetailTab('pagos')"
-                [class]="activeDetailTab() === 'pagos' ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-600/20' : 'text-zinc-400 hover:text-white font-bold'"
-                class="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0">
+        <button
+          (click)="setActiveDetailTab('pagos')"
+          [class]="
+            activeDetailTab() === 'pagos'
+              ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-600/20'
+              : 'text-zinc-400 hover:text-white font-bold'
+          "
+          class="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0"
+        >
           💳 Pagos & Colegiaturas
         </button>
-        <button (click)="setActiveDetailTab('documentos')"
-                [class]="activeDetailTab() === 'documentos' ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-600/20' : 'text-zinc-400 hover:text-white font-bold'"
-                class="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0">
+        <button
+          (click)="setActiveDetailTab('documentos')"
+          [class]="
+            activeDetailTab() === 'documentos'
+              ? 'bg-blue-600 text-white font-black shadow-md shadow-blue-600/20'
+              : 'text-zinc-400 hover:text-white font-bold'
+          "
+          class="px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shrink-0"
+        >
           📂 Docs & Galería
         </button>
       </div>
-
 
       <!-- ================================================================= -->
       <!-- CONTENIDO DE LA PESTAÑA 1: PERFIL, MÉDICO Y TUTORES               -->
       <!-- ================================================================= -->
       @if (activeDetailTab() === 'perfil') {
         <div class="space-y-6 animate-in fade-in duration-200">
-
           <!-- Alerta Médica Activa -->
           @if (selectedAlumnoForDetail()!.alertaMedica) {
-            <div class="bg-rose-500/10 border border-rose-500/20 p-5 rounded-3xl flex items-start gap-3.5">
-              <div class="w-10 h-10 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center shrink-0 border border-rose-500/30">
+            <div
+              class="bg-rose-500/10 border border-rose-500/20 p-5 rounded-3xl flex items-start gap-3.5"
+            >
+              <div
+                class="w-10 h-10 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center shrink-0 border border-rose-500/30"
+              >
                 <lucide-icon [img]="icons.ShieldAlert" class="w-5 h-5"></lucide-icon>
               </div>
               <div>
-                <h4 class="text-xs font-black uppercase tracking-wider text-rose-400">Alerta Médica Activa</h4>
-                <p class="text-xs text-zinc-300 mt-0.5">{{ selectedAlumnoForDetail()!.alertaMedica }}</p>
+                <h4 class="text-xs font-black uppercase tracking-wider text-rose-400">
+                  Alerta Médica Activa
+                </h4>
+                <p class="text-xs text-zinc-300 mt-0.5">
+                  {{ selectedAlumnoForDetail()!.alertaMedica }}
+                </p>
               </div>
             </div>
           }
@@ -251,201 +398,329 @@
           <!-- 4 Métricas de Referencia -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-2">
-              <div class="w-9 h-9 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20"><lucide-icon [img]="icons.Calendar" class="w-4 h-4"></lucide-icon></div>
-              <h3 class="text-2xl font-black text-white">{{ selectedAlumnoForDetail()!.asistenciaMensual }}</h3>
+              <div
+                class="w-9 h-9 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/20"
+              >
+                <lucide-icon [img]="icons.Calendar" class="w-4 h-4"></lucide-icon>
+              </div>
+              <h3 class="text-2xl font-black text-white">
+                {{ selectedAlumnoForDetail()!.asistenciaMensual }}
+              </h3>
               <p class="text-xs text-zinc-400 font-medium">Asistencia Mensual</p>
             </div>
             <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-2">
-              <div class="w-9 h-9 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-500/20"><lucide-icon [img]="icons.DollarSign" class="w-4 h-4"></lucide-icon></div>
-              <h3 class="text-2xl font-black text-white">{{ selectedAlumnoForDetail()!.estatusPago }}</h3>
-              <p class="text-xs text-zinc-400 font-medium">Último Pago: {{ selectedAlumnoForDetail()!.ultimoPago }}</p>
+              <div
+                class="w-9 h-9 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-500/20"
+              >
+                <lucide-icon [img]="icons.DollarSign" class="w-4 h-4"></lucide-icon>
+              </div>
+              <h3 class="text-2xl font-black text-white">
+                {{ selectedAlumnoForDetail()!.estatusPago }}
+              </h3>
+              <p class="text-xs text-zinc-400 font-medium">
+                Último Pago: {{ selectedAlumnoForDetail()!.ultimoPago }}
+              </p>
             </div>
             <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-2">
-              <div class="w-9 h-9 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center border border-amber-500/20"><lucide-icon [img]="icons.Activity" class="w-4 h-4"></lucide-icon></div>
-              <h3 class="text-2xl font-black text-white">{{ selectedAlumnoForDetail()!.incidentesMes }}</h3>
+              <div
+                class="w-9 h-9 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center border border-amber-500/20"
+              >
+                <lucide-icon [img]="icons.Activity" class="w-4 h-4"></lucide-icon>
+              </div>
+              <h3 class="text-2xl font-black text-white">
+                {{ selectedAlumnoForDetail()!.incidentesMes }}
+              </h3>
               <p class="text-xs text-zinc-400 font-medium">Incidentes (Mes)</p>
             </div>
             <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-2">
-              <div class="w-9 h-9 bg-purple-500/10 text-purple-400 rounded-xl flex items-center justify-center border border-purple-500/20"><lucide-icon [img]="icons.FileText" class="w-4 h-4"></lucide-icon></div>
-              <h3 class="text-2xl font-black text-white">{{ selectedAlumnoForDetail()!.docsPorVencer }}</h3>
+              <div
+                class="w-9 h-9 bg-purple-500/10 text-purple-400 rounded-xl flex items-center justify-center border border-purple-500/20"
+              >
+                <lucide-icon [img]="icons.FileText" class="w-4 h-4"></lucide-icon>
+              </div>
+              <h3 class="text-2xl font-black text-white">
+                {{ selectedAlumnoForDetail()!.docsPorVencer }}
+              </h3>
               <p class="text-xs text-zinc-400 font-medium">Doc. por Vencer</p>
             </div>
           </div>
 
           <!-- Información General -->
           <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4">
-            <h3 class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
-              <lucide-icon [img]="icons.Users" class="w-4 h-4 text-blue-400"></lucide-icon> Información General
+            <h3
+              class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2"
+            >
+              <lucide-icon [img]="icons.Users" class="w-4 h-4 text-blue-400"></lucide-icon>
+              Información General
             </h3>
             <div class="divide-y divide-zinc-800 text-xs">
-              <div class="py-3 flex justify-between"><span class="text-zinc-400">Fecha Nac.</span><span class="font-bold text-white">{{ selectedAlumnoForDetail()!.fechaNac }}</span></div>
-              <div class="py-3 flex justify-between"><span class="text-zinc-400">CURP</span><span class="font-bold text-white font-mono">{{ selectedAlumnoForDetail()!.curp }}</span></div>
-              <div class="py-3 flex justify-between"><span class="text-zinc-400">Género</span><span class="font-bold text-white">{{ selectedAlumnoForDetail()!.genero }}</span></div>
-              <div class="py-3 flex justify-between"><span class="text-zinc-400">Ingreso</span><span class="font-bold text-white">{{ selectedAlumnoForDetail()!.ingreso }}</span></div>
-              <div class="py-3 flex justify-between"><span class="text-zinc-400">Dirección</span><span class="font-bold text-white text-right max-w-xs">{{ selectedAlumnoForDetail()!.direccion }}</span></div>
+              <div class="py-3 flex justify-between">
+                <span class="text-zinc-400">Fecha Nac.</span
+                ><span class="font-bold text-white">{{ selectedAlumnoForDetail()!.fechaNac }}</span>
+              </div>
+              <div class="py-3 flex justify-between">
+                <span class="text-zinc-400">CURP</span
+                ><span class="font-bold text-white font-mono">{{
+                  selectedAlumnoForDetail()!.curp
+                }}</span>
+              </div>
+              <div class="py-3 flex justify-between">
+                <span class="text-zinc-400">Género</span
+                ><span class="font-bold text-white">{{ selectedAlumnoForDetail()!.genero }}</span>
+              </div>
+              <div class="py-3 flex justify-between">
+                <span class="text-zinc-400">Ingreso</span
+                ><span class="font-bold text-white">{{ selectedAlumnoForDetail()!.ingreso }}</span>
+              </div>
+              <div class="py-3 flex justify-between">
+                <span class="text-zinc-400">Dirección</span
+                ><span class="font-bold text-white text-right max-w-xs">{{
+                  selectedAlumnoForDetail()!.direccion
+                }}</span>
+              </div>
             </div>
           </div>
 
           <!-- Tutores y Autorizados (Como la referencia 2) -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4">
-              <h3 class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
-                <lucide-icon [img]="icons.Heart" class="w-4 h-4 text-rose-400"></lucide-icon> Tutores
+              <h3
+                class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2"
+              >
+                <lucide-icon [img]="icons.Heart" class="w-4 h-4 text-rose-400"></lucide-icon>
+                Tutores
               </h3>
               <div class="space-y-3">
                 @for (tutor of selectedAlumnoForDetail()!.tutores; track tutor.nombre) {
-                  <div class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex items-center justify-between">
+                  <div
+                    class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex items-center justify-between"
+                  >
                     <div class="flex items-center gap-3">
-                      <img [src]="tutor.foto" class="w-10 h-10 rounded-xl object-cover border border-zinc-700">
+                      <img
+                        [src]="tutor.foto"
+                        class="w-10 h-10 rounded-xl object-cover border border-zinc-700"
+                      />
                       <div>
-                        <p class="text-xs font-black text-white">{{ tutor.nombre }} <span class="text-zinc-500 font-normal">({{ tutor.parentesco }})</span></p>
-                        <p class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mt-0.5">{{ tutor.rol }}</p>
+                        <p class="text-xs font-black text-white">
+                          {{ tutor.nombre }}
+                          <span class="text-zinc-500 font-normal">({{ tutor.parentesco }})</span>
+                        </p>
+                        <p
+                          class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mt-0.5"
+                        >
+                          {{ tutor.rol }}
+                        </p>
                       </div>
                     </div>
-                    <button class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-bold transition-all">Llamar</button>
+                    <button
+                      class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-bold transition-all"
+                    >
+                      Llamar
+                    </button>
                   </div>
                 }
               </div>
             </div>
 
             <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4">
-              <h3 class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
-                <lucide-icon [img]="icons.CheckCircle2" class="w-4 h-4 text-emerald-400"></lucide-icon> Personas Autorizadas
+              <h3
+                class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2"
+              >
+                <lucide-icon
+                  [img]="icons.CheckCircle2"
+                  class="w-4 h-4 text-emerald-400"
+                ></lucide-icon>
+                Personas Autorizadas
               </h3>
               <div class="space-y-3">
                 @for (aut of selectedAlumnoForDetail()!.autorizados; track aut.nombre) {
-                  <div class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex items-center justify-between">
+                  <div
+                    class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex items-center justify-between"
+                  >
                     <div class="flex items-center gap-3">
-                      <img [src]="aut.foto" class="w-10 h-10 rounded-xl object-cover border border-zinc-700">
+                      <img
+                        [src]="aut.foto"
+                        class="w-10 h-10 rounded-xl object-cover border border-zinc-700"
+                      />
                       <div>
                         <p class="text-xs font-black text-white">{{ aut.nombre }}</p>
                         <p class="text-[10px] text-zinc-500 font-medium">{{ aut.parentesco }}</p>
                       </div>
                     </div>
-                    <button class="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl"><lucide-icon [img]="icons.Phone" class="w-3.5 h-3.5"></lucide-icon></button>
+                    <button class="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl">
+                      <lucide-icon [img]="icons.Phone" class="w-3.5 h-3.5"></lucide-icon>
+                    </button>
                   </div>
                 }
               </div>
             </div>
           </div>
-
         </div>
       }
-
 
       <!-- ================================================================= -->
       <!-- CONTENIDO DE LA PESTAÑA 2: MENÚ Y ALIMENTACIÓN (Referencia 3)       -->
       <!-- ================================================================= -->
       @if (activeDetailTab() === 'alimentacion') {
         <div class="space-y-6 animate-in fade-in duration-200">
-
           <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4">
             <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-              <h3 class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
-                <lucide-icon [img]="icons.Utensils" class="w-4 h-4 text-amber-400"></lucide-icon> Menú y Alimentación
+              <h3
+                class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2"
+              >
+                <lucide-icon [img]="icons.Utensils" class="w-4 h-4 text-amber-400"></lucide-icon>
+                Menú y Alimentación
               </h3>
-              <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 rounded-full text-[10px] font-black uppercase">Hoy</span>
+              <span
+                class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 rounded-full text-[10px] font-black uppercase"
+                >Hoy</span
+              >
             </div>
 
             <div class="space-y-3 text-xs">
-              <div class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center">
+              <div
+                class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center"
+              >
                 <div>
                   <p class="text-[10px] text-zinc-500 font-bold">09:00 AM</p>
                   <p class="text-sm font-black text-white mt-0.5">Desayuno</p>
-                  <p class="text-zinc-400 text-xs mt-1">Avena con manzana, huevo revuelto y leche.</p>
+                  <p class="text-zinc-400 text-xs mt-1">
+                    Avena con manzana, huevo revuelto y leche.
+                  </p>
                 </div>
-                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-xl text-[10px] font-bold">Comió Todo</span>
+                <span
+                  class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-xl text-[10px] font-bold"
+                  >Comió Todo</span
+                >
               </div>
 
-              <div class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center">
+              <div
+                class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center"
+              >
                 <div>
                   <p class="text-[10px] text-zinc-500 font-bold">11:30 AM</p>
                   <p class="text-sm font-black text-white mt-0.5">Colación</p>
                   <p class="text-zinc-400 text-xs mt-1">Gajos de naranja y galletas integrales.</p>
                 </div>
-                <span class="px-3 py-1 bg-amber-500/10 text-amber-400 rounded-xl text-[10px] font-bold">Comió la Mitad</span>
+                <span
+                  class="px-3 py-1 bg-amber-500/10 text-amber-400 rounded-xl text-[10px] font-bold"
+                  >Comió la Mitad</span
+                >
               </div>
             </div>
           </div>
 
           <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4">
             <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-              <h3 class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
-                <lucide-icon [img]="icons.Moon" class="w-4 h-4 text-indigo-400"></lucide-icon> Descanso (Siesta)
+              <h3
+                class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2"
+              >
+                <lucide-icon [img]="icons.Moon" class="w-4 h-4 text-indigo-400"></lucide-icon>
+                Descanso (Siesta)
               </h3>
-              <span class="px-2.5 py-0.5 bg-zinc-800 text-zinc-300 rounded-full text-[10px] font-black uppercase">Ayer</span>
+              <span
+                class="px-2.5 py-0.5 bg-zinc-800 text-zinc-300 rounded-full text-[10px] font-black uppercase"
+                >Ayer</span
+              >
             </div>
-            <div class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center text-xs">
+            <div
+              class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center text-xs"
+            >
               <div>
                 <p class="text-sm font-black text-white">1h 15m de Siesta</p>
                 <p class="text-zinc-400 text-xs mt-0.5">Calidad: Tranquila (13:00 – 14:15)</p>
               </div>
             </div>
           </div>
-
         </div>
       }
-
 
       <!-- ================================================================= -->
       <!-- CONTENIDO DE LA PESTAÑA 3: PAGOS Y COLEGIATURAS (Referencia 4)    -->
       <!-- ================================================================= -->
       @if (activeDetailTab() === 'pagos') {
         <div class="space-y-6 animate-in fade-in duration-200">
-
           <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4">
-            <h3 class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
-              <lucide-icon [img]="icons.CreditCard" class="w-4 h-4 text-emerald-400"></lucide-icon> Pagos y Colegiaturas
+            <h3
+              class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2"
+            >
+              <lucide-icon [img]="icons.CreditCard" class="w-4 h-4 text-emerald-400"></lucide-icon>
+              Pagos y Colegiaturas
             </h3>
 
-            <div class="p-6 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div
+              class="p-6 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+            >
               <div>
-                <p class="text-xs text-zinc-500 font-bold uppercase tracking-wider">Próximo Vencimiento</p>
+                <p class="text-xs text-zinc-500 font-bold uppercase tracking-wider">
+                  Próximo Vencimiento
+                </p>
                 <h4 class="text-lg font-black text-white mt-0.5">05 de Noviembre</h4>
                 <p class="text-sm font-bold text-blue-400 mt-1">$3,500.00 MXN</p>
               </div>
-              <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-black uppercase">Al día</span>
+              <span
+                class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-black uppercase"
+                >Al día</span
+              >
             </div>
 
             <div class="flex gap-3">
-              <button class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all">Registrar Pago</button>
-              <button class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all">Ver Recibos</button>
+              <button
+                class="min-w-0 flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+              >
+                Registrar Pago
+              </button>
+              <button
+                class="min-w-0 flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+              >
+                Ver Recibos
+              </button>
             </div>
           </div>
-
         </div>
       }
-
 
       <!-- ================================================================= -->
       <!-- CONTENIDO DE LA PESTAÑA 4: DOCUMENTOS Y GALERÍA (Referencia 4)    -->
       <!-- ================================================================= -->
       @if (activeDetailTab() === 'documentos') {
         <div class="space-y-6 animate-in fade-in duration-200">
-
           <!-- Documentos -->
           <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4">
             <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-              <h3 class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
-                <lucide-icon [img]="icons.FileText" class="w-4 h-4 text-blue-400"></lucide-icon> Documentos Escolares
+              <h3
+                class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2"
+              >
+                <lucide-icon [img]="icons.FileText" class="w-4 h-4 text-blue-400"></lucide-icon>
+                Documentos Escolares
               </h3>
             </div>
 
             <div class="space-y-3 text-xs">
-              <div class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center">
+              <div
+                class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center"
+              >
                 <div>
                   <p class="font-black text-white">Acta de Nacimiento</p>
                   <p class="text-[10px] text-zinc-500 mt-0.5">Subido: 10/Ago/2022</p>
                 </div>
-                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-xl text-[10px] font-bold">Vigente</span>
+                <span
+                  class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-xl text-[10px] font-bold"
+                  >Vigente</span
+                >
               </div>
 
-              <div class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center">
+              <div
+                class="p-4 bg-[#0a0f1d] border border-zinc-800 rounded-2xl flex justify-between items-center"
+              >
                 <div>
                   <p class="font-black text-white">Cartilla de Vacunación</p>
                   <p class="text-[10px] text-zinc-500 mt-0.5">Vence: 15/Nov/2023</p>
                 </div>
-                <span class="px-3 py-1 bg-amber-500/10 text-amber-400 rounded-xl text-[10px] font-bold">Próx. a vencer</span>
+                <span
+                  class="px-3 py-1 bg-amber-500/10 text-amber-400 rounded-xl text-[10px] font-bold"
+                  >Próx. a vencer</span
+                >
               </div>
             </div>
           </div>
@@ -453,31 +728,41 @@
           <!-- Galería Reciente -->
           <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl shadow-xl space-y-4">
             <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-              <h3 class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
-                <lucide-icon [img]="icons.ImageIcon" class="w-4 h-4 text-purple-400"></lucide-icon> Galería Reciente
+              <h3
+                class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2"
+              >
+                <lucide-icon [img]="icons.ImageIcon" class="w-4 h-4 text-purple-400"></lucide-icon>
+                Galería Reciente
               </h3>
               <button class="text-xs font-bold text-blue-400 hover:underline">Ver álbum</button>
             </div>
 
             <div class="grid grid-cols-3 gap-3">
               <div class="h-28 bg-zinc-800 rounded-2xl overflow-hidden border border-zinc-700">
-                <img src="https://picsum.photos/seed/child1/200/200" class="w-full h-full object-cover">
+                <img
+                  src="https://picsum.photos/seed/child1/200/200"
+                  class="w-full h-full object-cover"
+                />
               </div>
               <div class="h-28 bg-zinc-800 rounded-2xl overflow-hidden border border-zinc-700">
-                <img src="https://picsum.photos/seed/child2/200/200" class="w-full h-full object-cover">
+                <img
+                  src="https://picsum.photos/seed/child2/200/200"
+                  class="w-full h-full object-cover"
+                />
               </div>
-              <div class="h-28 bg-zinc-800 rounded-2xl overflow-hidden border border-zinc-700 relative flex items-center justify-center">
-                <img src="https://picsum.photos/seed/child3/200/200" class="w-full h-full object-cover brightness-50">
+              <div
+                class="h-28 bg-zinc-800 rounded-2xl overflow-hidden border border-zinc-700 relative flex items-center justify-center"
+              >
+                <img
+                  src="https://picsum.photos/seed/child3/200/200"
+                  class="w-full h-full object-cover brightness-50"
+                />
                 <span class="absolute text-white font-black text-sm">+12</span>
               </div>
             </div>
           </div>
-
         </div>
       }
-
     </div>
-
   }
-
 </div>

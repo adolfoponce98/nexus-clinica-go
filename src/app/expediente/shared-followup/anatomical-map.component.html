@@ -1,0 +1,124 @@
+<section class="clinical-section">
+  <div class="section-title">
+    <span class="letter teal">✚</span>
+    <div>
+      <h3>Mapa anatómico</h3>
+      <p>Toca la silueta para ubicar el hallazgo. Puedes registrar vista anterior y posterior.</p>
+    </div>
+  </div>
+  <div class="map-layout">
+    <div>
+      <div class="segmented">
+        <button type="button" [class.active]="view === 'Anterior'" (click)="view = 'Anterior'">
+          Anterior</button
+        ><button type="button" [class.active]="view === 'Posterior'" (click)="view = 'Posterior'">
+          Posterior
+        </button>
+      </div>
+      <svg
+        class="body-map"
+        viewBox="0 0 320 520"
+        role="img"
+        [attr.aria-label]="'Mapa corporal ' + view"
+        (click)="mark($event)"
+      >
+        <defs>
+          <linearGradient id="bodyFill" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#3b82f6" stop-opacity=".18" />
+            <stop offset="1" stop-color="#06b6d4" stop-opacity=".06" />
+          </linearGradient>
+        </defs>
+        <circle cx="160" cy="45" r="31" fill="url(#bodyFill)" stroke="#579cd6" stroke-width="2" />
+        <path
+          d="M141 77 L139 94 Q106 98 98 116 L61 246 Q58 262 69 267 Q79 269 85 251 L115 173 L117 258 Q114 290 121 325 L120 455 Q117 467 113 478 L140 478 L151 330 L169 330 L180 478 L207 478 Q203 467 200 455 L199 325 Q206 290 203 258 L205 173 L235 251 Q241 269 251 267 Q262 262 259 246 L222 116 Q214 98 181 94 L179 77"
+          fill="url(#bodyFill)"
+          stroke="#579cd6"
+          stroke-width="2"
+        />
+        <path
+          d="M160 99 V300 M120 180 Q160 194 200 180 M120 258 Q160 276 200 258"
+          fill="none"
+          stroke="#579cd6"
+          stroke-opacity=".3"
+          stroke-dasharray="5 6"
+        />
+        @for (m of marks; track $index) {
+          @if (
+            m.view === view &&
+            m.x !== null &&
+            m.y !== null &&
+            m.x >= 0 &&
+            m.x <= 100 &&
+            m.y >= 0 &&
+            m.y <= 100
+          ) {
+            <circle
+              [attr.cx]="m.x * 3.2"
+              [attr.cy]="m.y * 5.2"
+              r="7"
+              fill="#f43f5e"
+              stroke="white"
+              stroke-width="2"
+            >
+              <title>{{ m.zone || 'Zona sin describir' }} · {{ m.kind }}</title>
+            </circle>
+          }
+        }
+        <text x="160" y="511" text-anchor="middle" fill="#7b9bb7" font-size="12">
+          {{ view }} · {{ disabled ? 'Solo lectura' : 'Selecciona una zona' }}
+        </text>
+      </svg>
+    </div>
+    <div>
+      <label class="field"
+        >Zona anatómica<input
+          [(ngModel)]="zone"
+          [ngModelOptions]="{ standalone: true }"
+          [disabled]="disabled"
+          placeholder="Ej. rodilla derecha" /></label
+      ><label class="field"
+        >Tipo de hallazgo<select
+          [(ngModel)]="kind"
+          [ngModelOptions]="{ standalone: true }"
+          [disabled]="disabled"
+        >
+          @for (k of kinds; track k) {
+            <option>{{ k }}</option>
+          }
+        </select></label
+      >
+      <p class="muted">
+        Los marcadores complementan la descripción clínica. No calculan un diagnóstico.
+      </p>
+      <div class="marker-list">
+        @for (m of marks; track $index; let i = $index) {
+          <div class="marker-row">
+            <strong>{{ m.view }} · {{ m.kind }}</strong
+            ><label class="field"
+              >Zona<input
+                [(ngModel)]="m.zone"
+                (ngModelChange)="marksChange.emit(marks)"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="disabled" /></label
+            ><label class="field"
+              >Descripción<input
+                [(ngModel)]="m.notes"
+                (ngModelChange)="marksChange.emit(marks)"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="disabled" /></label
+            ><button
+              type="button"
+              class="text-button danger-text"
+              (click)="remove(i)"
+              [disabled]="disabled"
+            >
+              Quitar marcador
+            </button>
+          </div>
+        } @empty {
+          <p class="muted">Aún no hay marcadores.</p>
+        }
+      </div>
+    </div>
+  </div>
+</section>

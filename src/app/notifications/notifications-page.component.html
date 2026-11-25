@@ -1,0 +1,163 @@
+<main class="inbox-page">
+  <header class="inbox-header">
+    <div class="inbox-heading">
+      <span class="inbox-emblem"><lucide-icon [img]="icons.Bell" class="w-6 h-6" /></span>
+      <div>
+        <p class="inbox-eyebrow">ACTIVIDAD DEL CONSULTORIO</p>
+        <h1>Notificaciones</h1>
+        <p class="inbox-office">
+          <lucide-icon [img]="icons.Store" class="w-3.5 h-3.5" />{{ officeName }}
+        </p>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="inbox-button"
+      (click)="inbox.fetchNotifications(true)"
+      [disabled]="inbox.isLoadingNotifications"
+    >
+      <lucide-icon
+        [img]="icons.RefreshCw"
+        class="w-4 h-4"
+        [class.animate-spin]="inbox.isLoadingNotifications"
+      />{{ inbox.isLoadingNotifications ? 'Actualizando…' : 'Actualizar' }}
+    </button>
+  </header>
+  <section class="inbox-surface" aria-label="Historial de notificaciones">
+    <div class="inbox-filters">
+      <div class="inbox-periods" role="group" aria-label="Ver notificaciones por periodo">
+        @for (option of periods; track option.key) {
+          <button
+            type="button"
+            [class.selected]="period === option.key"
+            [attr.aria-pressed]="period === option.key"
+            (click)="period = option.key"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+      @if (period !== 'all') {
+        <div class="inbox-date-controls">
+          <button type="button" (click)="move(-1)" aria-label="Periodo anterior">
+            <lucide-icon [img]="icons.ChevronLeft" class="w-4 h-4" /></button
+          ><input
+            type="date"
+            [ngModel]="anchor"
+            (ngModelChange)="setDate($event)"
+            aria-label="Fecha de las notificaciones"
+          /><button type="button" (click)="move(1)" aria-label="Periodo siguiente">
+            <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4" /></button
+          ><button type="button" (click)="today()">Hoy</button>
+        </div>
+      }
+    </div>
+    <div class="inbox-list-heading">
+      <div>
+        <h2>
+          @if (period === 'all') {
+            Todo el historial
+          } @else if (period === 'day') {
+            {{ anchor | date: 'dd/MM/yyyy' }}
+          } @else {
+            {{ range[0] | date: 'dd/MM/yyyy' }} — {{ range[1] | date: 'dd/MM/yyyy' }}
+          }
+        </h2>
+        <p aria-live="polite">
+          {{ items.length }} notificaciones · {{ unread }} sin leer
+          <span>· Fecha de recepción</span>
+        </p>
+      </div>
+      <button
+        type="button"
+        class="inbox-read-all"
+        (click)="markVisibleRead()"
+        [disabled]="unread === 0"
+      >
+        <lucide-icon [img]="icons.CheckCircle2" class="w-4 h-4" />Marcar este periodo como leído
+      </button>
+    </div>
+    @if (inbox.notificationsError) {
+      <p class="inbox-warning" role="status">{{ inbox.notificationsError }}</p>
+    }
+    @if (inbox.localNotifications.storageError) {
+      <p class="inbox-warning" role="status">
+        El navegador no permitió guardar las lecturas localmente.
+      </p>
+    }
+    <div class="inbox-list" [attr.aria-busy]="inbox.isLoadingNotifications">
+      @if (inbox.isLoadingNotifications && !items.length) {
+        <div role="status" aria-label="Cargando notificaciones">
+          @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+            <div class="inbox-skeleton"><i></i><span></span></div>
+          }
+        </div>
+      } @else if (!items.length) {
+        <div class="inbox-empty">
+          <lucide-icon [img]="icons.Bell" class="w-8 h-8" />
+          <h3>Sin notificaciones en este periodo</h3>
+          <p>Selecciona otra fecha o consulta todo el historial.</p>
+        </div>
+      }
+      @for (item of items; track item.id) {
+        <article class="inbox-row" [class.unread]="!item.isRead">
+          <span
+            class="inbox-status"
+            [class.confirmed]="item.estadoRespuesta === 'confirmada'"
+            [class.cancelled]="item.estadoRespuesta === 'cancelada'"
+            ><lucide-icon
+              [img]="
+                item.estadoRespuesta === 'confirmada'
+                  ? icons.CheckCircle2
+                  : item.estadoRespuesta === 'cancelada'
+                    ? icons.X
+                    : icons.Calendar
+              "
+              class="w-5 h-5"
+          /></span>
+          <div class="inbox-row-content">
+            <div class="inbox-title">
+              <h3>Cita {{ item.estadoRespuesta || 'actualizada' }}</h3>
+              @if (!item.isRead) {
+                <span class="inbox-new">Sin leer</span>
+              }
+            </div>
+            <p class="inbox-meta">
+              <strong>{{ item.patientName || 'Paciente sin nombre' }}</strong> ·
+              {{ item.telefono || 'Sin teléfono' }}
+              <span
+                >· Cita: {{ item.fechaCita ? (item.fechaCita | date: 'dd/MM/yyyy') : 'Sin fecha' }}
+                {{ item.horaCita }}</span
+              >
+            </p>
+            @if (item.mensajeOriginal) {
+              <p class="inbox-message">
+                <lucide-icon [img]="icons.MessageSquare" class="w-3.5 h-3.5" />{{
+                  item.mensajeOriginal
+                }}
+              </p>
+            }
+          </div>
+          <div class="inbox-row-actions">
+            @if (item.updatedAt) {
+              <time [attr.datetime]="item.updatedAt">{{
+                item.updatedAt | date: 'dd/MM/yyyy · HH:mm'
+              }}</time>
+            }
+            @if (!item.isRead) {
+              <button type="button" (click)="inbox.markNotificationRead(item)">
+                <lucide-icon [img]="icons.CheckCircle2" class="w-3.5 h-3.5" />Marcar como leída
+              </button>
+            } @else {
+              <span class="inbox-read">Leída</span>
+            }
+          </div>
+        </article>
+      }
+    </div>
+    <footer>
+      Las lecturas se guardan en este dispositivo. Cambiar de periodo no realiza peticiones al
+      servidor.
+    </footer>
+  </section>
+</main>

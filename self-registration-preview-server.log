@@ -1,0 +1,184 @@
+> Building...
+√ Building...
+Initial chunk files | Names                         |  Raw size
+main.js             | main                          |   2.95 MB | 
+styles.css          | styles                        | 174.27 kB | 
+chunk-LMV75XVN.js   | -                             |  16.98 kB | 
+
+                    | Initial total                 |   3.14 MB
+
+Lazy chunk files    | Names                         |  Raw size
+chunk-O5J33OCI.js   | public-registration-component |  70.55 kB | 
+
+Application bundle generation complete. [7.927 seconds] - 2026-11-20T23:32:34.658Z
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:36:4:
+      36 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:101:167:
+      101 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:42:38:
+      42 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:14:80:
+      14 │ ...ule, FormsModule, LucideAngularModule, Advanced3DViewerComponent],
+         ╵                                           ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterOutlet is not used within the template of LayoutComponent [plugin angular-compiler]
+
+    src/app/sidemenu/layout.component.ts:23:12:
+      23 │   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngu...
+         ╵             ~~~~~~~~~~~~
+
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://127.0.0.1:4301/
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                         | Raw size
+main.js             | main                          |  2.95 MB | 
+
+Lazy chunk files    | Names                         | Raw size
+chunk-WHRBYZBY.js   | public-registration-component | 70.68 kB | 
+
+Application bundle generation complete. [4.990 seconds] - 2026-11-20T23:35:19.266Z
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:36:4:
+      36 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:101:167:
+      101 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:42:38:
+      42 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:14:80:
+      14 │ ...ule, FormsModule, LucideAngularModule, Advanced3DViewerComponent],
+         ╵                                           ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterOutlet is not used within the template of LayoutComponent [plugin angular-compiler]
+
+    src/app/sidemenu/layout.component.ts:23:12:
+      23 │   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngu...
+         ╵             ~~~~~~~~~~~~
+
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names | Raw size
+main.js             | main  |  2.97 MB | 
+
+Application bundle generation complete. [1.562 seconds] - 2026-11-20T23:41:19.391Z
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:36:4:
+      36 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:101:167:
+      101 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:42:38:
+      42 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:14:80:
+      14 │ ...ule, FormsModule, LucideAngularModule, Advanced3DViewerComponent],
+         ╵                                           ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterOutlet is not used within the template of LayoutComponent [plugin angular-compiler]
+
+    src/app/sidemenu/layout.component.ts:23:12:
+      23 │   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngu...
+         ╵             ~~~~~~~~~~~~
+
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names | Raw size
+main.js             | main  |  2.97 MB | 
+
+Application bundle generation complete. [1.222 seconds] - 2026-11-20T23:42:47.880Z
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:36:4:
+      36 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:101:167:
+      101 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:42:38:
+      42 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:14:80:
+      14 │ ...ule, FormsModule, LucideAngularModule, Advanced3DViewerComponent],
+         ╵                                           ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterOutlet is not used within the template of LayoutComponent [plugin angular-compiler]
+
+    src/app/sidemenu/layout.component.ts:23:12:
+      23 │   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngu...
+         ╵             ~~~~~~~~~~~~
+
+
+Page reload sent to client(s).

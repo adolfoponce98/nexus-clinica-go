@@ -1,0 +1,28 @@
+<app-followup-workspace specialtyCode="DER" [extensionTemplate]="specialtyForm" />
+<ng-template
+  #specialtyForm
+  let-code="code"
+  let-data="data"
+  let-core="core"
+  let-patient="patient"
+  let-disabled="disabled"
+  let-workspace="workspace"
+>
+  <app-specialty-fields
+    mode="fields"
+    [code]="code"
+    [value]="data"
+    [core]="core"
+    [patient]="patient"
+    [attachments]="workspace.pastPhotos.concat(workspace.attachments())"
+    [disabled]="disabled"
+    [at]="workspace.note?.createdAt || ''"
+    [privateNotes]="workspace.privateNotes"
+    [canSeePrivate]="workspace.canSeePrivate"
+    [privateNotesAvailable]="workspace.privateNotesLoaded"
+    [privateNotesBusy]="workspace.privateBusy()"
+    (retryPrivateNotes)="workspace.loadPrivateNotes()"
+    (privateNotesChange)="workspace.privateNotes = $event; workspace.changed()"
+    (changed)="workspace.changed()"
+  />
+</ng-template>

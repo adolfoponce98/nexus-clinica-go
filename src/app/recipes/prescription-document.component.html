@@ -1,0 +1,211 @@
+<div
+  #paperFrame
+  class="rx-paper-frame"
+  [style.max-width.px]="paperWidth"
+  [style.height.px]="previewHeight() || null"
+>
+  <article
+    #paperSheet
+    class="rx-sheet"
+    [class.rx-original-format]="
+      prescription.templateId === 'physical-custom' &&
+      prescription.customTemplate?.design?.version === 2
+    "
+    [style.width.px]="paperWidth"
+    [style.transform]="'scale(' + scale() + ')'"
+    [attr.data-layout]="template.layout"
+    [attr.data-orientation]="prescription.orientation === 'landscape' ? 'landscape' : 'portrait'"
+    [style.--rx-color]="prescription.customTemplate?.design?.color || template.color"
+    [style.--rx-accent]="prescription.customTemplate?.design?.accent || template.accent"
+  >
+    @if (prescription.templateId === 'physical-custom' && prescription.customTemplate?.design) {
+      @if (prescription.example) {
+        <div class="rx-demo">VISTA PREVIA · DATOS DE EJEMPLO · NO VÁLIDA PARA SURTIR</div>
+      }
+      <app-physical-prescription-document
+        [prescription]="prescription"
+        [integrityHash]="integrityHash"
+      />
+    } @else {
+      @if (watermarkUrl) {
+        <div class="rx-watermark" aria-hidden="true">
+          <img [src]="watermarkUrl" alt="" crossorigin="anonymous" (error)="hideWatermark()" />
+        </div>
+      }
+      @if (prescription.example) {
+        <div class="rx-demo">
+          VISTA PREVIA · DATOS DE PACIENTE Y MEDICAMENTOS DE EJEMPLO · NO VÁLIDA PARA SURTIR
+        </div>
+      }
+      <header class="rx-header">
+        <div class="rx-prescriber">
+          @if (doctorLogoUrl) {
+            <div class="rx-doctor-logo">
+              <img
+                [src]="doctorLogoUrl"
+                alt="Logo del médico emisor"
+                crossorigin="anonymous"
+                (error)="hideHeaderLogo('doctor')"
+              />
+            </div>
+          } @else {
+            <div class="rx-symbol" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z" />
+              </svg>
+            </div>
+          }
+          <div class="rx-professional">
+            <p class="rx-eyebrow">{{ office.name || 'Nombre del consultorio pendiente' }}</p>
+            <h1>{{ author.fullName || 'Nombre del médico pendiente' }}</h1>
+            <p class="rx-profession">
+              {{ author.profession || 'Profesión pendiente' }}
+              @if (author.specialty) {
+                <span> · {{ author.specialty }}</span>
+              }
+            </p>
+            <p class="rx-credentials">
+              {{ author.educationalInstitution || 'Institución educativa pendiente' }}
+            </p>
+            <p class="rx-credentials">
+              Cédula profesional: {{ author.professionalLicense || 'Pendiente' }}
+              @if (author.specialtyLicense) {
+                <span> · Especialidad: {{ author.specialtyLicense }}</span>
+              }
+            </p>
+          </div>
+        </div>
+        <div class="rx-brand">
+          @if (officeLogoUrl) {
+            <img
+              class="rx-office-logo"
+              [src]="officeLogoUrl"
+              alt="Logo del consultorio"
+              crossorigin="anonymous"
+              (error)="hideHeaderLogo('office')"
+            />
+          } @else if (!doctorLogoUrl) {
+            <span class="rx-monogram">{{ initials }}</span>
+          }
+          <strong>RECETA <br />MÉDICA</strong>
+        </div>
+      </header>
+      <section class="rx-office">
+        <strong>{{ office.name || 'Consultorio pendiente' }}</strong>
+        <p>{{ office.address || 'Domicilio completo pendiente' }}</p>
+        <p>
+          Tel. {{ office.phone || 'Pendiente' }}
+          @if (office.email) {
+            <span> · {{ office.email }}</span>
+          }
+        </p>
+      </section>
+      <div class="rx-folio">
+        <span
+          ><small>Folio de emisión</small><strong>{{ prescription.folio }}</strong></span
+        ><span
+          ><small>Fecha y hora · Ciudad de México</small
+          ><strong>{{ prescription.createdAt | date: 'dd/MM/yyyy HH:mm' : '-0600' }}</strong></span
+        >
+      </div>
+      <div class="rx-clinical-body">
+        <section class="rx-patient">
+          <div>
+            <small>PACIENTE</small>
+            <h2>{{ patient.fullName }}</h2>
+          </div>
+          <div>
+            <small>{{ patient.birthDate ? 'FECHA DE NACIMIENTO' : 'EDAD' }}</small
+            ><strong>{{ patient.birthDate || patient.age + (patient.age ? ' años' : '') }}</strong>
+          </div>
+        </section>
+        <section class="rx-treatment">
+          <div class="rx-section-title">
+            <span class="rx-rp">℞</span>
+            <div>
+              <h2>Prescripción e indicaciones</h2>
+              <p>Denominación genérica · instrucciones para el paciente</p>
+            </div>
+          </div>
+          @for (m of prescription.medications; track $index) {
+            <div class="rx-medicine">
+              <span class="rx-number">{{ ($index + 1).toString().padStart(2, '0') }}</span>
+              <div class="rx-medicine-content">
+                <h3>{{ m.genericName }}</h3>
+                @if (m.brandName) {
+                  <p class="rx-brand-name">Nombre comercial: {{ m.brandName }}</p>
+                }
+                @if (m.pharmaceuticalForm || m.concentration) {
+                  <p>
+                    {{ m.pharmaceuticalForm
+                    }}{{ m.pharmaceuticalForm && m.concentration ? ' · ' : ''
+                    }}{{ m.concentration }}
+                  </p>
+                }
+                @if (m.presentation || m.quantity) {
+                  <div class="rx-quantity">
+                    @if (m.presentation) {
+                      <span><small>Presentación</small>{{ m.presentation }}</span>
+                    }
+                    @if (m.quantity) {
+                      <span><small>Cantidad a surtir</small>{{ m.quantity }}</span>
+                    }
+                  </div>
+                }
+                <p class="rx-instruction">
+                  <strong>Dosis:</strong> {{ m.dose }}.
+                  @if (m.route) {
+                    <strong>Vía:</strong> {{ m.route }}.
+                  }
+                  <strong>Frecuencia:</strong> {{ m.frequency }}. <strong>Duración:</strong>
+                  {{ m.duration }}.
+                </p>
+              </div>
+            </div>
+          }
+          @if (prescription.instructions) {
+            <div class="rx-extra">
+              <h3>Indicaciones adicionales</h3>
+              <p>{{ prescription.instructions }}</p>
+            </div>
+          }
+        </section>
+      </div>
+      <p class="rx-legal">
+        {{
+          prescription.example
+            ? 'EJEMPLO SIN VALIDEZ · No es una receta emitida.'
+            : 'Receta general. Este formato no sustituye recetarios especiales ni autorizaciones de COFEPRIS. Una copia impresa se contrasta con el registro original mediante su folio.'
+        }}
+      </p>
+      <footer class="rx-footer">
+        @if (template.footerReference) {
+          <div class="rx-footer-reference">
+            <span>{{ office.name }}</span
+            ><span>{{ prescription.folio }}</span>
+          </div>
+        }
+        <div class="rx-signature">
+          @if (!prescription.example && author.signatureImage) {
+            <img [src]="author.signatureImage" alt="Firma digitalizada del médico emisor" />
+          } @else {
+            <div class="rx-signature-space"></div>
+          }
+          <span>{{ author.fullName || 'Nombre del profesional' }}</span
+          ><small>{{
+            prescription.example
+              ? 'Firma del profesional al emitir'
+              : 'Firma digitalizada vinculada a la sesión del emisor'
+          }}</small>
+        </div>
+        <div class="rx-verification">
+          <app-prescription-qr
+            [example]="!!prescription.example || !!prescription.draft"
+            [payload]="prescription.qrData || ''"
+            [integrityHash]="integrityHash"
+          />
+        </div>
+      </footer>
+    }
+  </article>
+</div>

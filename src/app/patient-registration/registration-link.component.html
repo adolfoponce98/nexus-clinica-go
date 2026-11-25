@@ -1,0 +1,152 @@
+<button
+  type="button"
+  (click)="open()"
+  [disabled]="!permissions.can('patients', 'write')"
+  class="link-trigger"
+>
+  <lucide-icon [img]="icons.Link2" class="w-4 h-4" /> Enlace de registro
+</button>
+<dialog
+  #modal
+  class="link-dialog"
+  aria-labelledby="registration-link-title"
+  (close)="opened.set(false)"
+  (cancel)="$event.preventDefault(); close()"
+  (click)="backdrop($event)"
+>
+  <header>
+    <div class="dialog-title">
+      <span class="dialog-icon"><lucide-icon [img]="icons.QrCode" class="w-6 h-6" /></span>
+      <div>
+        <small>AUTOGESTIÓN DEL PACIENTE</small>
+        <h2 id="registration-link-title">
+          {{ confirming() ? 'Generar enlace de registro' : 'Comparte su registro' }}
+        </h2>
+      </div>
+    </div>
+    <button type="button" class="close-dialog" aria-label="Cerrar" (click)="close()">
+      <lucide-icon [img]="icons.X" class="w-4 h-4" />
+    </button>
+  </header>
+  @if (confirming()) {
+    <p class="intro-copy">
+      Se generará un <strong>enlace y un código QR</strong> para que el paciente capture sus datos y
+      antecedentes sin iniciar sesión.
+    </p>
+    <div class="scope-label">
+      <lucide-icon [img]="icons.Building2" class="w-4 h-4" /><span>{{ officeName }}</span>
+    </div>
+    <div class="generation-details">
+      <div>
+        <span class="detail-icon"><lucide-icon [img]="icons.Link2" class="w-5 h-5" /></span>
+        <div>
+          <h3>Compártelo con tu paciente</h3>
+          <p>Podrás copiar el enlace o mostrar el QR para abrir el formulario.</p>
+        </div>
+      </div>
+      <div>
+        <span class="detail-icon"><lucide-icon [img]="icons.Clock3" class="w-5 h-5" /></span>
+        <div>
+          <h3>Disponible durante una hora</h3>
+          <p>El tiempo comenzará cuando confirmes la generación.</p>
+        </div>
+      </div>
+      <div>
+        <span class="detail-icon"><lucide-icon [img]="icons.ShieldCheck" class="w-5 h-5" /></span>
+        <div>
+          <h3>Un solo registro</h3>
+          <p>El enlace se invalidará cuando el paciente envíe sus datos y firma.</p>
+        </div>
+      </div>
+    </div>
+    @if (error()) {
+      <p role="alert" class="error">{{ error() }}</p>
+    }
+    <footer class="confirm-actions">
+      <button
+        type="button"
+        class="secondary-action"
+        (click)="link() ? confirming.set(false) : close()"
+        [disabled]="loading()"
+      >
+        Cancelar</button
+      ><button
+        type="button"
+        class="primary-action"
+        (click)="generate()"
+        [disabled]="loading() || !permissions.can('patients', 'write')"
+      >
+        @if (loading()) {
+          <span class="button-spinner" aria-hidden="true"></span>
+        } @else {
+          <lucide-icon [img]="icons.Sparkles" class="w-4 h-4" />
+        }
+        {{ loading() ? 'Generando…' : 'Generar enlace y QR' }}
+      </button>
+    </footer>
+  } @else if (link()) {
+    <p class="intro-copy">
+      Comparte el enlace o QR con tu paciente para completar su registro. Se cerrará después de un
+      envío.
+    </p>
+    <div class="scope-label">
+      <lucide-icon [img]="icons.Building2" class="w-4 h-4" /><span
+        >{{ link().doctorName }} · {{ link().officeName }}</span
+      >
+    </div>
+    @if (qr()) {
+      <img
+        [src]="qr()"
+        alt="QR del enlace de registro del paciente"
+        width="220"
+        height="220"
+        class="link-qr"
+      />
+    } @else if (loading()) {
+      <p role="status" class="loading-copy">Preparando código QR…</p>
+    }
+    <label for="patient-registration-url"
+      >Enlace para el paciente<input
+        id="patient-registration-url"
+        [value]="link().url"
+        readonly
+        (focus)="$any($event.target).select()"
+    /></label>
+    <div class="expiry">
+      <lucide-icon [img]="icons.Clock3" class="w-4 h-4" /><span>{{
+        remaining() > 0
+          ? 'Disponible durante ' + clock + ' o hasta completar el registro.'
+          : 'El enlace ya expiró. Genera uno nuevo.'
+      }}</span>
+    </div>
+    @if (error()) {
+      <p role="alert" class="error">{{ error() }}</p>
+    }
+    <div class="link-actions">
+      <button type="button" class="primary-action" (click)="copy()" [disabled]="remaining() === 0">
+        <lucide-icon [img]="icons.Copy" class="w-4 h-4" />Copiar enlace</button
+      ><button
+        type="button"
+        class="secondary-action"
+        (click)="share()"
+        [disabled]="remaining() === 0"
+      >
+        <lucide-icon [img]="icons.Share2" class="w-4 h-4" />Compartir
+      </button>
+    </div>
+    <button
+      type="button"
+      class="secondary-action download-qr"
+      (click)="downloadQr()"
+      [disabled]="!qr() || remaining() === 0"
+    >
+      <lucide-icon [img]="icons.Download" class="w-4 h-4" />Guardar código QR
+    </button>
+    <button type="button" class="new-link" (click)="prepareAnother()" [disabled]="loading()">
+      Generar para otro paciente
+    </button>
+    @if (notice()) {
+      <p role="status" class="notice">{{ notice() }}</p>
+    }
+  }
+</dialog>

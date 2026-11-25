@@ -1,0 +1,242 @@
+:host {
+  display: block;
+  width: 100%;
+}
+.clinical-skeleton {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.skeleton-card {
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-secondary, #fff);
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 4px 18px #0f172a04;
+}
+.shimmer {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--bg-primary, #f1f5f9);
+  border-radius: 7px;
+}
+.shimmer:after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, #94a3b822, transparent);
+  animation: clinical-shimmer 1.65s infinite;
+}
+i {
+  font-style: normal;
+}
+.back-placeholder {
+  width: 220px;
+  height: 38px;
+  margin-bottom: 22px;
+}
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+  min-height: 126px;
+}
+.heading-text {
+  flex: 1;
+}
+.badge {
+  height: 17px;
+  width: 140px;
+  margin-bottom: 12px;
+}
+.title {
+  height: 28px;
+  width: 65%;
+  max-width: 340px;
+  margin-bottom: 12px;
+}
+.subtitle {
+  height: 10px;
+  width: 80%;
+  max-width: 420px;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+}
+.actions i {
+  width: 130px;
+  height: 42px;
+}
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.contact {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+}
+.icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 13px;
+}
+.contact > div,
+.history-row > div {
+  flex: 1;
+  min-width: 0;
+}
+.label {
+  height: 9px;
+  width: 80px;
+  margin-bottom: 10px;
+}
+.value {
+  height: 13px;
+  width: 75%;
+  margin-bottom: 10px;
+}
+.tabs {
+  display: flex;
+  gap: 18px;
+  padding: 17px;
+  margin-bottom: 22px;
+}
+.tabs i {
+  width: 150px;
+  height: 30px;
+}
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 22px;
+}
+.main-content {
+  display: grid;
+  gap: 22px;
+}
+.section-title {
+  height: 17px;
+  width: 190px;
+  max-width: 80%;
+  margin-bottom: 23px;
+}
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+}
+.date {
+  width: 65px;
+  height: 14px;
+}
+.summary {
+  height: 170px;
+  width: 100%;
+}
+.attachments {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.attachments i {
+  height: 90px;
+  border-radius: 13px;
+}
+.visual {
+  width: 100%;
+  height: 220px;
+  border-radius: 16px;
+  margin-bottom: 22px;
+}
+.short {
+  width: 50%;
+  margin-top: 12px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@keyframes clinical-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (max-width: 1000px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  .side-content {
+    display: none;
+  }
+  .actions i {
+    width: 100px;
+  }
+  .skeleton-card {
+    padding: 19px;
+  }
+}
+@media (max-width: 650px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .heading-text {
+    width: 100%;
+  }
+  .actions {
+    width: 100%;
+  }
+  .actions i {
+    flex: 1;
+  }
+  .tabs {
+    gap: 10px;
+  }
+  .tabs i {
+    width: 30%;
+  }
+  .attachments {
+    gap: 10px;
+  }
+  .attachments i {
+    height: 65px;
+  }
+  .date {
+    width: 40px;
+  }
+  .back-placeholder {
+    width: 160px;
+  }
+  .content-grid {
+    gap: 15px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer:after {
+    animation: none;
+    transform: none;
+  }
+}

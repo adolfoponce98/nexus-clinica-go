@@ -1,0 +1,285 @@
+<section class="composer">
+  <header class="composer-heading">
+    <div class="heading-icon"><lucide-icon [img]="icons.FilePenLine" /></div>
+    <div class="composer-title">
+      <span class="kicker">PRESCRIPCIÓN MÉDICA</span>
+      <h1>{{ issued() ? 'Receta emitida' : 'Expedir receta' }}</h1>
+    </div>
+    <p class="composer-subtitle">
+      La identidad del médico y el diseño corresponden al consultorio seleccionado.
+    </p>
+    <button
+      type="button"
+      aria-label="Cerrar editor de receta"
+      class="icon-button"
+      (click)="close()"
+      [disabled]="busy()"
+    >
+      <lucide-icon [img]="icons.X" />
+    </button>
+  </header>
+  @if (error()) {
+    <div class="message error" role="alert">
+      {{ error() }}
+      @if (!ready() && !loading()) {
+        <button type="button" (click)="load()">Reintentar carga</button>
+      }
+    </div>
+  }
+  @if (loading()) {
+    <div class="loading" role="status">
+      <span class="spinner"></span>Cargando paciente, plantilla y firma…
+    </div>
+  }
+  @if (ready()) {
+    <div class="composer-columns">
+      <section class="editor">
+        <div class="context-card">
+          <div>
+            <lucide-icon [img]="icons.User" /><span
+              ><small>PACIENTE DEL EXPEDIENTE</small><strong>{{ patient.fullName }}</strong
+              ><em>{{ patient.birthDate || patient.age + ' años' }}</em></span
+            >
+          </div>
+          <div>
+            <lucide-icon [img]="icons.Building2" /><span
+              ><small>CONSULTORIO EMISOR</small><strong>{{ office.name }}</strong></span
+            >
+          </div>
+        </div>
+        @if (!issued()) {
+          <section
+            class="dictation-panel"
+            aria-labelledby="rx-dictation-title"
+            [attr.aria-busy]="aiBusy()"
+          >
+            <div class="dictation-heading">
+              <span class="dictation-icon"><lucide-icon [img]="icons.Mic" /></span>
+              <div>
+                <span class="kicker">DICTADO INTELIGENTE</span>
+                <h2 id="rx-dictation-title">Tu prescripción, con tu voz</h2>
+                <p>Dicta uno o varios medicamentos, sus dosis e indicaciones.</p>
+              </div>
+            </div>
+            <label class="dictation-label" for="rx-dictation"
+              >Transcripción <span>Editable al detener el dictado</span></label
+            >
+            <textarea
+              id="rx-dictation"
+              [(ngModel)]="dictation"
+              rows="4"
+              maxlength="12000"
+              [disabled]="frozen || recording() || stopping()"
+              placeholder="Dicta nombre, dosis, frecuencia y duración. Puedes añadir forma, concentración, presentación y vía."
+            ></textarea>
+            <div class="dictation-controls">
+              @if (recording()) {
+                <button type="button" class="record-button recording" (click)="stopDictation()">
+                  <lucide-icon [img]="icons.Square" class="w-4 h-4" />Detener grabación
+                  <span>{{ elapsedDictation }}</span>
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="record-button"
+                  (click)="startDictation()"
+                  [disabled]="frozen || stopping() || !canUseDictation"
+                >
+                  <lucide-icon [img]="icons.Mic" class="w-4 h-4" />{{
+                    stopping() ? 'Finalizando dictado…' : 'Comenzar dictado'
+                  }}
+                </button>
+              }
+              <button
+                type="button"
+                class="generate-button"
+                (click)="generateFromDictation()"
+                [disabled]="
+                  frozen || recording() || stopping() || !dictation.trim() || !canUseDictation
+                "
+              >
+                @if (aiBusy()) {
+                  <span class="spinner light"></span>Organizando medicamentos…
+                } @else {
+                  <lucide-icon [img]="icons.Sparkles" class="w-4 h-4" />Generar prescripción
+                }
+              </button>
+            </div>
+            <label class="replace-option"
+              ><input
+                type="checkbox"
+                [(ngModel)]="replaceMedications"
+                [disabled]="frozen || recording()"
+              />Reemplazar la lista actual de medicamentos</label
+            >
+            <p class="dictation-footnote">
+              {{
+                billing.active()
+                  ? 'Incluido en tu suscripción · Sin consumo de créditos.'
+                  : 'Plan FREE: 1 crédito IA por generación exitosa.'
+              }}
+              Revisa los datos dictados antes de emitir.
+            </p>
+            @if (!canUseDictation) {
+              <p class="dictation-feedback">
+                Verifica que se haya cargado tu cuenta y que tengas permisos para recetas e IA.
+                Puedes completar los medicamentos manualmente.
+              </p>
+            }
+            @if (speechError()) {
+              <p class="dictation-feedback error" role="alert">{{ speechError() }}</p>
+            }
+            @if (aiNotice()) {
+              <p class="dictation-feedback" role="status">{{ aiNotice() }}</p>
+            }
+            @if (aiWarnings().length) {
+              <div class="dictation-warnings">
+                <strong>Por revisar</strong>
+                <ul>
+                  @for (warning of aiWarnings(); track $index) {
+                    <li>{{ warning }}</li>
+                  }
+                </ul>
+              </div>
+            }
+          </section>
+        }
+        @if (issued()) {
+          <div class="message success" role="status">
+            <lucide-icon [img]="icons.Check" /><span
+              >Receta conservada con folio <strong>{{ issued().folio }}</strong
+              >.
+              @if (data.attachToConsultation) {
+                Completa la carga del PDF para incluirla en los adjuntos de esta consulta.
+              } @else {
+                Puedes descargar nuevamente su PDF.
+              }
+            </span>
+          </div>
+        }
+        <div class="section-heading">
+          <div>
+            <h2>Medicamentos</h2>
+            <p>Escribe indicaciones claras y completas en español.</p>
+          </div>
+          <span>{{ medications.length }} / 20</span>
+        </div>
+        @for (m of medications; track m; let i = $index) {
+          <article class="medicine-card">
+            <div class="medicine-heading">
+              <span class="medicine-icon"><lucide-icon [img]="icons.Pill" /></span>
+              <h3>Medicamento {{ i + 1 }}</h3>
+              <button
+                type="button"
+                class="icon-button delete"
+                [attr.aria-label]="'Eliminar medicamento ' + (i + 1)"
+                (click)="remove(i)"
+                [disabled]="frozen"
+              >
+                <lucide-icon [img]="icons.Trash2" class="w-4 h-4" />
+              </button>
+            </div>
+            <div class="medicine-fields">
+              @for (f of fields; track f.key) {
+                <label [class.wide]="f.wide"
+                  >{{ f.label }}{{ f.required ? ' *' : ''
+                  }}<input
+                    [attr.aria-label]="f.label + ' ' + (i + 1)"
+                    [(ngModel)]="m[f.key]"
+                    [disabled]="frozen"
+                    [placeholder]="f.placeholder"
+                    maxlength="1000"
+                    [required]="f.required"
+                /></label>
+              }
+            </div>
+          </article>
+        }
+        <button
+          type="button"
+          class="add-button"
+          (click)="add()"
+          [disabled]="frozen || medications.length >= 20"
+        >
+          <lucide-icon [img]="icons.Plus" class="w-4 h-4" />Añadir medicamento
+        </button>
+        <label class="additional"
+          >Indicaciones adicionales <small>(opcional)</small
+          ><textarea
+            [(ngModel)]="instructions"
+            [disabled]="frozen"
+            maxlength="8000"
+            rows="3"
+            placeholder="Cuidados e indicaciones complementarias para el paciente"
+          ></textarea>
+        </label>
+        <div class="acknowledgements">
+          <lucide-icon [img]="icons.ShieldCheck" class="w-5 h-5" />
+          <div>
+            <label
+              ><input type="checkbox" [(ngModel)]="acknowledged" [disabled]="frozen" />Confirmo la
+              emisión de esta receta con mi identidad profesional y firma digitalizada.</label
+            ><label
+              ><input type="checkbox" [(ngModel)]="generalAcknowledged" [disabled]="frozen" />Esta
+              receta general no incluye medicamentos que requieren recetario especial.</label
+            >
+          </div>
+        </div>
+        @if (pending && !issued() && !busy()) {
+          <p class="pending-note">
+            La solicitud conserva sus datos para reintentar sin duplicar la receta.
+          </p>
+        }
+      </section>
+      <aside class="preview">
+        <div class="preview-heading">
+          <span class="kicker">VISTA PREVIA · PLANTILLA PREDETERMINADA</span
+          ><span class="preview-status">{{ issued() ? 'Emitida' : 'Borrador' }}</span>
+        </div>
+        <p>
+          {{
+            issued()
+              ? 'El QR vincula los identificadores cifrados del expediente y la receta.'
+              : 'El folio y el QR definitivo se generan al emitir la receta.'
+          }}
+        </p>
+        <div class="paper-scroll">
+          <div #document class="paper">
+            <app-prescription-document [prescription]="preview" [integrityHash]="hash" />
+          </div>
+        </div>
+      </aside>
+    </div>
+    <footer class="composer-footer">
+      <p>
+        @if (data.attachToConsultation) {
+          El PDF se subirá a los archivos adjuntos. Guarda la consulta para conservar su vínculo.
+        } @else {
+          La receta quedará conservada y podrás descargar su PDF.
+        }
+      </p>
+      <button
+        type="button"
+        class="primary"
+        (click)="save()"
+        [disabled]="busy() || (!pending && !valid)"
+      >
+        @if (busy()) {
+          <span class="spinner light"></span>{{ stage() }}
+        } @else {
+          <lucide-icon [img]="issued() ? icons.Download : icons.FilePenLine" class="w-4 h-4" />{{
+            issued()
+              ? data.attachToConsultation
+                ? 'Reintentar adjuntar PDF'
+                : 'Descargar PDF'
+              : pending
+                ? 'Reintentar emisión'
+                : data.attachToConsultation
+                  ? 'Emitir y adjuntar PDF'
+                  : 'Emitir y descargar PDF'
+          }}
+        }
+      </button>
+    </footer>
+  }
+</section>

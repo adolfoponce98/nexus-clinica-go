@@ -1,3 +1,4 @@
+import { API_URLS } from '../config/api-urls';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -18,10 +19,10 @@ export interface RegistrarPagoResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PagosService {
-  private apiUrl = 'https://registrarpago-rdotx3vmaq-uc.a.run.app';
+  private apiUrl = API_URLS.REGISTRARPAGO;
   private headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
   constructor(private http: HttpClient) {}

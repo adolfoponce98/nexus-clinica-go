@@ -1,0 +1,185 @@
+<div class="rx-workspace">
+  <header class="workspace-heading">
+    <button
+      type="button"
+      class="rx-button secondary"
+      (click)="mode() === 'templates' ? close.emit() : mode.set('templates')"
+    >
+      ← {{ mode() === 'templates' ? 'Volver a formatos' : 'Elegir plantillas' }}</button
+    ><button type="button" class="rx-button secondary" (click)="load(false)" [disabled]="loading()">
+      Actualizar datos
+    </button>
+  </header>
+  @if (error()) {
+    <div role="alert" class="rx-message error">{{ error() }}</div>
+  }
+  @if (notice()) {
+    <div role="status" class="rx-message success">{{ notice() }}</div>
+  }
+
+  <section class="lookup-panel top-lookup" aria-label="Consultar receta">
+    <div>
+      <h2>Consultar y verificar una receta</h2>
+      <p>Introduce el folio o el contenido del QR de una receta de este consultorio.</p>
+    </div>
+    <div class="lookup-input">
+      <input
+        aria-label="Folio o contenido del QR"
+        [(ngModel)]="lookupFolio"
+        placeholder="Folio RX-… o contenido del QR"
+      /><button
+        type="button"
+        class="rx-button secondary"
+        (click)="lookup()"
+        [disabled]="!lookupFolio.trim() || loading() || !office().idConsultorio"
+      >
+        Consultar
+      </button>
+    </div>
+  </section>
+  @if (loading()) {
+    <app-clinical-content-skeleton
+      kind="templates"
+      label="Cargando plantillas y configuración de recetas…"
+    />
+  }
+  @if (!loading() && office().idConsultorio) {
+    @if (mode() === 'templates') {
+      <section class="gallery-heading">
+        <div>
+          <span class="rx-kicker">TU IDENTIDAD, EN CADA RECETA</span>
+          <h1>Una receta a tu estilo.</h1>
+          <p>
+            {{ templates.length }} diseños con la misma información clínica. Elige una plantilla
+            para este consultorio.
+          </p>
+        </div>
+      </section>
+      <div class="gallery-layout" [class.horizontal]="orientation() === 'landscape'">
+        <section class="template-grid" aria-label="Plantillas de receta">
+          @for (t of templates; track t.id) {
+            <button
+              type="button"
+              class="template-option"
+              [class.selected]="selected() === t.id"
+              [attr.aria-pressed]="selected() === t.id"
+              (click)="select(t.id)"
+              [style.--card-color]="t.color"
+              [style.--card-accent]="t.accent"
+            >
+              @if (t.id === 'physical-custom') {
+                <div class="custom-thumbnail">
+                  <app-prescription-document
+                    [prescription]="{
+                      ...example,
+                      templateId: t.id,
+                      customTemplate: customTemplate(),
+                    }"
+                  />
+                </div>
+              } @else {
+                <app-prescription-thumbnail
+                  [template]="t"
+                  [doctorLogoUrl]="doctor().prescriptionLogoUrl || doctor().logoUrl || ''"
+                  [officeLogoUrl]="office().logoUrl || office().logo || ''"
+                  [orientation]="orientation()"
+                />
+              }
+              <div class="template-title">
+                <strong>{{ t.name }}</strong>
+                @if (settings().templateId === t.id) {
+                  <span class="active-pill">Activa</span>
+                } @else if (selected() === t.id) {
+                  <span class="selected-tick">✓</span>
+                }
+              </div>
+              <p>{{ t.description }}</p>
+              <div class="template-features">
+                @if (t.officeLogo) {
+                  <span>Logo del consultorio</span>
+                }
+                @if (!t.watermark) {
+                  <span>Sin marca de agua</span>
+                }
+              </div>
+            </button>
+          }
+        </section>
+        <aside class="preview-panel">
+          <div class="preview-heading">
+            <div>
+              <span class="rx-kicker">VISTA PREVIA</span>
+              <h2>{{ chosen.name }}</h2>
+            </div>
+            <span class="example-pill">Ejemplo</span>
+          </div>
+          <p class="preview-copy">
+            {{
+              selected() === 'physical-custom' && customTemplate()?.design?.version === 2
+                ? 'Textos impresos conservados del recetario físico. Paciente, medicamentos e indicaciones de ejemplo.'
+                : 'Datos reales del emisor y consultorio. El paciente, medicamentos e indicaciones son de ejemplo.'
+            }}
+          </p>
+          <div class="format-controls" role="group" aria-label="Orientación de la receta">
+            <span>Formato de página <small>Carta</small></span>
+            <div>
+              <button
+                type="button"
+                [class.active]="orientation() === 'portrait'"
+                [attr.aria-pressed]="orientation() === 'portrait'"
+                (click)="orientation.set('portrait')"
+              >
+                <span class="page-icon"></span>Vertical</button
+              ><button
+                type="button"
+                [class.active]="orientation() === 'landscape'"
+                [attr.aria-pressed]="orientation() === 'landscape'"
+                (click)="orientation.set('landscape')"
+              >
+                <span class="page-icon horizontal"></span>Horizontal
+              </button>
+            </div>
+          </div>
+          <p class="watermark-hint">
+            El logo del consultorio se utiliza como marca de agua tenue cuando está disponible.
+          </p>
+          <div class="document-preview"><app-prescription-document [prescription]="example" /></div>
+          <div class="preview-actions">
+            <button
+              type="button"
+              class="rx-button primary"
+              (click)="setDefault()"
+              [disabled]="saving() || isDefault || !permissions.can('prescriptions', 'write')"
+            >
+              {{
+                saving()
+                  ? 'Guardando…'
+                  : isDefault
+                    ? 'Plantilla predeterminada de este consultorio'
+                    : 'Usar como predeterminada'
+              }}</button
+            ><small
+              >Solo cambia el diseño de las recetas que se emitan después. Las anteriores conservan
+              su plantilla.</small
+            >
+          </div>
+        </aside>
+      </div>
+    }
+    @if (mode() === 'issued' && issued()) {
+      <section class="issued-heading">
+        <div>
+          <span class="rx-kicker">RECETA CONSERVADA · SOLO LECTURA</span>
+          <h1>Prescripción emitida</h1>
+          <p>Folio {{ issued().folio }}</p>
+        </div>
+        <button type="button" class="rx-button primary" (click)="print()">
+          Imprimir / Guardar PDF
+        </button>
+      </section>
+      <div id="issued-prescription" class="issued-document">
+        <app-prescription-document [prescription]="issued()" [integrityHash]="hash()" />
+      </div>
+    }
+  }
+</div>

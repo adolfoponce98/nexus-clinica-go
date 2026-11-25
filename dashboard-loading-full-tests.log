@@ -1,0 +1,240 @@
+> Building...
+√ Building...
+Initial chunk files                                                                   | Names                                                                              |  Raw size
+spec-app-auth-progressive-navigation.js                                               | spec-app-auth-progressive-navigation                                               | 750.15 kB | 
+chunk-PKMVIN2G.js                                                                     | -                                                                                  | 440.66 kB | 
+chunk-4LGH2HGH.js                                                                     | -                                                                                  | 245.18 kB | 
+chunk-SAMCF2BO.js                                                                     | -                                                                                  | 220.70 kB | 
+chunk-N5FZBWAN.js                                                                     | -                                                                                  | 193.31 kB | 
+chunk-RZ3MAOKM.js                                                                     | -                                                                                  | 175.94 kB | 
+styles.css                                                                            | styles                                                                             | 163.78 kB | 
+chunk-Q6KYFUA7.js                                                                     | -                                                                                  | 121.45 kB | 
+chunk-LBTGQDM3.js                                                                     | -                                                                                  | 116.10 kB | 
+chunk-EF7MCVZ3.js                                                                     | -                                                                                  |  85.97 kB | 
+chunk-XVUHJH6F.js                                                                     | -                                                                                  |  82.31 kB | 
+chunk-CVWR6UNJ.js                                                                     | -                                                                                  |  75.93 kB | 
+chunk-LEIJGGHL.js                                                                     | -                                                                                  |  75.60 kB | 
+chunk-HH7SQMVF.js                                                                     | -                                                                                  |  72.07 kB | 
+chunk-OE4HNQ62.js                                                                     | -                                                                                  |  71.89 kB | 
+chunk-2EAD7RCP.js                                                                     | -                                                                                  |  69.22 kB | 
+chunk-G5XJ2UST.js                                                                     | -                                                                                  |  68.98 kB | 
+chunk-WQANNRQB.js                                                                     | -                                                                                  |  66.97 kB | 
+chunk-OKOAICV3.js                                                                     | -                                                                                  |  55.37 kB | 
+chunk-SAOIECH3.js                                                                     | -                                                                                  |  55.29 kB | 
+chunk-NZGEGTOO.js                                                                     | -                                                                                  |  51.38 kB | 
+chunk-L4QNIP3O.js                                                                     | -                                                                                  |  49.91 kB | 
+chunk-5KXDSMZT.js                                                                     | -                                                                                  |  47.02 kB | 
+chunk-6NHHVE7H.js                                                                     | -                                                                                  |  45.04 kB | 
+chunk-QBS6VZFS.js                                                                     | -                                                                                  |  43.56 kB | 
+chunk-MVGAN5G2.js                                                                     | -                                                                                  |  41.12 kB | 
+chunk-EYWN7Q7W.js                                                                     | -                                                                                  |  39.92 kB | 
+chunk-36BQS7L6.js                                                                     | -                                                                                  |  37.67 kB | 
+chunk-TCJ3ZUYG.js                                                                     | -                                                                                  |  27.95 kB | 
+chunk-C7FLCDWW.js                                                                     | -                                                                                  |  27.78 kB | 
+chunk-BO2TPDSD.js                                                                     | -                                                                                  |  25.85 kB | 
+chunk-KBJ2KPOX.js                                                                     | -                                                                                  |  22.03 kB | 
+chunk-U77AZ53E.js                                                                     | -                                                                                  |  15.72 kB | 
+chunk-ETLZT6AK.js                                                                     | -                                                                                  |  14.63 kB | 
+chunk-TV2QR3BV.js                                                                     | -                                                                                  |  14.34 kB | 
+spec-app-recipes-prescription-composer.component.js                                   | spec-app-recipes-prescription-composer.component                                   |  14.26 kB | 
+spec-app-expediente-shared-followup-followup-workspace.component.js                   | spec-app-expediente-shared-followup-followup-workspace.component                   |  13.49 kB | 
+chunk-W2ZPLN2G.js                                                                     | -                                                                                  |  11.56 kB | 
+spec-app-calendar-calendar.component.js                                               | spec-app-calendar-calendar.component                                               |  11.28 kB | 
+chunk-GROPVTZR.js                                                                     | -                                                                                  |  10.91 kB | 
+chunk-PMPHYFE3.js                                                                     | -                                                                                  |  10.80 kB | 
+chunk-PJOBDR6H.js                                                                     | -                                                                                  |  10.07 kB | 
+chunk-3BH56DBC.js                                                                     | -                                                                                  |  10.05 kB | 
+spec-app-auth-employee-data.js                                                        | spec-app-auth-employee-data                                                        |   9.43 kB | 
+chunk-VWWBSGWI.js                                                                     | -                                                                                  |   9.37 kB | 
+spec-app-main-main-layout.component.js                                                | spec-app-main-main-layout.component                                                |   8.94 kB | 
+chunk-PSUTR72U.js                                                                     | -                                                                                  |   8.01 kB | 
+spec-app-expediente-baseFormPersonaldentification-patient-identification.component.js | spec-app-expediente-baseFormPersonaldentification-patient-identification.component |   7.51 kB | 
+spec-app-auth-auth-session.service.js                                                 | spec-app-auth-auth-session.service                                                 |   7.17 kB | 
+spec-app-auth-permissions.js                                                          | spec-app-auth-permissions                                                          |   7.01 kB | 
+chunk-TUT5GSC6.js                                                                     | -                                                                                  |   6.87 kB | 
+spec-app-reporting-check-in-reminders.component.js                                    | spec-app-reporting-check-in-reminders.component                                    |   6.47 kB | 
+spec-app-clinical-clinical-identity.component.js                                      | spec-app-clinical-clinical-identity.component                                      |   6.30 kB | 
+spec-app-auth-sync-cache.js                                                           | spec-app-auth-sync-cache                                                           |   6.26 kB | 
+spec-app-auth-office-sync.service.js                                                  | spec-app-auth-office-sync.service                                                  |   5.93 kB | 
+chunk-5JXFHWSU.js                                                                     | -                                                                                  |   5.84 kB | 
+chunk-SZ2OUI3W.js                                                                     | -                                                                                  |   5.78 kB | 
+spec-app-expediente-shared-followup-followup-utils.js                                 | spec-app-expediente-shared-followup-followup-utils                                 |   5.61 kB | 
+spec-app-calendar-onboarding-calendar-practice-dialogs.component.js                   | spec-app-calendar-onboarding-calendar-practice-dialogs.component                   |   5.60 kB | 
+spec-app-auth-session-http.interceptor.js                                             | spec-app-auth-session-http.interceptor                                             |   5.46 kB | 
+chunk-GQH7B6TC.js                                                                     | -                                                                                  |   5.33 kB | 
+chunk-72RGWDCR.js                                                                     | -                                                                                  |   5.21 kB | 
+chunk-NAMSZIPB.js                                                                     | -                                                                                  |   5.20 kB | 
+chunk-JBWBLPNK.js                                                                     | -                                                                                  |   5.19 kB | 
+spec-app-shared-directory-creation.js                                                 | spec-app-shared-directory-creation                                                 |   5.04 kB | 
+chunk-GLNOEIPA.js                                                                     | -                                                                                  |   4.92 kB | 
+spec-app-planes-billing.service.js                                                    | spec-app-planes-billing.service                                                    |   4.77 kB | 
+spec-app-recipes-prescription-workspace.component.js                                  | spec-app-recipes-prescription-workspace.component                                  |   4.67 kB | 
+chunk-OKRRIAN6.js                                                                     | -                                                                                  |   4.60 kB | 
+spec-app-home-home-loading.js                                                         | spec-app-home-home-loading                                                         |   4.48 kB | 
+spec-app-clinical-prescription-branding.component.js                                  | spec-app-clinical-prescription-branding.component                                  |   4.43 kB | 
+spec-app-planes-creation-access.service.js                                            | spec-app-planes-creation-access.service                                            |   4.42 kB | 
+spec-app-consultorios-offices-loading.js                                              | spec-app-consultorios-offices-loading                                              |   4.36 kB | 
+spec-app-appointment-history-appointment-history.component.js                         | spec-app-appointment-history-appointment-history.component                         |   4.33 kB | 
+spec-app-home-current-appointment.component.js                                        | spec-app-home-current-appointment.component                                        |   3.90 kB | 
+spec-app-auth-session-idle.service.js                                                 | spec-app-auth-session-idle.service                                                 |   3.90 kB | 
+chunk-LQP6KDUV.js                                                                     | -                                                                                  |   3.86 kB | 
+chunk-WK2VFJMS.js                                                                     | -                                                                                  |   3.61 kB | 
+spec-app-recipes-prescription-document.component.js                                   | spec-app-recipes-prescription-document.component                                   |   3.56 kB | 
+spec-app-appointment-history-appointment-history.service.js                           | spec-app-appointment-history-appointment-history.service                           |   3.52 kB | 
+spec-app-calendar-onboarding-calendar-onboarding.component.js                         | spec-app-calendar-onboarding-calendar-onboarding.component                         |   3.52 kB | 
+chunk-WCZPXDTL.js                                                                     | -                                                                                  |   3.48 kB | 
+spec-app-patient-patient-list-patient-creation-access.js                              | spec-app-patient-patient-list-patient-creation-access                              |   3.46 kB | 
+spec-app-patient-registration-public-registration.component.js                        | spec-app-patient-registration-public-registration.component                        |   3.44 kB | 
+spec-app-patient-registration-registration-link.component.js                          | spec-app-patient-registration-registration-link.component                          |   3.30 kB | 
+spec-app-auth-local-notifications.service.js                                          | spec-app-auth-local-notifications.service                                          |   3.19 kB | 
+spec-app-auth-office-preference.js                                                    | spec-app-auth-office-preference                                                    |   3.04 kB | 
+chunk-ED4K2N3Y.js                                                                     | -                                                                                  |   2.97 kB | 
+spec-app-appointment-history-appointment-history.utils.js                             | spec-app-appointment-history-appointment-history.utils                             |   2.90 kB | 
+spec-app-employes-employee-permission-editor.js                                       | spec-app-employes-employee-permission-editor                                       |   2.90 kB | 
+chunk-JSIV37HY.js                                                                     | -                                                                                  |   2.85 kB | 
+spec-app-profile-tabs-connected-devices.component.js                                  | spec-app-profile-tabs-connected-devices.component                                  |   2.81 kB | 
+spec-app-appointments-appointment-patient.js                                          | spec-app-appointments-appointment-patient                                          |   2.79 kB | 
+spec-app-reporting-report-export.js                                                   | spec-app-reporting-report-export                                                   |   2.79 kB | 
+chunk-5Q33SIKQ.js                                                                     | -                                                                                  |   2.77 kB | 
+spec-app-recipes-prescription-pdf.service.js                                          | spec-app-recipes-prescription-pdf.service                                          |   2.71 kB | 
+spec-app-clinical-clinical-document-view.component.js                                 | spec-app-clinical-clinical-document-view.component                                 |   2.60 kB | 
+spec-app-recipes-receta-medica.component.js                                           | spec-app-recipes-receta-medica.component                                           |   2.57 kB | 
+chunk-HQRRF35B.js                                                                     | -                                                                                  |   2.49 kB | 
+spec-app-expediente-oftamologic-medical-record-oftamologic-form.component.js          | spec-app-expediente-oftamologic-medical-record-oftamologic-form.component          |   2.34 kB | 
+spec-app-reporting-check-in.utils.js                                                  | spec-app-reporting-check-in.utils                                                  |   2.29 kB | 
+chunk-ZYLAZ3K7.js                                                                     | -                                                                                  |   2.23 kB | 
+spec-app-reporting-appointment-billing.component.js                                   | spec-app-reporting-appointment-billing.component                                   |   2.23 kB | 
+spec-app-clinical-clinical-note-workflow.component.js                                 | spec-app-clinical-clinical-note-workflow.component                                 |   2.04 kB | 
+chunk-VYYERPGF.js                                                                     | -                                                                                  |   2.02 kB | 
+chunk-UKADXAH6.js                                                                     | -                                                                                  |   1.92 kB | 
+spec-app-scheduling-office-hours-editor.component.js                                  | spec-app-scheduling-office-hours-editor.component                                  |   1.89 kB | 
+spec-app-app.js                                                                       | spec-app-app                                                                       |   1.84 kB | 
+chunk-5UNATMQY.js                                                                     | -                                                                                  |   1.83 kB | 
+spec-app-auth-appointment-cache.js                                                    | spec-app-auth-appointment-cache                                                    |   1.74 kB | 
+spec-app-employes-employee-permission-presets.js                                      | spec-app-employes-employee-permission-presets                                      |   1.66 kB | 
+chunk-SLKQZEDR.js                                                                     | -                                                                                  |   1.65 kB | 
+spec-app-clinical-clinical-asset-dialog.component.js                                  | spec-app-clinical-clinical-asset-dialog.component                                  |   1.63 kB | 
+spec-app-scheduling-office-hours.js                                                   | spec-app-scheduling-office-hours                                                   |   1.62 kB | 
+spec-app-recipes-prescription-qr.component.js                                         | spec-app-recipes-prescription-qr.component                                         |   1.58 kB | 
+chunk-6N77FK7F.js                                                                     | -                                                                                  |   1.29 kB | 
+spec-app-patient-registration-public-registration-api.service.js                      | spec-app-patient-registration-public-registration-api.service                      |   1.28 kB | 
+init-testbed.js                                                                       | init-testbed                                                                       |   1.21 kB | 
+chunk-QOIEN36E.js                                                                     | -                                                                                  |   1.20 kB | 
+chunk-W6P4NQSV.js                                                                     | -                                                                                  |   1.18 kB | 
+spec-app-clinical-signature-pad.component.js                                          | spec-app-clinical-signature-pad.component                                          |   1.11 kB | 
+chunk-Q62YKTKA.js                                                                     | -                                                                                  |   1.06 kB | 
+vitest-mock-patch.js                                                                  | vitest-mock-patch                                                                  | 969 bytes | 
+chunk-WVGTXDHP.js                                                                     | -                                                                                  | 333 bytes | 
+chunk-HBAXCVFD.js                                                                     | -                                                                                  | 280 bytes | 
+chunk-U3ASSIHP.js                                                                     | -                                                                                  |  43 bytes | 
+
+                                                                                      | Initial total                                                                      |   4.11 MB
+
+Lazy chunk files                                                                      | Names                                                                              |  Raw size
+chunk-FJW7DA5N.js                                                                     | payment-result-component                                                           |  26.55 kB | 
+chunk-BTZHPFXO.js                                                                     | public-registration-component                                                      | 334 bytes | 
+
+Application bundle generation complete. [11.528 seconds] - 2026-11-23T17:46:10.782Z
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:277:185:
+      277 │ ...Cobrado: {{ (appointment?.amountPaid ?? 0) | currency:'MXN':'s...
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:278:22:
+      278 │     @if (appointment?.finalCost !== null && appointment?.finalCos...
+          ╵                       ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:278:57:
+      278 │ ...t !== null && appointment?.finalCost !== undefined) { <p>Costo...
+          ╵                               ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:279:27:
+      279 │     @else if (appointment?.quotedCost !== null && appointment?.qu...
+          ╵                            ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:279:63:
+      279 │ ... !== null && appointment?.quotedCost !== undefined) { <p>Preci...
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:40:4:
+      40 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:102:167:
+      102 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:45:57:
+      45 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:14:80:
+      14 │ ...ule, FormsModule, LucideAngularModule, Advanced3DViewerComponent],
+         ╵                                           ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+ RUN  v4.1.2 D:/GitHub/nexus-admin-nexo-salud
+
+
+ Test Files  55 passed (55)
+      Tests  266 passed (266)
+   Start at  11:46:11
+   Duration  6.41s (transform 9.99s, setup 12.02s, import 24.38s, tests 11.90s, environment 116.03s)
+

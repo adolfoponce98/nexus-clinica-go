@@ -30,7 +30,7 @@ export interface BranchModel {
   numberStudents: number;
   numberCoach: number;
   typeClasses: any[]; // Cambiar 'any[]' por TypeClassModel[] si ya cuentas con el modelo
-  myBikes: any[];    // Cambiar 'any[]' por MyBike[] si ya cuentas con el modelo
+  myBikes: any[]; // Cambiar 'any[]' por MyBike[] si ya cuentas con el modelo
   myBikesNumber: number;
   schedulersStudio: string[];
   tolerance: string;

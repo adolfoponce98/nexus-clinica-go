@@ -1,0 +1,146 @@
+<section class="branding-panel" aria-labelledby="branding-title">
+  <header>
+    <span class="branding-icon"><lucide-icon [img]="icons.ImagePlus" /></span>
+    <div>
+      <span class="kicker">IDENTIDAD VISUAL</span>
+      <h3 id="branding-title">Logo para tus recetas</h3>
+      <p>Una imagen limpia que acompaña tu identidad profesional.</p>
+    </div>
+  </header>
+  <div class="brand-targets" role="group" aria-label="Asignar logo">
+    <button
+      type="button"
+      [class.active]="target === 'doctor'"
+      [attr.aria-pressed]="target === 'doctor'"
+      (click)="selectTarget('doctor')"
+      [disabled]="loading() || preparing() || saving() || uploading()"
+    >
+      <lucide-icon [img]="icons.UserRound" />Del doctor</button
+    ><button
+      type="button"
+      [class.active]="target === 'office'"
+      [attr.aria-pressed]="target === 'office'"
+      (click)="selectTarget('office')"
+      [disabled]="loading() || preparing() || saving() || uploading()"
+    >
+      <lucide-icon [img]="icons.Building2" />Del consultorio
+    </button>
+  </div>
+  <p class="brand-scope">
+    {{
+      target === 'office'
+        ? officeName
+        : 'Se muestra junto a tu nombre en las recetas, además del logo propio del consultorio.'
+    }}
+  </p>
+  @if (error()) {
+    <p class="brand-message error" role="alert">
+      {{ error() }}
+      <button type="button" (click)="load()" [disabled]="loading() || preparing() || saving()">
+        Actualizar datos
+      </button>
+    </p>
+  }
+  @if (loading()) {
+    <app-clinical-content-skeleton kind="logo" label="Cargando logos del doctor y consultorio…" />
+  } @else {
+    <div class="branding-layout">
+      <div class="logo-stage">
+        @if (preview()) {
+          <img [src]="preview()" alt="Vista previa del logo para recetas" />
+        } @else {
+          <lucide-icon [img]="icons.ImagePlus" class="empty-icon" /><strong
+            >Tu logo, sin fondo</strong
+          ><span>PNG, JPG o WebP · Hasta 5 MB</span>
+        }
+      </div>
+      <div class="branding-details">
+        <h4>{{ dirty ? 'Revisa tu imagen' : 'Identidad en cada receta' }}</h4>
+        <p>
+          El logo del doctor aparece junto a su nombre, con mayor presencia. El del consultorio se
+          muestra a la derecha.
+        </p>
+        @if (fileName) {
+          <span class="file-name">{{ fileName }}</span>
+        }
+        @if (dirty) {
+          <span class="image-status" [class.ready]="ready()"
+            ><lucide-icon [img]="icons.CheckCircle2" />{{
+              ready()
+                ? 'PNG con transparencia · Listo para guardar'
+                : 'Imagen con fondo · Prepárala con IA'
+            }}</span
+          >
+        }
+        <input
+          #logoFile
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          aria-label="Subir logo del doctor o consultorio"
+          (change)="upload($event)"
+          [disabled]="disabled"
+          hidden
+        />
+        <div class="brand-actions">
+          <button type="button" class="secondary" (click)="logoFile.click()" [disabled]="disabled">
+            <lucide-icon [img]="icons.Upload" />{{
+              preview() ? 'Cambiar imagen' : 'Subir imagen'
+            }}</button
+          ><button
+            type="button"
+            class="prepare"
+            (click)="prepare()"
+            [disabled]="disabled || !imageData || ready()"
+          >
+            @if (preparing()) {
+              <span class="spinner"></span>Quitando fondo…
+            } @else {
+              <lucide-icon [img]="icons.Sparkles" />Preparar logo con IA
+            }
+          </button>
+        </div>
+        <p class="billing-copy">
+          {{
+            billing.active()
+              ? 'Preparación incluida con tu suscripción.'
+              : 'FREE: 1 crédito por preparación exitosa.'
+          }}
+        </p>
+        <p class="brand-help">
+          La IA ayuda a separar el fondo. Revisa los detalles y el texto antes de guardar. El
+          encabezado mantiene los logos a color; el fondo utiliza una versión tenue.
+        </p>
+      </div>
+    </div>
+    @if (uploading()) {
+      <p role="status" class="brand-loading"><span class="spinner"></span>Preparando imagen…</p>
+    }
+    @if (notice()) {
+      <p role="status" class="brand-message success">
+        <lucide-icon [img]="icons.CheckCircle2" />{{ notice() }}
+      </p>
+    }
+    <footer>
+      <p>Las recetas ya emitidas conservan su logo original.</p>
+      <div>
+        @if (savedLogo) {
+          <button type="button" class="remove" (click)="save(true)" [disabled]="disabled">
+            <lucide-icon [img]="icons.Trash2" />Quitar logo
+          </button>
+        }
+        <button
+          type="button"
+          class="primary"
+          (click)="save()"
+          [disabled]="disabled || !dirty || !ready()"
+        >
+          @if (saving()) {
+            <span class="spinner light"></span>Guardando…
+          } @else {
+            <lucide-icon [img]="icons.Save" />Guardar logo
+          }
+        </button>
+      </div>
+    </footer>
+  }
+</section>

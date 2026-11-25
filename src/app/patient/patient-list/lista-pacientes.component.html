@@ -1,26 +1,60 @@
-<div class="min-h-screen font-sans p-4 sm:p-8 flex flex-col items-center" style="background-color: var(--bg-primary); color: var(--text-main);">
+<app-plan-usage module="patients" />
+<div
+  class="min-h-screen font-sans p-4 sm:p-8 flex flex-col items-center"
+  style="background-color: var(--bg-primary); color: var(--text-main)"
+>
+  @if (loadError()) {
+    <div role="alert" class="p-4 border border-rose-500/30 rounded-xl text-sm text-rose-500">
+      <p>{{ loadError() }}</p>
+      <button
+        type="button"
+        (click)="cargarPacientes(idConsultorio())"
+        [disabled]="isLoading()"
+        class="underline mt-2"
+      >
+        Reintentar
+      </button>
+    </div>
+  }
 
   <!-- CONTENEDOR PRINCIPAL -->
   <div class="w-full max-w-6xl space-y-6">
-
     <!-- CABECERA -->
-    <header class="backdrop-blur-2xl border p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <header
+      class="backdrop-blur-2xl border p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
       <div>
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-500 border border-blue-500/20 mb-2">
+        <span
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-500 border border-blue-500/20 mb-2"
+        >
           DIRECTORIO MÉDICO
         </span>
-        <h1 class="text-2xl font-black tracking-tight" style="color: var(--text-main);">Gestión de Pacientes</h1>
-        <p class="text-xs" style="color: var(--text-muted);">Consulta expedientes, historiales de citas y filtros avanzados de atención.</p>
+        <h1 class="text-2xl font-black tracking-tight" style="color: var(--text-main)">
+          Gestión de Pacientes
+        </h1>
+        <p class="text-xs" style="color: var(--text-muted)">
+          Consulta expedientes, historiales de citas y filtros avanzados de atención.
+        </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
+        <app-patient-registration-link />
         <!-- Botón Importar Expediente con IA -->
-        <button (click)="abrirModalImportar()" class="flex items-center gap-2 px-5 py-3 rounded-2xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm">
+        <button
+          (click)="abrirModalImportar()"
+          class="flex items-center gap-2 px-5 py-3 rounded-2xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+          appPermission="records:write"
+        >
           <lucide-icon [img]="icons.FileText" class="w-4 h-4"></lucide-icon>
           Importar Expediente
         </button>
 
-        <button (click)="nuevoExpediente()" class="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+        <button
+          (click)="nuevoExpediente()"
+          class="flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand-gradient hover:bg-brand-gradient-hover text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-blue-600/20"
+          appPermission="records:write"
+        >
           <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
           Nuevo Paciente
         </button>
@@ -28,41 +62,60 @@
     </header>
 
     <!-- BARRA DE FILTROS Y BUSCADOR -->
-    <div class="backdrop-blur-2xl border p-5 rounded-3xl space-y-4 shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <div
+      class="backdrop-blur-2xl border p-5 rounded-3xl space-y-4 shadow-xl"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
       <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-
         <!-- Buscador por nombre o expediente -->
         <div class="md:col-span-4 relative">
-          <lucide-icon [img]="icons.Search" class="w-4 h-4 absolute left-4 top-3.5" style="color: var(--text-muted);"></lucide-icon>
+          <lucide-icon
+            [img]="icons.Search"
+            class="w-4 h-4 absolute left-4 top-3.5"
+            style="color: var(--text-muted)"
+          ></lucide-icon>
           <input
             type="text"
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event)"
             placeholder="Buscar por nombre o #expediente..."
-            class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-blue-500 transition-all shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-blue-500 transition-all shadow-inner"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          />
         </div>
 
-        <!-- Filtro por Categoría de Consulta -->
         <div class="md:col-span-3">
           <select
-            [ngModel]="selectedCategory()"
-            (ngModelChange)="selectedCategory.set($event)"
-            class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            @for (cat of categorias; track cat) {
-              <option [value]="cat">Categoría: {{ cat }}</option>
-            }
+            [ngModel]="lastVisitFilter()"
+            (ngModelChange)="lastVisitFilter.set($event)"
+            class="w-full border rounded-2xl py-3 px-4 text-xs"
+            style="background: var(--bg-primary); color: var(--text-main)"
+          >
+            <option value="TODAS">Última consulta: todas</option>
+            <option value="7">Últimos 7 días</option>
+            <option value="30">Últimos 30 días</option>
+            <option value="NUNCA">Sin consultas registradas</option>
           </select>
         </div>
-
         <!-- Filtro por Primera Vez / Visitas -->
         <div class="md:col-span-3">
           <select
             [ngModel]="selectedVisitsFilter()"
             (ngModelChange)="selectedVisitsFilter.set($event)"
-            class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          >
             <option value="TODOS">Todos los pacientes</option>
-            <option value="PRIMERA_VEZ">Primera vez (1 visita)</option>
-            <option value="MULTIPLE_VISITAS">Subsecuentes (>1 visita)</option>
+            <option value="PRIMERA_VEZ">Primera vez (sin consultas)</option>
+            <option value="MULTIPLE_VISITAS">Con consultas registradas</option>
           </select>
         </div>
 
@@ -71,36 +124,56 @@
           <select
             [ngModel]="sortBy()"
             (ngModelChange)="sortBy.set($event)"
-            class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            <option value="recientes">Más recientes</option>
-            <option value="visitas">Más visitas</option>
+            class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          >
+            <option value="recientes">Última consulta</option>
+            <option value="motivo">Último motivo de consulta</option>
+            <option value="nombre">Nombre</option>
+            <option value="visitas">Más consultas</option>
           </select>
         </div>
-
       </div>
     </div>
 
     <!-- ESTADO DE CARGA (LOADER) -->
     @if (isLoading()) {
-      <div class="backdrop-blur-2xl border rounded-3xl p-16 text-center space-y-3 shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-        <lucide-icon [img]="icons.Loader2" class="w-8 h-8 mx-auto text-blue-500 animate-spin"></lucide-icon>
-        <p class="text-xs font-bold" style="color: var(--text-muted);">Cargando pacientes del consultorio...</p>
-      </div>
+      <app-directory-skeleton kind="patients" label="Cargando pacientes del consultorio…" />
     } @else {
-
       <!-- LISTADO DE PACIENTES -->
       <div class="space-y-4">
         @if (filteredPacientes().length === 0) {
           <!-- EMPTY STATE -->
-          <div class="backdrop-blur-2xl border rounded-3xl p-16 text-center space-y-4 shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-            <div class="w-16 h-16 mx-auto rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+          <div
+            class="backdrop-blur-2xl border rounded-3xl p-16 text-center space-y-4 shadow-xl"
+            style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+          >
+            <div
+              class="w-16 h-16 mx-auto rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400"
+            >
               <lucide-icon [img]="icons.FileText" class="w-8 h-8"></lucide-icon>
             </div>
             <div class="space-y-1">
-              <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">No hay pacientes registrados</h3>
-              <p class="text-xs max-w-md mx-auto" style="color: var(--text-muted);">Este consultorio aún no cuenta con expedientes de pacientes guardados o no coinciden con los filtros aplicados.</p>
+              <h3
+                class="text-sm font-black uppercase tracking-wider"
+                style="color: var(--text-main)"
+              >
+                No hay pacientes registrados
+              </h3>
+              <p class="text-xs max-w-md mx-auto" style="color: var(--text-muted)">
+                Este consultorio aún no cuenta con expedientes de pacientes guardados o no coinciden
+                con los filtros aplicados.
+              </p>
             </div>
-            <button (click)="nuevoExpediente()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md cursor-pointer transition-all">
+            <button
+              (click)="nuevoExpediente()"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md cursor-pointer transition-all"
+              appPermission="records:write"
+            >
               <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
               Registrar nuevo paciente
             </button>
@@ -109,68 +182,109 @@
           @for (paciente of filteredPacientes(); track paciente.id) {
             <div
               (click)="verDetalleExpediente(paciente)"
-              class="backdrop-blur-xl border p-6 rounded-3xl transition-all cursor-pointer shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group hover:border-blue-500/50" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-
+              class="backdrop-blur-xl border p-6 rounded-3xl transition-all cursor-pointer shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 group hover:border-blue-500/50"
+              style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+              appPermission="records:read"
+            >
               <!-- Datos Principales -->
               <div class="space-y-2">
                 <div class="flex items-center gap-3">
-                  <span class="text-xs font-mono font-black text-blue-500 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-lg">
+                  <span
+                    class="text-xs font-mono font-black text-blue-500 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-lg"
+                  >
                     {{ paciente.expedienteNum }}
                   </span>
                   @if (paciente.esPrimeraVez) {
-                    <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                    <span
+                      class="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2.5 py-1 rounded-lg"
+                    >
                       Primera Vez
                     </span>
                   } @else {
-                    <span class="text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500 border border-purple-500/20 px-2.5 py-1 rounded-lg">
-                      {{ paciente.numeroVisitas }} Visitas registradas
+                    <span
+                      class="text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500 border border-purple-500/20 px-2.5 py-1 rounded-lg"
+                    >
+                      {{ paciente.numeroVisitas }} consultas médicas
                     </span>
                   }
                 </div>
 
                 <div>
-                  <h2 class="text-base font-black transition-colors group-hover:text-blue-500" style="color: var(--text-main);">
+                  <h2
+                    class="text-base font-black transition-colors group-hover:text-blue-500"
+                    style="color: var(--text-main)"
+                  >
                     {{ paciente.nombre }}
                   </h2>
-                  <div class="flex flex-wrap items-center gap-4 text-xs pt-1" style="color: var(--text-muted);">
+                  <div
+                    class="flex flex-wrap items-center gap-4 text-xs pt-1"
+                    style="color: var(--text-muted)"
+                  >
                     <span class="flex items-center gap-1.5">
-                      <lucide-icon [img]="icons.Phone" class="w-3.5 h-3.5 text-blue-500"></lucide-icon>
+                      <lucide-icon
+                        [img]="icons.Phone"
+                        class="w-3.5 h-3.5 text-blue-500"
+                      ></lucide-icon>
                       {{ paciente.telefono }}
                     </span>
                     <span class="flex items-center gap-1.5">
-                      <lucide-icon [img]="icons.Mail" class="w-3.5 h-3.5 text-purple-500"></lucide-icon>
+                      <lucide-icon
+                        [img]="icons.Mail"
+                        class="w-3.5 h-3.5 text-purple-500"
+                      ></lucide-icon>
                       {{ paciente.correo }}
                     </span>
                     <span class="flex items-center gap-1.5">
-                      <lucide-icon [img]="icons.Stethoscope" class="w-3.5 h-3.5 text-emerald-500"></lucide-icon>
-                      {{ paciente.categoriaConsulta }}
+                      <lucide-icon
+                        [img]="icons.Stethoscope"
+                        class="w-3.5 h-3.5 text-emerald-500"
+                      ></lucide-icon>
+                      {{ paciente.ultimoMotivo }}
                     </span>
                   </div>
                 </div>
               </div>
 
               <!-- Datos de Expediente y Fecha -->
-              <div class="flex items-center justify-between md:justify-end w-full md:w-auto gap-6 border-t md:border-t-0 pt-4 md:pt-0" style="border-color: var(--border-color);">
+              <div
+                class="flex items-center justify-between md:justify-end w-full md:w-auto gap-6 border-t md:border-t-0 pt-4 md:pt-0"
+                style="border-color: var(--border-color)"
+              >
                 <div class="text-left md:text-right space-y-1">
-                  <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--text-muted);">Última Visita</p>
-                  <p class="text-xs font-bold flex items-center md:justify-end gap-1.5" style="color: var(--text-main);">
-                    <lucide-icon [img]="icons.Calendar" class="w-3.5 h-3.5 text-blue-500"></lucide-icon>
-                    {{ paciente.ultimaVisita }}
+                  <p
+                    class="text-[10px] font-bold uppercase tracking-widest"
+                    style="color: var(--text-muted)"
+                  >
+                    Última Visita
+                  </p>
+                  <p
+                    class="text-xs font-bold flex items-center md:justify-end gap-1.5"
+                    style="color: var(--text-main)"
+                  >
+                    <lucide-icon
+                      [img]="icons.Calendar"
+                      class="w-3.5 h-3.5 text-blue-500"
+                    ></lucide-icon>
+                    {{ paciente.ultimaVisita || 'Sin consultas registradas' }}
                   </p>
                 </div>
 
-                <div class="w-10 h-10 rounded-2xl border flex items-center justify-center transition-all group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-500 shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-muted);">
+                <div
+                  class="w-10 h-10 rounded-2xl border flex items-center justify-center transition-all group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-500 shadow-sm"
+                  style="
+                    background-color: var(--bg-primary);
+                    border-color: var(--border-color);
+                    color: var(--text-muted);
+                  "
+                >
                   <lucide-icon [img]="icons.ChevronRight" class="w-5 h-5"></lucide-icon>
                 </div>
               </div>
-
             </div>
           }
         }
       </div>
-
     }
-
   </div>
 </div>
 
@@ -180,39 +294,87 @@
 
 <!-- DIÁLOGO 1: SELECCIÓN Y PREVIEW DE ARCHIVO -->
 @if (showImportModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-    <div class="w-full max-w-lg border rounded-3xl p-6 space-y-5 shadow-2xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+  <div
+    class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"
+  >
+    <div
+      class="w-full max-w-lg border rounded-3xl p-6 space-y-5 shadow-2xl"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
       <div class="flex justify-between items-center">
-        <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Importar Expediente con IA</h3>
-        <button (click)="showImportModal.set(false)" class="text-xs font-bold text-red-400 cursor-pointer">✕ Cerrar</button>
+        <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main)">
+          Importar Expediente con IA
+        </h3>
+        <button
+          (click)="showImportModal.set(false)"
+          class="text-xs font-bold text-red-400 cursor-pointer"
+        >
+          ✕ Cerrar
+        </button>
       </div>
 
-      <p class="text-xs" style="color: var(--text-muted);">
-        Sube un archivo PDF o una imagen de un expediente previo (papel o digital). La inteligencia artificial extraerá los datos automáticamente para ahorrar tiempo de captura.
+      <p class="text-xs" style="color: var(--text-muted)">
+        Sube un archivo PDF o una imagen de un expediente previo (papel o digital). La inteligencia
+        artificial extraerá los datos automáticamente para ahorrar tiempo de captura.
       </p>
 
       <!-- Input de archivo -->
-      <div class="border-2 border-dashed border-blue-500/30 rounded-2xl p-6 text-center space-y-3 cursor-pointer hover:border-blue-500 transition-all" (click)="fileInput.click()">
-        <input #fileInput type="file" accept="image/jpeg,image/png,image/jpg,application/pdf" (change)="onFileSelected($event)" class="hidden">
+      <div
+        class="border-2 border-dashed border-blue-500/30 rounded-2xl p-6 text-center space-y-3 cursor-pointer hover:border-blue-500 transition-all"
+        (click)="fileInput.click()"
+      >
+        <input
+          #fileInput
+          type="file"
+          accept="image/jpeg,image/png,image/jpg,application/pdf"
+          (change)="onFileSelected($event)"
+          class="hidden"
+          appPermission="records:write"
+        />
         <lucide-icon [img]="icons.FileText" class="w-8 h-8 mx-auto text-blue-500"></lucide-icon>
         @if (selectedImportFile()) {
-          <p class="text-xs font-bold text-blue-400">Archivo seleccionado: {{ selectedImportFile()?.name }}</p>
+          <p class="text-xs font-bold text-blue-400">
+            Archivo seleccionado: {{ selectedImportFile()?.name }}
+          </p>
         } @else {
-          <p class="text-xs font-bold" style="color: var(--text-main);">Haz clic para seleccionar imagen o PDF</p>
-          <p class="text-[10px]" style="color: var(--text-muted);">Formatos aceptados: JPG, PNG, PDF</p>
+          <p class="text-xs font-bold" style="color: var(--text-main)">
+            Haz clic para seleccionar imagen o PDF
+          </p>
+          <p class="text-[10px]" style="color: var(--text-muted)">
+            Formatos aceptados: JPG, PNG, PDF
+          </p>
         }
       </div>
 
       <!-- Preview si es imagen -->
       @if (importPreviewUrl()) {
-        <div class="relative w-full h-40 rounded-xl overflow-hidden border border-[var(--border-color)]">
-          <img [src]="importPreviewUrl()" alt="Preview" class="w-full h-full object-contain">
+        <div
+          class="relative w-full h-40 rounded-xl overflow-hidden border border-[var(--border-color)]"
+        >
+          <img [src]="importPreviewUrl()" alt="Preview" class="w-full h-full object-contain" />
         </div>
       }
 
       <div class="flex justify-end gap-3 pt-2">
-        <button (click)="showImportModal.set(false)" class="px-4 py-2 rounded-xl text-xs font-bold border border-[var(--border-color)] cursor-pointer" style="color: var(--text-muted);">Cancelar</button>
-        <button (click)="extraerInformacionIA()" [disabled]="!selectedImportFile() || isExtractingAI()" class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md cursor-pointer disabled:opacity-50">
+        <button
+          (click)="showImportModal.set(false)"
+          class="px-4 py-2 rounded-xl text-xs font-bold border border-[var(--border-color)] cursor-pointer"
+          style="color: var(--text-muted)"
+        >
+          Cancelar
+        </button>
+        <button
+          title="Requiere suscripción activa. Consume 1 crédito al completarse."
+          (click)="extraerInformacionIA()"
+          [appPermissionDisabled]="
+            !selectedImportFile() ||
+            isExtractingAI() ||
+            !billing.allows('ai') ||
+            (billing.state()?.aiCredits ?? 0) < 1
+          "
+          class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md cursor-pointer disabled:opacity-50"
+          appPermission="nexusI:write"
+        >
           @if (isExtractingAI()) {
             <lucide-icon [img]="icons.Loader2" class="w-4 h-4 animate-spin"></lucide-icon>
             Procesando IA...
@@ -227,49 +389,112 @@
 
 <!-- DIÁLOGO 2: FORMULARIO PRELLENADO DE FICHA DE IDENTIFICACIÓN -->
 @if (showFormModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto animate-in fade-in">
-    <div class="w-full max-w-3xl border rounded-3xl p-6 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="flex justify-between items-center border-b pb-3" style="border-color: var(--border-color);">
+  <div
+    class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto animate-in fade-in"
+  >
+    <div
+      class="w-full max-w-3xl border rounded-3xl p-6 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
+      <div
+        class="flex justify-between items-center border-b pb-3"
+        style="border-color: var(--border-color)"
+      >
         <div>
-          <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">1. Ficha de Identificación</h3>
-          <p class="text-xs text-[var(--text-muted)]">Revisa y ajusta la información extraída antes de guardarla.</p>
+          <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">
+            1. Ficha de Identificación
+          </h3>
+          <p class="text-xs text-[var(--text-muted)]">
+            Revisa y ajusta la información extraída antes de guardarla.
+          </p>
         </div>
-        <button (click)="showFormModal.set(false)" class="text-xs font-bold text-red-400 cursor-pointer">✕ Cancelar</button>
+        <button
+          (click)="showFormModal.set(false)"
+          class="text-xs font-bold text-red-400 cursor-pointer"
+        >
+          ✕ Cancelar
+        </button>
       </div>
 
       <form [formGroup]="importForm" class="space-y-5">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-
           <!-- Número de Expediente (Condicional / Si se encontró) -->
           @if (importForm.get('numeroExpediente')?.value) {
             <div class="space-y-1 sm:col-span-3">
-              <label class="text-[11px] font-bold text-blue-400 uppercase">Número de Expediente Detectado</label>
-              <input type="text" formControlName="numeroExpediente" class="w-full bg-[var(--bg-primary)] border border-blue-500/50 rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+              <label class="text-[11px] font-bold text-blue-400 uppercase"
+                >Número de Expediente Detectado</label
+              >
+              <input
+                type="text"
+                formControlName="numeroExpediente"
+                class="w-full bg-[var(--bg-primary)] border border-blue-500/50 rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+                appPermission="records:write"
+              />
             </div>
           }
 
           <!-- Nombre Completo -->
           <div class="space-y-1 sm:col-span-2">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Nombre Completo del Paciente</label>
-            <input type="text" formControlName="nombreCompleto" placeholder="Ej. Carlos Alberto Ramírez" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-blue-500">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Nombre Completo del Paciente</label
+            >
+            <input
+              type="text"
+              formControlName="nombreCompleto"
+              placeholder="Ej. Carlos Alberto Ramírez"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-blue-500"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Fecha de Nacimiento -->
           <div class="space-y-1">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Fecha de Nacimiento (Día / Mes / Año)</label>
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Fecha de Nacimiento (Día / Mes / Año)</label
+            >
             <div class="flex items-center gap-2">
-              <input type="text" maxlength="2" placeholder="DD" [(ngModel)]="diaNac" [ngModelOptions]="{standalone: true}" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl py-2.5 px-2 text-center text-xs font-bold text-[var(--text-main)] outline-none">
+              <input
+                type="text"
+                maxlength="2"
+                placeholder="DD"
+                [(ngModel)]="diaNac"
+                [ngModelOptions]="{ standalone: true }"
+                class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl py-2.5 px-2 text-center text-xs font-bold text-[var(--text-main)] outline-none"
+                appPermission="records:write"
+              />
               <span class="text-[var(--text-muted)]">/</span>
-              <input type="text" maxlength="2" placeholder="MM" [(ngModel)]="mesNac" [ngModelOptions]="{standalone: true}" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl py-2.5 px-2 text-center text-xs font-bold text-[var(--text-main)] outline-none">
+              <input
+                type="text"
+                maxlength="2"
+                placeholder="MM"
+                [(ngModel)]="mesNac"
+                [ngModelOptions]="{ standalone: true }"
+                class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl py-2.5 px-2 text-center text-xs font-bold text-[var(--text-main)] outline-none"
+                appPermission="records:write"
+              />
               <span class="text-[var(--text-muted)]">/</span>
-              <input type="text" maxlength="4" placeholder="AAAA" [(ngModel)]="anioNac" [ngModelOptions]="{standalone: true}" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl py-2.5 px-2 text-center text-xs font-bold text-[var(--text-main)] outline-none">
+              <input
+                type="text"
+                maxlength="4"
+                placeholder="AAAA"
+                [(ngModel)]="anioNac"
+                [ngModelOptions]="{ standalone: true }"
+                class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl py-2.5 px-2 text-center text-xs font-bold text-[var(--text-main)] outline-none"
+                appPermission="records:write"
+              />
             </div>
           </div>
 
           <!-- Sexo -->
           <div class="space-y-1">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Sexo / Identidad de Género</label>
-            <select formControlName="sexo" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none cursor-pointer">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Sexo / Identidad de Género</label
+            >
+            <select
+              formControlName="sexo"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none cursor-pointer"
+              appPermission="records:write"
+            >
               <option value="">Selecciona una opción</option>
               @for (s of sexosList; track s) {
                 <option [value]="s">{{ s }}</option>
@@ -282,7 +507,13 @@
             <label class="text-[11px] font-bold text-rose-400 uppercase flex items-center gap-1">
               <lucide-icon [img]="icons.Droplet" class="w-3.5 h-3.5"></lucide-icon> Tipo de Sangre
             </label>
-            <input type="text" formControlName="tipoSangre" placeholder="Ej. O+" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <input
+              type="text"
+              formControlName="tipoSangre"
+              placeholder="Ej. O+"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Religión -->
@@ -290,68 +521,160 @@
             <label class="text-[11px] font-bold text-purple-400 uppercase flex items-center gap-1">
               <lucide-icon [img]="icons.BookOpen" class="w-3.5 h-3.5"></lucide-icon> Religión
             </label>
-            <input type="text" formControlName="religion" placeholder="Ej. Católica" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <input
+              type="text"
+              formControlName="religion"
+              placeholder="Ej. Católica"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Teléfono Fijo -->
           <div class="space-y-1">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Teléfono Fijo (10 dígitos)</label>
-            <input type="text" formControlName="telefono" maxlength="10" placeholder="3312345678" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Teléfono Fijo (10 dígitos)</label
+            >
+            <input
+              type="text"
+              formControlName="telefono"
+              maxlength="10"
+              placeholder="3312345678"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Celular -->
           <div class="space-y-1">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Celular / Móvil (10 dígitos)</label>
-            <input type="text" formControlName="celular" maxlength="10" placeholder="3387654321" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Celular / Móvil (10 dígitos)</label
+            >
+            <input
+              type="text"
+              formControlName="celular"
+              maxlength="10"
+              placeholder="3387654321"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Correo -->
           <div class="space-y-1">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Correo Electrónico</label>
-            <input type="email" formControlName="correo" placeholder="paciente@correo.com" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Correo Electrónico</label
+            >
+            <input
+              type="email"
+              formControlName="correo"
+              placeholder="paciente@correo.com"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Domicilio Calle y Número -->
           <div class="space-y-1 sm:col-span-2">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Calle y Número</label>
-            <input type="text" formControlName="calleNumero" placeholder="Ej. Av. Patria #1200, Int. 4B" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Calle y Número</label
+            >
+            <input
+              type="text"
+              formControlName="calleNumero"
+              placeholder="Ej. Av. Patria #1200, Int. 4B"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Colonia / Ciudad -->
           <div class="space-y-1">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Colonia / Ciudad</label>
-            <input type="text" formControlName="coloniaCiudad" placeholder="Ej. Zapopan Centro" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Colonia / Ciudad</label
+            >
+            <input
+              type="text"
+              formControlName="coloniaCiudad"
+              placeholder="Ej. Zapopan Centro"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Ocupación -->
           <div class="space-y-1">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Ocupación</label>
-            <input type="text" formControlName="ocupacion" placeholder="Ej. Ingeniero" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Ocupación</label
+            >
+            <input
+              type="text"
+              formControlName="ocupacion"
+              placeholder="Ej. Ingeniero"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Actividad Deportiva -->
           <div class="space-y-1">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Actividad Deportiva / Recreativa</label>
-            <input type="text" formControlName="actividadDeportiva" placeholder="Ej. Ciclismo" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Actividad Deportiva / Recreativa</label
+            >
+            <input
+              type="text"
+              formControlName="actividadDeportiva"
+              placeholder="Ej. Ciclismo"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Contacto de emergencia -->
           <div class="space-y-1">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Contacto de emergencia</label>
-            <input type="text" formControlName="contactoEmergencia" placeholder="Ej. María López - 3312345678" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Contacto de emergencia</label
+            >
+            <input
+              type="text"
+              formControlName="contactoEmergencia"
+              placeholder="Ej. María López - 3312345678"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
 
           <!-- Datos Fiscales -->
           <div class="space-y-1 sm:col-span-2">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Datos fiscales / Seguro de Gastos Médicos</label>
-            <input type="text" formControlName="datosFiscales" placeholder="RFC o Póliza de GMM (Opcional)" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none">
+            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase"
+              >Datos fiscales / Seguro de Gastos Médicos</label
+            >
+            <input
+              type="text"
+              formControlName="datosFiscales"
+              placeholder="RFC o Póliza de GMM (Opcional)"
+              class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none"
+              appPermission="records:write"
+            />
           </div>
-
         </div>
 
-        <div class="flex justify-end gap-3 pt-4 border-t" style="border-color: var(--border-color);">
-          <button type="button" (click)="showFormModal.set(false)" class="px-4 py-2.5 rounded-xl text-xs font-bold border border-[var(--border-color)] cursor-pointer" style="color: var(--text-muted);">Cancelar</button>
-          <button type="button" (click)="guardarFichaImportada()" [disabled]="isSavingRecord()" class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md cursor-pointer disabled:opacity-50">
+        <div class="flex justify-end gap-3 pt-4 border-t" style="border-color: var(--border-color)">
+          <button
+            type="button"
+            (click)="showFormModal.set(false)"
+            class="px-4 py-2.5 rounded-xl text-xs font-bold border border-[var(--border-color)] cursor-pointer"
+            style="color: var(--text-muted)"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="guardarFichaImportada()"
+            [appPermissionDisabled]="isSavingRecord()"
+            class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md cursor-pointer disabled:opacity-50"
+            appPermission="records:write"
+          >
             @if (isSavingRecord()) {
               <lucide-icon [img]="icons.Loader2" class="w-4 h-4 animate-spin"></lucide-icon>
               Guardando ficha...
@@ -367,16 +690,30 @@
 
 <!-- DIÁLOGO 3: ÉXITO -->
 @if (showSuccessModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-    <div class="w-full max-w-sm border rounded-3xl p-6 text-center space-y-4 shadow-2xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="w-14 h-14 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+  <div
+    class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"
+  >
+    <div
+      class="w-full max-w-sm border rounded-3xl p-6 text-center space-y-4 shadow-2xl"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
+      <div
+        class="w-14 h-14 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400"
+      >
         <lucide-icon [img]="icons.UserCheck" class="w-7 h-7"></lucide-icon>
       </div>
       <div class="space-y-1">
-        <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">¡Paciente Importado con Éxito!</h3>
-        <p class="text-xs" style="color: var(--text-muted);">La ficha de identificación ha sido registrada correctamente en el consultorio.</p>
+        <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main)">
+          ¡Paciente Importado con Éxito!
+        </h3>
+        <p class="text-xs" style="color: var(--text-muted)">
+          La ficha de identificación ha sido registrada correctamente en el consultorio.
+        </p>
       </div>
-      <button (click)="showSuccessModal.set(false)" class="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider cursor-pointer shadow-md">
+      <button
+        (click)="showSuccessModal.set(false)"
+        class="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider cursor-pointer shadow-md"
+      >
         Aceptar
       </button>
     </div>

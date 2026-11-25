@@ -12,9 +12,9 @@ import { MedicalRecordFormComponent } from './traumatologic/medical-record-form.
     CommonModule,
     MedicalRecordFormDentistComponent,
     MedicalRecordFormComponent,
-    OftalmologiaComponent
+    OftalmologiaComponent,
   ],
-  templateUrl: 'medical-record-container.component.html'
+  templateUrl: 'medical-record-container.component.html',
 })
 export class MedicalRecordContainerComponent implements OnInit {
   // Inyectamos tu AuthService usando la función inject (o mediante constructor)

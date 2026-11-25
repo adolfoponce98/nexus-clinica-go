@@ -22,8 +22,8 @@ export class FloatingChatComponent implements AfterViewChecked {
     {
       sender: 'bot',
       text: 'Hola, Doctor/a. Bienvenido al asistente de incidencias. ¿Qué reporte o pregunta desea realizar?',
-      time: this.getCurrentTime()
-    }
+      time: this.getCurrentTime(),
+    },
   ];
 
   ngAfterViewChecked() {
@@ -42,7 +42,7 @@ export class FloatingChatComponent implements AfterViewChecked {
     this.messages.push({
       sender: 'doctor',
       text: userText,
-      time: this.getCurrentTime()
+      time: this.getCurrentTime(),
     });
 
     this.newMessage = '';
@@ -54,19 +54,25 @@ export class FloatingChatComponent implements AfterViewChecked {
   }
 
   handleBotResponse(query: string) {
-    let reply = 'He registrado su reporte correctamente. El equipo técnico lo revisará a la brevedad.';
+    let reply =
+      'He registrado su reporte correctamente. El equipo técnico lo revisará a la brevedad.';
 
     const lowerQuery = query.toLowerCase();
-    if (lowerQuery.includes('error') || lowerQuery.includes('falla') || lowerQuery.includes('sistema')) {
+    if (
+      lowerQuery.includes('error') ||
+      lowerQuery.includes('falla') ||
+      lowerQuery.includes('sistema')
+    ) {
       reply = '⚠️ Entendido. He creado un ticket de soporte urgente con base en su descripción.';
     } else if (lowerQuery.includes('receta') || lowerQuery.includes('paciente')) {
-      reply = '💡 Para dudas sobre el módulo clínico, recuerde verificar que los datos del paciente estén guardados.';
+      reply =
+        '💡 Para dudas sobre el módulo clínico, recuerde verificar que los datos del paciente estén guardados.';
     }
 
     this.messages.push({
       sender: 'bot',
       text: reply,
-      time: this.getCurrentTime()
+      time: this.getCurrentTime(),
     });
   }
 
@@ -77,7 +83,8 @@ export class FloatingChatComponent implements AfterViewChecked {
   private scrollToBottom(): void {
     try {
       if (this.scrollContainer) {
-        this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+        this.scrollContainer.nativeElement.scrollTop =
+          this.scrollContainer.nativeElement.scrollHeight;
       }
     } catch (err) {}
   }

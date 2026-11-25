@@ -1,0 +1,135 @@
+> Building...
+√ Building...
+Initial chunk files                          | Names                                     |  Raw size
+chunk-6JQPIP5Y.js                            | -                                         |   3.49 MB | 
+chunk-57SKUCRS.js                            | -                                         | 354.63 kB | 
+styles.css                                   | styles                                    | 165.18 kB | 
+chunk-VRGSBME4.js                            | -                                         |  81.92 kB | 
+chunk-CES5Z4AL.js                            | -                                         |  64.51 kB | 
+chunk-WZTK5LLA.js                            | -                                         |  33.47 kB | 
+chunk-5QPCIH6M.js                            | -                                         |  29.05 kB | 
+spec-app-main-main-layout.component.js       | spec-app-main-main-layout.component       |   9.58 kB | 
+chunk-V7LMIXJX.js                            | -                                         |   9.03 kB | 
+chunk-VREPCMOT.js                            | -                                         |   7.36 kB | 
+chunk-JBWBLPNK.js                            | -                                         |   5.19 kB | 
+chunk-RRV3VUVW.js                            | -                                         |   4.82 kB | 
+spec-app-planes-billing.service.js           | spec-app-planes-billing.service           |   4.66 kB | 
+spec-app-planes-pricing-catalog.component.js | spec-app-planes-pricing-catalog.component |   4.62 kB | 
+spec-app-planes-creation-access.service.js   | spec-app-planes-creation-access.service   |   4.57 kB | 
+chunk-OWDYNIIW.js                            | -                                         |   4.00 kB | 
+spec-app-planes-planes.component.js          | spec-app-planes-planes.component          |   2.65 kB | 
+spec-app-auth-progressive-navigation.js      | spec-app-auth-progressive-navigation      |   2.53 kB | 
+init-testbed.js                              | init-testbed                              |   1.21 kB | 
+vitest-mock-patch.js                         | vitest-mock-patch                         | 969 bytes | 
+
+                                             | Initial total                             |   4.28 MB
+
+Lazy chunk files                             | Names                                     |  Raw size
+chunk-YOUJXYQO.js                            | public-registration-component             |  74.09 kB | 
+chunk-3JJ4FL7T.js                            | payment-result-component                  |  26.57 kB | 
+chunk-Q2MEI6NJ.js                            | pricing-catalog-component                 | 266 bytes | 
+
+Application bundle generation complete. [10.783 seconds] - 2026-11-23T23:51:29.269Z
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:620:39:
+      620 │ ... Cobrado: {{ appointment?.amountPaid ?? 0 | currency: 'MXN' : ...
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:631:26:
+      631 │         @if (appointment?.finalCost !== null && appointment?.fina...
+          ╵                           ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:631:61:
+      631 │ ...nt?.finalCost !== null && appointment?.finalCost !== undefined) {
+          ╵                                           ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:633:33:
+      633 │ ... } @else if (appointment?.quotedCost !== null && appointment?....
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:633:69:
+      633 │ ...?.quotedCost !== null && appointment?.quotedCost !== undefined) {
+          ╵                                          ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:66:4:
+      66 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:120:4:
+      120 │     FloatingChatComponent,
+          ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:69:4:
+      69 │     PatientIntakeComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:30:4:
+      30 │     Advanced3DViewerComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+ RUN  v4.1.2 D:/GitHub/nexus-admin-nexo-salud
+
+
+ Test Files  6 passed (6)
+      Tests  34 passed (34)
+   Start at  17:51:29
+   Duration  3.87s (transform 5.69s, setup 2.92s, import 8.48s, tests 593ms, environment 7.99s)
+

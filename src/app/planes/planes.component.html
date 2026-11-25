@@ -1,208 +1,257 @@
-<div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6 sm:p-8 rounded-3xl shadow-2xl space-y-8 transition-colors duration-300 relative">
-
-  <!-- Encabezado -->
-  <div class="flex flex-col md:flex-row justify-between items-center gap-6 pb-6 border-b border-[var(--border-color)]">
-    <div class="space-y-1 text-center md:text-left">
-      <div class="flex items-center justify-center md:justify-start gap-2">
-        <span class="px-2.5 py-1 rounded-full bg-[var(--accent-color)]/10 text-[var(--accent-color)] text-[10px] font-black uppercase tracking-wider">Suscripciones Médicas</span>
-      </div>
-      <h2 class="text-2xl font-black text-[var(--text-main)]">Plan y Beneficios del Sistema</h2>
-      <p class="text-xs text-[var(--text-muted)]">Selecciona tu modalidad de pago y potencia tu consultorio al máximo.</p>
+<main class="billing-page">
+  <header class="plans-header">
+    <div>
+      <span class="eyebrow"
+        ><lucide-icon [img]="icons.Sparkles" [size]="13" /> CRECE CON CLÍNICA GO</span
+      >
+      <h1>Más posibilidades para tu práctica</h1>
+      <p>Elige el plan que acompañe a tu clínica. Tú te enfocas en tus pacientes.</p>
     </div>
-  </div>
-
-  <!-- LOADER MIENTRAS CARGAN LAS SUSCRIPCIONES -->
-  @if (isLoading()) {
-    <div class="flex flex-col items-center justify-center py-16 space-y-3">
-      <lucide-icon [img]="Loader2" class="w-8 h-8 text-[var(--accent-color)] animate-spin"></lucide-icon>
-      <p class="text-xs font-bold text-[var(--text-muted)]">Cargando planes y suscripciones...</p>
-    </div>
-  } @else {
-
-    <!-- CARRUSEL HORIZONTAL DE TARJETAS (Con overflow visible y padding superior para el badge) -->
-    <div class="flex overflow-x-auto overflow-y-visible snap-x snap-mandatory pb-4 pt-3 gap-6 scrollbar-thin scrollbar-thumb-[var(--border-color)]">
-      @for (sub of subscriptions(); track sub.idSuscription) {
-        @let statusInfo = getSubscriptionStatus(sub.idSuscription);
-        @let isSelected = selectedPlanId() === sub.idSuscription;
-        @let isOneTime = sub.type === 2;
-
-        <div (click)="selectPlan(sub.idSuscription)"
-             class="min-w-[300px] sm:min-w-[340px] max-w-[360px] flex-shrink-0 snap-start bg-[var(--bg-primary)] rounded-3xl p-6 flex flex-col justify-between space-y-6 relative transition-all cursor-pointer shadow-lg group border-2"
-             [class.border-amber-500]="isOneTime && (isSelected || statusInfo.actionType === 'current')"
-             [class.border-[var(--accent-color)]]="!isOneTime && (isSelected || statusInfo.actionType === 'current')"
-             [class.border-[var(--border-color)]]="!isSelected && statusInfo.actionType !== 'current'">
-
-          <!-- Banda de oferta exclusiva para Pago Único (Type 2) -->
-          @if (isOneTime) {
-            <div class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-4 py-1 rounded-bl-2xl shadow z-10">
-              ⚡ Pago Único / Oferta
-            </div>
-          }
-
-          <!-- 🌟 Badge de Plan Activo centrado y sin cortes -->
-          @if (statusInfo.actionType === 'current') {
-            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[var(--accent-color)] text-white text-[9px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full shadow-md z-20 whitespace-nowrap">
-              Plan Activo
-            </div>
-          }
-
-          <div class="space-y-3 pt-2">
-            <div class="flex justify-between items-center">
-              <h4 class="text-xs font-black uppercase tracking-wider"
-                  [class.text-amber-500]="isOneTime"
-                  [class.text-[var(--accent-color)]]="!isOneTime">
-                {{ sub.title || 'Plan Médico' }}
-              </h4>
-              <span class="w-5 h-5 rounded-full flex items-center justify-center text-white"
-                  [class.bg-amber-500]="isSelected && isOneTime"
-                  [class.bg-[var(--accent-color)]]="isSelected && !isOneTime"
-                  [class.border]="!isSelected"
-                  [class.border-[var(--border-color)]]="!isSelected">
-                @if (isSelected) {
-                  <lucide-icon [img]="Check" class="w-3 h-3"></lucide-icon>
-                }
-              </span>
-            </div>
-
-            <div class="flex items-baseline gap-1">
-              <span class="text-3xl font-black text-[var(--text-main)]">${{ sub.price || 0 | number }}</span>
-              <span class="text-[10px] text-[var(--text-muted)] font-bold">{{ isOneTime ? 'MXN (Único)' : 'MXN' }}</span>
-            </div>
-
-            <p class="text-[10px] text-[var(--text-muted)] leading-relaxed">{{ sub.description }}</p>
-          </div>
-
-          <!-- VISTA PREVIA: Muestra un máximo de 5 beneficios directos en la Card -->
-          <div class="space-y-2 pt-2 border-t border-[var(--border-color)]">
-            @if (sub.benefits && sub.benefits.length > 0) {
-              <div class="space-y-1">
-                @for (benefit of sub.benefits | slice:0:5; track benefit) {
-                  <div class="flex items-center gap-2 text-[10px] text-[var(--text-main)]">
-                    <lucide-icon [img]="CheckCircle2" class="w-3.5 h-3.5 text-emerald-500 shrink-0"></lucide-icon>
-                    <span>{{ benefit }}</span>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-
-          <!-- SECCIÓN DE ACCIÓN (Botón o texto de plan actual limpio) -->
-          <div class="space-y-3 pt-4 border-t border-[var(--border-color)]">
-            @if (statusInfo.actionType === 'current') {
-              <div class="w-full py-2.5 text-center text-xs font-black uppercase tracking-wider text-[var(--accent-color)] select-none">
-                {{ statusInfo.label }}
-              </div>
-            } @else {
-              <button (click)="abrirSuscripcion(sub, $event)"
-                      [disabled]="isSubscribing()"
-                      [class.opacity-60]="isSubscribing()"
-                      [class.cursor-not-allowed]="isSubscribing()"
-                      [class.bg-emerald-600]="statusInfo.actionType === 'renew'"
-                      [class.bg-amber-500]="statusInfo.actionType !== 'renew' && isOneTime"
-                      [class.bg-[var(--accent-color)]]="statusInfo.actionType !== 'renew' && !isOneTime"
-                      class="w-full py-2.5 rounded-xl hover:opacity-90 text-white font-bold text-xs transition-all shadow-md cursor-pointer flex items-center justify-center gap-2">
-
-                @if (isSubscribing() && subscribingPlanId() === sub.idSuscription) {
-                  <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin"></lucide-icon>
-                  <span>Generando pago...</span>
-                } @else {
-                  <span>{{ statusInfo.label }}</span>
-                }
-              </button>
-            }
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- SECCIÓN INFERIOR: DETALLE COMPLETO DE BENEFICIOS DEL PLAN SELECCIONADO -->
-    @if (selectedPlanId()) {
-      @let activePlan = subscriptions().find(s => s.idSuscription === selectedPlanId());
-      @if (activePlan) {
-        <div class="bg-[var(--bg-primary)] border p-6 rounded-2xl space-y-4 animate-in fade-in duration-300"
-             [class.border-amber-500/40]="activePlan.type === 2"
-             [class.border-[var(--accent-color)]/40]="activePlan.type !== 2">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <lucide-icon [img]="Sparkles" class="w-4 h-4"
-                           [class.text-amber-500]="activePlan.type === 2"
-                           [class.text-[var(--accent-color)]]="activePlan.type !== 2"></lucide-icon>
-              <h3 class="text-xs font-black uppercase tracking-wider text-[var(--text-main)]">
-                Todos los beneficios de <span class="uppercase" [class.text-amber-500]="activePlan.type === 2" [class.text-[var(--accent-color)]]="activePlan.type !== 2">{{ activePlan.title }}</span>
-              </h3>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
-            <!-- Todos los beneficios -->
-            @if (activePlan.benefits) {
-              @for (benefit of activePlan.benefits; track benefit) {
-                <div class="flex items-start gap-2.5 text-xs text-[var(--text-main)]">
-                  <lucide-icon [img]="CheckCircle2" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></lucide-icon>
-                  <span>{{ benefit }}</span>
-                </div>
-              }
-            }
-            <!-- Todos los extras -->
-            @if (activePlan.extras) {
-              @for (extra of activePlan.extras; track extra) {
-                <div class="flex items-start gap-2.5 text-xs font-bold"
-                     [class.text-amber-500]="activePlan.type === 2"
-                     [class.text-[var(--accent-color)]]="activePlan.type !== 2">
-                  <lucide-icon [img]="Sparkles" class="w-4 h-4 shrink-0 mt-0.5"></lucide-icon>
-                  <span>{{ extra }}</span>
-                </div>
-              }
-            }
-          </div>
-        </div>
-      }
-    }
-
+    <button
+      class="secondary refresh"
+      aria-label="Actualizar planes"
+      (click)="load()"
+      [disabled]="loading() || busy()"
+    >
+      <lucide-icon [img]="icons.RefreshCw" [size]="16" [class.spin]="loading()" />
+    </button>
+  </header>
+  @if (error()) {
+    <p role="alert" class="notice error">{{ error() }}</p>
   }
-
-</div>
-
-
-<!-- MODAL DE CONFIRMACIÓN DE SUSCRIPCIÓN -->
-@if (showSubscribeModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-6 relative animate-in fade-in zoom-in duration-200">
-
-      <!-- Botón cerrar -->
-      <button (click)="showSubscribeModal.set(false)" class="absolute top-6 right-6 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer">
-        <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
-      </button>
-
-      <div class="space-y-2">
-        <span class="px-3 py-1 rounded-full bg-[var(--accent-color)]/10 text-[var(--accent-color)] text-[10px] font-black uppercase tracking-wider">Confirmar Transacción</span>
-        <h3 class="text-xl font-black text-[var(--text-main)]">{{ selectedSubscriptionTier()?.title }}</h3>
-        <p class="text-xs text-[var(--text-muted)]">{{ selectedSubscriptionTier()?.description }}</p>
+  @if (loading()) {
+    <section class="plans-loader" role="status" aria-live="polite" aria-label="Cargando planes">
+      <div class="loader-icon">
+        <lucide-icon [img]="icons.LoaderCircle" [size]="30" class="spin" />
       </div>
-
-      <!-- Resumen de costos -->
-      <div class="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl p-4 space-y-3">
-        <div class="pt-3 flex justify-between items-center">
-          <span class="text-xs font-black uppercase tracking-wider text-[var(--text-main)]">Total a pagar:</span>
-          <span class="text-2xl font-black text-[var(--accent-color)]">${{ selectedSubscriptionTier()?.price || 0 | number }} <span class="text-xs text-[var(--text-muted)] font-normal">MXN</span></span>
-        </div>
+      <h2>Estamos preparando tus planes</h2>
+      <p>Consultando las opciones disponibles para tu clínica…</p>
+      <div class="skeleton-grid" aria-hidden="true">
+        @for (item of [1, 2, 3]; track item) {
+          <div class="skeleton-card">
+            <i></i><span></span><span></span><b></b><span></span><span></span><em></em>
+          </div>
+        }
       </div>
-
-      <!-- Botones de acción del modal -->
-      <div class="flex items-center gap-3 pt-2">
-        <button (click)="showSubscribeModal.set(false)" class="w-1/2 py-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-main)] font-bold text-xs hover:bg-[var(--border-color)] transition-all cursor-pointer">
-          Cancelar
-        </button>
-        <button (click)="suscribirsePlanMedico()" [disabled]="isSubscribing()" class="w-1/2 py-3 rounded-2xl bg-[var(--accent-color)] text-white font-bold text-xs hover:opacity-90 transition-all shadow-md shadow-blue-500/20 cursor-pointer flex items-center justify-center gap-2">
-          @if(isSubscribing()) {
-            <lucide-icon [img]="Loader2" class="w-4 h-4 animate-spin"></lucide-icon>
-            <span>Generando...</span>
-          } @else {
-            <span>Continuar al pago</span>
-          }
+    </section>
+  } @else {
+    <div class="plans-toolbar">
+      <div class="plan-tabs" role="group" aria-label="Tipo de producto">
+        <button
+          [class.selected]="category() === 'subscription'"
+          [attr.aria-pressed]="category() === 'subscription'"
+          (click)="category.set('subscription')"
+        >
+          <lucide-icon [img]="icons.Crown" [size]="15" />Suscripciones</button
+        ><button
+          [class.selected]="category() === 'credits'"
+          [attr.aria-pressed]="category() === 'credits'"
+          (click)="category.set('credits')"
+        >
+          <lucide-icon [img]="icons.Zap" [size]="15" />Créditos IA
         </button>
       </div>
-
+      @if (billing.state(); as s) {
+        <span class="current-plan"
+          ><span></span>Tu plan: <strong>{{ billing.active() ? s.planName : 'FREE' }}</strong></span
+        >
+      }
     </div>
-  </div>
-}
+    @if (pending(); as p) {
+      <aside class="notice">
+        <strong>Tienes un pago pendiente</strong>
+        <p>Retoma tu selección o comprueba su estado antes de iniciar otro pago.</p>
+        <div class="actions">
+          <button (click)="resume()" [disabled]="busy()">
+            Retomar pago<lucide-icon [img]="icons.ArrowUpRight" [size]="15" /></button
+          ><a
+            [routerLink]="['/planes/resultado']"
+            [queryParams]="{ request_id: p.requestId, outcome: 'cancel' }"
+            >Comprobar o cancelar</a
+          >
+        </div>
+      </aside>
+    }
+    @if (!billing.canManage()) {
+      <p class="notice">Solo el doctor propietario puede contratar planes y recargar créditos.</p>
+    }
+    @if (category() === 'subscription') {
+      <div class="plan-tabs" role="group" aria-label="Periodo de contratación">
+        @for (period of intervalOptions(); track period.months) {
+          <button
+            type="button"
+            [class.selected]="selectedInterval() === period.months"
+            [attr.aria-pressed]="selectedInterval() === period.months"
+            (click)="selectedInterval.set(period.months)"
+          >
+            {{ period.label }}
+          </button>
+        }
+      </div>
+    }
+    <div class="catalog-heading">
+      <div>
+        <h2>
+          {{
+            category() === 'subscription'
+              ? 'Un plan a la altura de tu consulta'
+              : 'Dale impulso a Nexus IA'
+          }}
+        </h2>
+        <p>
+          {{
+            category() === 'subscription'
+              ? 'Herramientas que conectan tu agenda, tus pacientes y tu equipo.'
+              : 'Recargas disponibles para FREE y suscripciones, sin vencimiento.'
+          }}
+        </p>
+      </div>
+      @if (category() === 'credits' && billing.state(); as s) {
+        <span class="credit-balance"
+          ><lucide-icon [img]="icons.Zap" [size]="15" />{{ s.aiCredits }} créditos disponibles</span
+        >
+      }
+    </div>
+    <section
+      class="plans-grid"
+      [attr.aria-label]="
+        category() === 'subscription' ? 'Planes disponibles' : 'Recargas disponibles'
+      "
+    >
+      @for (p of visiblePlans(); track p.id) {
+        <article
+          class="panel plan"
+          [class.active-plan]="billing.active() && billing.state()?.planId === p.id"
+          [class.credit-plan]="p.kind === 'credits'"
+        >
+          <div class="plan-top">
+            <div class="plan-icon" [attr.data-price-level]="priceLevel(p)">
+              <lucide-icon [img]="planIcon(p)" [size]="24" />
+            </div>
+            <span class="tag">{{
+              billing.active() && billing.state()?.planId === p.id
+                ? 'TU PLAN ACTUAL'
+                : p.kind === 'credits'
+                  ? 'SIN VENCIMIENTO'
+                  : 'SUSCRIPCIÓN'
+            }}</span>
+          </div>
+          <h3>{{ p.title }}</h3>
+          <p class="plan-description">
+            {{
+              p.description ||
+                (p.kind === 'credits'
+                  ? 'Créditos para las herramientas inteligentes que te acompañan en consulta.'
+                  : 'Tu práctica conectada, con más herramientas para cada día.')
+            }}
+          </p>
+          @if (p.available) {
+            <div class="price">{{ money(p.amount) }}<small>MXN</small></div>
+            <p class="period">{{ period(p) }}</p>
+            @if (p.taxBehavior === 'inclusive') {
+              <p class="period">Impuestos incluidos</p>
+            }
+          } @else {
+            <p class="error">{{ unavailableMessage(p) }}</p>
+          }
+          <div class="flex flex-wrap gap-2 mt-3" aria-label="Proveedores de pago">
+            @for (provider of p.providers || [{ id: 'stripe' }]; track provider.id) {
+              <app-payment-provider-badge [provider]="provider.id" />
+            }
+          </div>
+          <div class="plan-divider"></div>
+          <ul>
+            @if (p.kind === 'subscription') {
+              <li>
+                <lucide-icon [img]="icons.Check" [size]="16" />Reportes de tu práctica en PDF y
+                Excel
+              </li>
+              <li><lucide-icon [img]="icons.Check" [size]="16" />Gráficas de pacientes y citas</li>
+              <li><lucide-icon [img]="icons.Check" [size]="16" />Acceso a Nexus IA con créditos</li>
+            } @else {
+              <li>
+                <lucide-icon [img]="icons.Check" [size]="16" />{{ p.aiCredits }} créditos añadidos a
+                tu saldo
+              </li>
+              <li><lucide-icon [img]="icons.Check" [size]="16" />Úsalos cuando los necesites</li>
+              <li>
+                <lucide-icon [img]="icons.Check" [size]="16" />Disponible para cuentas FREE y con
+                suscripción
+              </li>
+            }
+            @for (b of p.benefits; track $index) {
+              <li><lucide-icon [img]="icons.Check" [size]="16" />{{ b }}</li>
+            }
+          </ul>
+          <button
+            class="plan-cta"
+            (click)="billing.active() && p.kind === 'subscription' ? portal() : choose(p)"
+            [disabled]="!p.available || !billing.canManage() || busy() || !!pending()"
+          >
+            {{
+              p.kind === 'credits'
+                ? 'Recargar créditos'
+                : billing.active()
+                  ? 'Administrar suscripción'
+                  : 'Elegir este plan'
+            }}<lucide-icon [img]="icons.ArrowUpRight" [size]="16" />
+          </button>
+        </article>
+      } @empty {
+        <div class="panel empty-plans">
+          <lucide-icon [img]="icons.CreditCard" [size]="30" />
+          <h3>Próximamente, más opciones para ti</h3>
+          <p>
+            {{
+              category() === 'subscription'
+                ? 'No hay suscripciones publicadas para este periodo. Prueba otra periodicidad.'
+                : 'No hay recargas publicadas por el momento.'
+            }}
+          </p>
+        </div>
+      }
+    </section>
+    <footer class="catalog-footer">
+      <lucide-icon [img]="icons.ShieldCheck" [size]="17" /><span
+        >Pago seguro con Stripe ·
+        {{
+          category() === 'subscription'
+            ? 'Administra tu suscripción cuando lo necesites.'
+            : 'Las recargas no contratan ni renuevan una suscripción.'
+        }}</span
+      >
+    </footer>
+  }
+  <dialog #confirmation (cancel)="busy() && $event.preventDefault()">
+    <section class="panel">
+      <div class="plan-icon">
+        <lucide-icon [img]="icons.ShieldCheck" [size]="24" />
+      </div>
+      <span class="eyebrow">CONFIRMAR SELECCIÓN</span>
+      <h2>{{ selected()?.title }}</h2>
+      <h3>{{ money(selected()?.amount) }} MXN</h3>
+      <p>{{ period(selected() || {}) }}</p>
+      <p>
+        {{
+          selected()?.kind === 'credits'
+            ? 'La recarga añade créditos sin vencimiento y no activa una suscripción.'
+            : 'Se realizarán cobros recurrentes según el periodo elegido. Podrás administrar la cancelación en el portal de facturación.'
+        }}
+      </p>
+      <p>Continuarás al pago seguro. La activación se confirma después de verificar el pago.</p>
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <div class="actions">
+        <button class="secondary" (click)="close()" [disabled]="busy()">Volver</button
+        ><button (click)="checkout()" [disabled]="busy()">
+          @if (busy()) {
+            <lucide-icon [img]="icons.LoaderCircle" [size]="16" class="spin" />
+          }
+          {{ busy() ? 'Abriendo pago…' : 'Continuar'
+          }}<lucide-icon [img]="icons.ArrowUpRight" [size]="16" />
+        </button>
+      </div>
+    </section>
+  </dialog>
+</main>

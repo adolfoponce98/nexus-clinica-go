@@ -1,90 +1,195 @@
-<div class="min-h-screen font-sans p-4 sm:p-6 space-y-6 max-w-7xl mx-auto relative pb-32 transition-colors duration-300" style="background-color: var(--bg-primary); color: var(--text-main);">
- <!-- 🔄 LOADER DE CARGA MIENTRAS SE OBTIENE LA INFORMACIÓN -->
+<div
+  class="min-h-screen font-sans p-4 sm:p-6 space-y-6 max-w-7xl mx-auto relative pb-32 transition-colors duration-300"
+  style="background-color: var(--bg-primary); color: var(--text-main)"
+>
+  <app-clinical-document-view [note]="clinicalDocument()" />
+  <app-clinical-note-workflow
+    [patientId]="idPatient()"
+    [expedienteId]="expedienteId()"
+    [followUpId]="followUpId()"
+  />
+
+  <div class="rounded-2xl border p-4 space-y-2" style="border-color: var(--border-color)">
+    <p class="font-bold text-blue-500">Consulta: {{ visibleConsultationId() }}</p>
+    <p class="text-sm">Motivo: {{ consultationReason() }}</p>
+  </div>
+  <!-- 🔄 LOADER DE CARGA MIENTRAS SE OBTIENE LA INFORMACIÓN -->
   @if (isLoading()) {
-    <div class="absolute inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-md transition-colors duration-300" style="background-color: var(--bg-primary);">
-      <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-      <p class="text-xs font-black uppercase tracking-wider mt-4" style="color: var(--text-main);">Cargando detalle del seguimiento clínico...</p>
+    <div
+      class="absolute inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-md transition-colors duration-300"
+      style="background-color: var(--bg-primary)"
+    >
+      <div
+        class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"
+      ></div>
+      <p class="text-xs font-black uppercase tracking-wider mt-4" style="color: var(--text-main)">
+        Cargando detalle del seguimiento clínico...
+      </p>
     </div>
   }
-   <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
+  <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
   <div class="flex items-center justify-between">
-    <button (click)="volverAlListado()"
-            class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+    <button
+      (click)="volverAlListado()"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-md"
+      style="
+        background-color: var(--bg-secondary);
+        border-color: var(--border-color);
+        color: var(--text-main);
+      "
+    >
       <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-cyan-500"></lucide-icon>
       Regresar al expediente dental
     </button>
   </div>
 
   <!-- ENCABEZADO (SIN BOTÓN DE GRABACIÓN) -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 rounded-3xl shadow-xl border transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+  <div
+    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 rounded-3xl shadow-xl border transition-colors duration-300"
+    style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+  >
     <div>
       <div class="flex items-center gap-2">
-        <span class="px-2.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Control Estomatológico General</span>
-        <span class="text-xs" style="color: var(--text-muted);">Visualización de Seguimiento Médico</span>
+        <span
+          class="px-2.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-wider"
+          >Control Estomatológico General</span
+        >
+        <span class="text-xs" style="color: var(--text-muted)"
+          >Visualización de Seguimiento Médico</span
+        >
       </div>
-      <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main);">Detalle de Seguimiento y Evolución Dental</h1>
-      <p class="text-xs mt-0.5" style="color: var(--text-muted);">Consulta de información registrada en la sesión clínica.</p>
+      <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main)">
+        Detalle de Seguimiento y Evolución Dental
+      </h1>
+      <p class="text-xs mt-0.5" style="color: var(--text-muted)">
+        Consulta de información registrada en la sesión clínica.
+      </p>
     </div>
   </div>
 
   <!-- SELECCIÓN DE TIPO DE CONSULTA O TRATAMIENTO (SOLO LECTURA) -->
-  <div class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+  <div
+    class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300"
+    style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+  >
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-xl flex items-center justify-center">
+      <div
+        class="w-9 h-9 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-xl flex items-center justify-center"
+      >
         <lucide-icon [img]="icons.Stethoscope" class="w-5 h-5"></lucide-icon>
       </div>
       <div>
-        <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Tipo de Tratamiento o Consulta Registrado</h3>
-        <p class="text-xs" style="color: var(--text-muted);">Especialidad o procedimiento asociado a este registro.</p>
+        <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main)">
+          Tipo de Tratamiento o Consulta Registrado
+        </h3>
+        <p class="text-xs" style="color: var(--text-muted)">
+          Especialidad o procedimiento asociado a este registro.
+        </p>
       </div>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-2">
-      <button type="button" disabled
-              [class]="selectedTreatmentType() === 'general' ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90' : 'bg-primary border text-zinc-500 opacity-50'"
-              class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+      <button
+        type="button"
+        disabled
+        [class]="
+          selectedTreatmentType() === 'general'
+            ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90'
+            : 'bg-primary border text-zinc-500 opacity-50'
+        "
+        class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed"
+        style="background-color: var(--bg-primary); border-color: var(--border-color)"
+      >
         <lucide-icon [img]="icons.Stethoscope" class="w-4 h-4"></lucide-icon>
         <span>General</span>
       </button>
 
-      <button type="button" disabled
-              [class]="selectedTreatmentType() === 'ortodoncia' ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90' : 'bg-primary border text-zinc-500 opacity-50'"
-              class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+      <button
+        type="button"
+        disabled
+        [class]="
+          selectedTreatmentType() === 'ortodoncia'
+            ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90'
+            : 'bg-primary border text-zinc-500 opacity-50'
+        "
+        class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed"
+        style="background-color: var(--bg-primary); border-color: var(--border-color)"
+      >
         <lucide-icon [img]="icons.Activity" class="w-4 h-4"></lucide-icon>
         <span>Ortodoncia</span>
       </button>
 
-      <button type="button" disabled
-              [class]="selectedTreatmentType() === 'limpieza' ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90' : 'bg-primary border text-zinc-500 opacity-50'"
-              class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+      <button
+        type="button"
+        disabled
+        [class]="
+          selectedTreatmentType() === 'limpieza'
+            ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90'
+            : 'bg-primary border text-zinc-500 opacity-50'
+        "
+        class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed"
+        style="background-color: var(--bg-primary); border-color: var(--border-color)"
+      >
         <lucide-icon [img]="icons.Smile" class="w-4 h-4"></lucide-icon>
         <span>Limpieza</span>
       </button>
 
-      <button type="button" disabled
-              [class]="selectedTreatmentType() === 'blanqueamiento' ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90' : 'bg-primary border text-zinc-500 opacity-50'"
-              class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+      <button
+        type="button"
+        disabled
+        [class]="
+          selectedTreatmentType() === 'blanqueamiento'
+            ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90'
+            : 'bg-primary border text-zinc-500 opacity-50'
+        "
+        class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed"
+        style="background-color: var(--bg-primary); border-color: var(--border-color)"
+      >
         <lucide-icon [img]="icons.Sparkles" class="w-4 h-4"></lucide-icon>
         <span>Blanqueamiento</span>
       </button>
 
-      <button type="button" disabled
-              [class]="selectedTreatmentType() === 'extraccion' ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90' : 'bg-primary border text-zinc-500 opacity-50'"
-              class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+      <button
+        type="button"
+        disabled
+        [class]="
+          selectedTreatmentType() === 'extraccion'
+            ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90'
+            : 'bg-primary border text-zinc-500 opacity-50'
+        "
+        class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed"
+        style="background-color: var(--bg-primary); border-color: var(--border-color)"
+      >
         <lucide-icon [img]="icons.ShieldAlert" class="w-4 h-4"></lucide-icon>
         <span>Extracción / Cirugía</span>
       </button>
 
-      <button type="button" disabled
-              [class]="selectedTreatmentType() === 'endodoncia' ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90' : 'bg-primary border text-zinc-500 opacity-50'"
-              class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+      <button
+        type="button"
+        disabled
+        [class]="
+          selectedTreatmentType() === 'endodoncia'
+            ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90'
+            : 'bg-primary border text-zinc-500 opacity-50'
+        "
+        class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed"
+        style="background-color: var(--bg-primary); border-color: var(--border-color)"
+      >
         <lucide-icon [img]="icons.FileCode" class="w-4 h-4"></lucide-icon>
         <span>Endodoncia</span>
       </button>
 
-      <button type="button" disabled
-              [class]="selectedTreatmentType() === 'restauracion' ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90' : 'bg-primary border text-zinc-500 opacity-50'"
-              class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+      <button
+        type="button"
+        disabled
+        [class]="
+          selectedTreatmentType() === 'restauracion'
+            ? 'bg-cyan-500 text-zinc-950 font-black shadow-lg shadow-cyan-500/20 border-cyan-400 opacity-90'
+            : 'bg-primary border text-zinc-500 opacity-50'
+        "
+        class="px-4 py-3 rounded-2xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 text-center cursor-not-allowed"
+        style="background-color: var(--bg-primary); border-color: var(--border-color)"
+      >
         <lucide-icon [img]="icons.ShieldCheck" class="w-4 h-4"></lucide-icon>
         <span>Restauración</span>
       </button>
@@ -93,140 +198,354 @@
 
   <!-- FORMULARIO DE SEGUIMIENTO DENTAL DINÁMICO (SOLO LECTURA) -->
   <div class="space-y-6">
-
     <!-- 1. EVOLUCIÓN SUBJETIVA Y SINTOMATOLOGÍA -->
-    <div class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <div
+      class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-xl flex items-center justify-center">
+        <div
+          class="w-9 h-9 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-xl flex items-center justify-center"
+        >
           <lucide-icon [img]="icons.Smile" class="w-5 h-5"></lucide-icon>
         </div>
         <div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">1. Evolución Subjetiva y Confort del Paciente</h3>
-          <p class="text-xs" style="color: var(--text-muted);">Sensibilidad dental, percepción del tratamiento y hábitos de higiene.</p>
+          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main)">
+            1. Evolución Subjetiva y Confort del Paciente
+          </h3>
+          <p class="text-xs" style="color: var(--text-muted)">
+            Sensibilidad dental, percepción del tratamiento y hábitos de higiene.
+          </p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Nivel de Dolor / Molestia Actual</label>
-          <input type="text" [ngModel]="dentalPainLevel()" readonly class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+            >Nivel de Dolor / Molestia Actual</label
+          >
+          <input
+            type="text"
+            [ngModel]="dentalPainLevel()"
+            readonly
+            class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          />
         </div>
 
         @if (selectedTreatmentType() === 'ortodoncia') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Adaptación a Ortodoncia / Aparatos</label>
-            <input type="text" [ngModel]="orthodonticComfort()" readonly class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Adaptación a Ortodoncia / Aparatos</label
+            >
+            <input
+              type="text"
+              [ngModel]="orthodonticComfort()"
+              readonly
+              class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            />
           </div>
         } @else if (selectedTreatmentType() === 'blanqueamiento') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Sensibilidad Post-Blanqueamiento</label>
-            <input type="text" [ngModel]="orthodonticComfort()" readonly class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Sensibilidad Post-Blanqueamiento</label
+            >
+            <input
+              type="text"
+              [ngModel]="orthodonticComfort()"
+              readonly
+              class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            />
           </div>
         } @else if (selectedTreatmentType() === 'extraccion') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Evolución Post-Quirúrgica / Sangrado</label>
-            <input type="text" [ngModel]="orthodonticComfort()" readonly class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Evolución Post-Quirúrgica / Sangrado</label
+            >
+            <input
+              type="text"
+              [ngModel]="orthodonticComfort()"
+              readonly
+              class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            />
           </div>
         } @else {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Evolución y Adaptación General</label>
-            <input type="text" [ngModel]="orthodonticComfort()" readonly class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Evolución y Adaptación General</label
+            >
+            <input
+              type="text"
+              [ngModel]="orthodonticComfort()"
+              readonly
+              class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            />
           </div>
         }
 
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Hábitos de Higiene y Uso de Auxiliares</label>
-          <input type="text" [ngModel]="hygieneAndHabits()" readonly class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+            >Hábitos de Higiene y Uso de Auxiliares</label
+          >
+          <input
+            type="text"
+            [ngModel]="hygieneAndHabits()"
+            readonly
+            class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          />
         </div>
 
         <div class="space-y-1.5 sm:col-span-2 lg:col-span-3">
-          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Síntomas Específicos o Hallazgos Reportados</label>
-          <input type="text" [ngModel]="newDentalSymptoms()" readonly class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+            >Síntomas Específicos o Hallazgos Reportados</label
+          >
+          <input
+            type="text"
+            [ngModel]="newDentalSymptoms()"
+            readonly
+            class="w-full border rounded-2xl px-4 py-3 text-xs outline-none cursor-default opacity-80"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          />
         </div>
       </div>
     </div>
 
     <!-- 2. EXPLORACIÓN CLÍNICA E INTRAORAL -->
-    <div class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <div
+      class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center justify-center">
+        <div
+          class="w-9 h-9 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center justify-center"
+        >
           <lucide-icon [img]="icons.Stethoscope" class="w-5 h-5"></lucide-icon>
         </div>
         <div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">2. Exploración Clínica e Intraoral</h3>
-          <p class="text-xs" style="color: var(--text-muted);">Estado gingival, tejidos blandos, piezas dentarias y evaluación específica según tratamiento.</p>
+          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main)">
+            2. Exploración Clínica e Intraoral
+          </h3>
+          <p class="text-xs" style="color: var(--text-muted)">
+            Estado gingival, tejidos blandos, piezas dentarias y evaluación específica según
+            tratamiento.
+          </p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Estado Gingival y Periodontal</label>
-          <textarea rows="2" [ngModel]="gingivalAndPeriodontalState()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+            >Estado Gingival y Periodontal</label
+          >
+          <textarea
+            rows="2"
+            [ngModel]="gingivalAndPeriodontalState()"
+            readonly
+            class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          ></textarea>
         </div>
 
         @if (selectedTreatmentType() === 'ortodoncia') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Estado de Brackets, Arcos y Ligas</label>
-            <textarea rows="2" [ngModel]="applianceAndBracketStatus()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Estado de Brackets, Arcos y Ligas</label
+            >
+            <textarea
+              rows="2"
+              [ngModel]="applianceAndBracketStatus()"
+              readonly
+              class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            ></textarea>
           </div>
         } @else if (selectedTreatmentType() === 'blanqueamiento') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Tono Dental y Estado del Esmalte</label>
-            <textarea rows="2" [ngModel]="applianceAndBracketStatus()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Tono Dental y Estado del Esmalte</label
+            >
+            <textarea
+              rows="2"
+              [ngModel]="applianceAndBracketStatus()"
+              readonly
+              class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            ></textarea>
           </div>
         } @else if (selectedTreatmentType() === 'extraccion') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Estado del Alvéolo y Cicatrización</label>
-            <textarea rows="2" [ngModel]="applianceAndBracketStatus()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Estado del Alvéolo y Cicatrización</label
+            >
+            <textarea
+              rows="2"
+              [ngModel]="applianceAndBracketStatus()"
+              readonly
+              class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            ></textarea>
           </div>
         } @else {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Estado de Tejidos Blandos y Mucosa</label>
-            <textarea rows="2" [ngModel]="applianceAndBracketStatus()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Estado de Tejidos Blandos y Mucosa</label
+            >
+            <textarea
+              rows="2"
+              [ngModel]="applianceAndBracketStatus()"
+              readonly
+              class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            ></textarea>
           </div>
         }
 
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Esmalte, Limpieza y Restauraciones Previas</label>
-          <textarea rows="2" [ngModel]="enamelAndRestorationState()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+            >Esmalte, Limpieza y Restauraciones Previas</label
+          >
+          <textarea
+            rows="2"
+            [ngModel]="enamelAndRestorationState()"
+            readonly
+            class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          ></textarea>
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Oclusión, Mordida y Piezas Involucradas</label>
-          <textarea rows="2" [ngModel]="occlusionAndBiteState()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+            >Oclusión, Mordida y Piezas Involucradas</label
+          >
+          <textarea
+            rows="2"
+            [ngModel]="occlusionAndBiteState()"
+            readonly
+            class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          ></textarea>
         </div>
       </div>
     </div>
 
     <!-- 3. ESTUDIOS DE IMAGEN Y FOTOGRAFÍAS CLÍNICAS -->
-    <div class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <div
+      class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl flex items-center justify-center">
+        <div
+          class="w-9 h-9 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl flex items-center justify-center"
+        >
           <lucide-icon [img]="icons.ImageIcon" class="w-5 h-5"></lucide-icon>
         </div>
         <div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">3. Radiografías de Control y Fotografías Clínicas</h3>
-          <p class="text-xs" style="color: var(--text-muted);">Registros fotográficos o estudios adjuntos en esta sesión.</p>
+          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main)">
+            3. Radiografías de Control y Fotografías Clínicas
+          </h3>
+          <p class="text-xs" style="color: var(--text-muted)">
+            Registros fotográficos o estudios adjuntos en esta sesión.
+          </p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
         @if (uploadedFiles().length === 0) {
-          <p class="text-xs italic" style="color: var(--text-muted);">No se adjuntaron archivos en este seguimiento.</p>
+          <p class="text-xs italic" style="color: var(--text-muted)">
+            No se adjuntaron archivos en este seguimiento.
+          </p>
         }
         @for (img of uploadedFiles(); track img.name) {
-          <a [href]="img.url" target="_blank" class="border p-3.5 rounded-2xl flex items-center gap-3 relative group transition-colors duration-300 hover:border-cyan-500 cursor-pointer" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+          <a
+            [href]="img.url"
+            target="_blank"
+            class="border p-3.5 rounded-2xl flex items-center gap-3 relative group transition-colors duration-300 hover:border-cyan-500 cursor-pointer"
+            style="background-color: var(--bg-primary); border-color: var(--border-color)"
+          >
             @if (isVisualMedia(img.name)) {
-              <img [src]="img.url" class="w-14 h-14 rounded-xl object-cover border shrink-0" style="border-color: var(--border-color);" alt="estudio dental">
+              <img
+                [src]="img.url"
+                class="w-14 h-14 rounded-xl object-cover border shrink-0"
+                style="border-color: var(--border-color)"
+                alt="estudio dental"
+              />
             } @else {
-              <div class="w-14 h-14 rounded-xl border shrink-0 flex items-center justify-center bg-cyan-500/10 text-cyan-400 border-cyan-500/20 font-bold uppercase text-xs">
+              <div
+                class="w-14 h-14 rounded-xl border shrink-0 flex items-center justify-center bg-cyan-500/10 text-cyan-400 border-cyan-500/20 font-bold uppercase text-xs"
+              >
                 {{ img.name.split('.').pop() }}
               </div>
             }
 
-            <div class="overflow-hidden flex-1">
-              <span class="px-2 py-0.5 bg-cyan-500/10 text-cyan-400 rounded-md text-[9px] font-black uppercase">{{ img.type }}</span>
-              <p class="text-xs font-bold truncate mt-1" style="color: var(--text-main);">{{ img.name }}</p>
+            <div class="min-w-0 overflow-hidden flex-1">
+              <span
+                class="px-2 py-0.5 bg-cyan-500/10 text-cyan-400 rounded-md text-[9px] font-black uppercase"
+                >{{ img.type }}</span
+              >
+              <p class="text-xs font-bold truncate mt-1" style="color: var(--text-main)">
+                {{ img.name }}
+              </p>
               <p class="text-[9px] text-emerald-400 mt-1">Ver archivo / documento ↗</p>
             </div>
           </a>
@@ -235,77 +554,184 @@
     </div>
 
     <!-- 4. PLAN ODONTOLÓGICO Y AJUSTES TERAPÉUTICOS -->
-    <div class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <div
+      class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl flex items-center justify-center">
+        <div
+          class="w-9 h-9 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-xl flex items-center justify-center"
+        >
           <lucide-icon [img]="icons.ShieldCheck" class="w-5 h-5"></lucide-icon>
         </div>
         <div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">4. Plan Odontológico y Ajustes en Sesión</h3>
-          <p class="text-xs" style="color: var(--text-muted);">Procedimientos realizados, medicamentos y recomendaciones para la próxima cita.</p>
+          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main)">
+            4. Plan Odontológico y Ajustes en Sesión
+          </h3>
+          <p class="text-xs" style="color: var(--text-muted)">
+            Procedimientos realizados, medicamentos y recomendaciones para la próxima cita.
+          </p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
         @if (selectedTreatmentType() === 'ortodoncia') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Ajuste de Arco / Aparatología</label>
-            <textarea rows="3" [ngModel]="ajusteArcoOrtodoncia()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Ajuste de Arco / Aparatología</label
+            >
+            <textarea
+              rows="3"
+              [ngModel]="ajusteArcoOrtodoncia()"
+              readonly
+              class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            ></textarea>
           </div>
         } @else if (selectedTreatmentType() === 'blanqueamiento') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Aplicación de Gel / Sesión</label>
-            <textarea rows="3" [ngModel]="ajusteArcoOrtodoncia()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Aplicación de Gel / Sesión</label
+            >
+            <textarea
+              rows="3"
+              [ngModel]="ajusteArcoOrtodoncia()"
+              readonly
+              class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            ></textarea>
           </div>
         } @else if (selectedTreatmentType() === 'limpieza') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Detalles de Profilaxis / Tartrectomía</label>
-            <textarea rows="3" [ngModel]="ajusteArcoOrtodoncia()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Detalles de Profilaxis / Tartrectomía</label
+            >
+            <textarea
+              rows="3"
+              [ngModel]="ajusteArcoOrtodoncia()"
+              readonly
+              class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            ></textarea>
           </div>
         } @else if (selectedTreatmentType() === 'extraccion') {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Técnica Quirúrgica y Sutura</label>
-            <textarea rows="3" [ngModel]="ajusteArcoOrtodoncia()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Técnica Quirúrgica y Sutura</label
+            >
+            <textarea
+              rows="3"
+              [ngModel]="ajusteArcoOrtodoncia()"
+              readonly
+              class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            ></textarea>
           </div>
         } @else {
           <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Ajuste o Modificación Terapéutica</label>
-            <textarea rows="3" [ngModel]="ajusteArcoOrtodoncia()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+            <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+              >Ajuste o Modificación Terapéutica</label
+            >
+            <textarea
+              rows="3"
+              [ngModel]="ajusteArcoOrtodoncia()"
+              readonly
+              class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            ></textarea>
           </div>
         }
 
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Procedimiento Realizado Hoy</label>
-          <textarea rows="3" [ngModel]="procedimientoRealizado()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+            >Procedimiento Realizado Hoy</label
+          >
+          <textarea
+            rows="3"
+            [ngModel]="procedimientoRealizado()"
+            readonly
+            class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          ></textarea>
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main);">Indicaciones y Próxima Cita</label>
-          <textarea rows="3" [ngModel]="recomendacionesProximaCita()" readonly class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+          <label class="text-[11px] font-bold uppercase" style="color: var(--text-main)"
+            >Indicaciones y Próxima Cita</label
+          >
+          <textarea
+            rows="3"
+            [ngModel]="recomendacionesProximaCita()"
+            readonly
+            class="w-full border rounded-2xl p-3.5 text-xs outline-none cursor-default opacity-80 resize-none"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+          ></textarea>
         </div>
       </div>
     </div>
 
     <!-- 5. RESUMEN MÉDICO / ESTOMATOLÓGICO -->
-    <div class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <div
+      class="p-6 rounded-3xl shadow-xl border space-y-4 transition-colors duration-300"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl flex items-center justify-center">
+        <div
+          class="w-9 h-9 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-xl flex items-center justify-center"
+        >
           <lucide-icon [img]="icons.FileText" class="w-5 h-5"></lucide-icon>
         </div>
         <div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Nota Clínica Estomatológica Registrada</h3>
-          <p class="text-xs" style="color: var(--text-muted);">Resumen clínico o transcripción guardada de la sesión.</p>
+          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main)">
+            Nota Clínica Estomatológica Registrada
+          </h3>
+          <p class="text-xs" style="color: var(--text-muted)">
+            Resumen clínico o transcripción guardada de la sesión.
+          </p>
         </div>
       </div>
 
       <div class="pt-2">
-        <textarea rows="4"
-                  [ngModel]="resumenMedico()"
-                  readonly
-                  class="w-full border rounded-2xl p-4 text-xs outline-none cursor-default opacity-80 resize-y"
-                  style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
+        <textarea
+          rows="4"
+          [ngModel]="resumenMedico()"
+          readonly
+          class="w-full border rounded-2xl p-4 text-xs outline-none cursor-default opacity-80 resize-y"
+          style="
+            background-color: var(--bg-primary);
+            border-color: var(--border-color);
+            color: var(--text-main);
+          "
+        ></textarea>
       </div>
     </div>
-
   </div>
 </div>

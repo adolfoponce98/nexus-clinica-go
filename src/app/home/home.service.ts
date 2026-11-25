@@ -1,16 +1,17 @@
+import { API_URLS } from '../config/api-urls';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { DashBoardRequest, DashBoardResponse } from './home.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DashboardService {
-  private apiUrl = 'https://getbranchdashboarddata-rdotx3vmaq-uc.a.run.app';
+  private apiUrl = API_URLS.GETBRANCHDASHBOARDDATA;
 
   private headers = new HttpHeaders({
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   });
 
   constructor(private http: HttpClient) {}

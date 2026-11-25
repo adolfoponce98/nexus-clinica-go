@@ -1,0 +1,98 @@
+<section class="clinical-section">
+  <div class="section-title">
+    <span class="letter violet">D</span>
+    <div>
+      <h3>Odontograma por superficies</h3>
+      <p>Nomenclatura FDI · dentición adulta e infantil.</p>
+    </div>
+  </div>
+  <div class="segmented">
+    <button type="button" [class.active]="dentition === 'Adulto'" (click)="dentition = 'Adulto'">
+      Adulto · 32 piezas</button
+    ><button
+      type="button"
+      [class.active]="dentition === 'Infantil'"
+      (click)="dentition = 'Infantil'"
+    >
+      Infantil · 20 piezas
+    </button>
+  </div>
+  <div class="teeth-scroll">
+    @for (row of rows; track $index) {
+      <div class="teeth-row">
+        @for (tooth of row; track tooth) {
+          <button
+            type="button"
+            class="tooth"
+            [class.selected]="selected === tooth"
+            [class.has-mark]="count(tooth) > 0"
+            (click)="selected = tooth"
+            [attr.aria-label]="'Pieza ' + tooth + ' · ' + count(tooth) + ' superficies registradas'"
+          >
+            <svg width="25" height="32" viewBox="0 0 25 32" aria-hidden="true">
+              <path
+                d="M4 3 Q8 0 12 3 Q18 0 22 4 Q25 10 21 18 L18 29 Q16 32 14 23 Q12 16 10 23 Q8 32 6 29 L3 18 Q0 9 4 3z"
+                fill="currentColor"
+                fill-opacity=".12"
+                stroke="currentColor"
+              />
+              <path
+                d="M6 8 L12 12 L19 8 M12 12 V19"
+                stroke="currentColor"
+                stroke-opacity=".4"
+                fill="none"
+              /></svg
+            ><strong>{{ tooth }}</strong>
+            @if (count(tooth)) {
+              <i>{{ count(tooth) }}</i>
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+  <div class="dental-editor">
+    <strong>Pieza {{ selected || 'sin seleccionar' }}</strong
+    ><label class="field"
+      >Cara<select
+        [(ngModel)]="surface"
+        [ngModelOptions]="{ standalone: true }"
+        [disabled]="disabled"
+      >
+        @for (s of surfaces; track s) {
+          <option>{{ s }}</option>
+        }
+      </select></label
+    ><label class="field"
+      >Condición<select
+        [(ngModel)]="condition"
+        [ngModelOptions]="{ standalone: true }"
+        [disabled]="disabled"
+      >
+        @for (c of conditions; track c) {
+          <option>{{ c }}</option>
+        }
+      </select></label
+    ><button type="button" class="primary" (click)="apply()" [disabled]="disabled || !selected">
+      Registrar superficie
+    </button>
+  </div>
+  <div class="dental-marks">
+    @for (m of value; track $index; let i = $index) {
+      <div>
+        <strong>{{ m.tooth }}</strong
+        ><span>{{ m.surface }} · {{ m.condition }}</span
+        ><button
+          type="button"
+          class="text-button danger-text"
+          (click)="remove(i)"
+          [disabled]="disabled"
+        >
+          Quitar
+        </button>
+      </div>
+    } @empty {
+      <p class="muted">Selecciona una pieza y una superficie para registrar un hallazgo.</p>
+    }
+  </div>
+</section>

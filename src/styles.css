@@ -1,7 +1,38 @@
-@import "tailwindcss";
+@import './app/recipes/prescription-paper.css';
+@import 'tailwindcss';
+@source "./app";
+
+/* Las vistas administrativas comparten espacio con el menú lateral. */
+@theme {
+  /* Paleta Clínica Go: cobalto, índigo y teal. */
+  --color-brand-blue: #3862d1;
+  --color-brand-indigo: #3d3fd1;
+  --color-brand-teal: #338c8e;
+  --color-blue-50: #f0f4ff;
+  --color-blue-100: #e2eaff;
+  --color-blue-200: #c7d6ff;
+  --color-blue-300: #a2baff;
+  --color-blue-400: #7899f0;
+  --color-blue-500: #4e75dc;
+  --color-blue-600: #3862d1;
+  --color-blue-700: #2e50b8;
+  --color-blue-800: #294497;
+  --color-blue-900: #253b78;
+  --color-blue-950: #17254e;
+  --color-indigo-500: #5b5ee5;
+  --color-indigo-600: #3d3fd1;
+  --color-indigo-700: #3335b5;
+  --color-teal-500: #43a6a8;
+  --color-teal-600: #338c8e;
+  --color-teal-700: #287a7c;
+  --breakpoint-lg: 90rem;
+  --breakpoint-xl: 105rem;
+  --breakpoint-2xl: 120rem;
+}
 
 /* Esto fuerza que el fondo inicial no parpadee antes de cargar el tema */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -10,56 +41,78 @@ html, body {
 
 /* --- Tema por defecto (Light Mode) --- */
 :root {
-  --bg-primary: #f8fafc;       /* Fondo general limpio (Slate muy claro) */
-  --bg-secondary: #ffffff;     /* Fondo de tarjetas / contenedores */
-  --text-main: #0f172a;        /* Texto principal muy oscuro (Slate 900) */
-  --text-muted: #64748b;       /* Texto secundario (Slate 500) */
-  --border-color: #e2e8f0;     /* Bordes sutiles (Slate 200) */
-  --accent-color: #2563eb;     /* Azul corporativo principal */
+  --brand-blue: #3862d1;
+  --brand-indigo: #3d3fd1;
+  --brand-teal: #338c8e;
+  --brand-gradient: linear-gradient(115deg, #3862d1 0%, #3d3fd1 48%, #287a7c 100%);
+  --brand-gradient-hover: linear-gradient(115deg, #2e50b8 0%, #3335b5 48%, #22686a 100%);
+
+  --bg-primary: #f8fafc; /* Fondo general limpio (Slate muy claro) */
+  --bg-secondary: #ffffff; /* Fondo de tarjetas / contenedores */
+  --text-main: #0f172a; /* Texto principal muy oscuro (Slate 900) */
+  --text-muted: #64748b; /* Texto secundario (Slate 500) */
+  --border-color: #e2e8f0; /* Bordes sutiles (Slate 200) */
+  --accent-color: #3862d1; /* Azul corporativo principal */
 }
 
 /* --- Tema Oscuro (Dark Mode) --- */
 /* Cuando el body tenga la clase 'dark', se aplicarán estos colores basados en tu marca */
 body.dark {
-  --bg-primary: #070b14;       /* Fondo general oscuro profundo corporativo */
-  --bg-secondary: #0f172a;     /* Fondo de tarjetas / contenedores (Slate 900) */
-  --text-main: #f8fafc;        /* Texto principal blanco/claro */
-  --text-muted: #94a3b8;       /* Texto secundario gris claro (Slate 400) */
-  --border-color: #1e293b;     /* Bordes oscuros sutiles (Slate 800) */
-  --accent-color: #3b82f6;     /* Azul brillante de acento */
+  --bg-primary: #070b14; /* Fondo general oscuro profundo corporativo */
+  --bg-secondary: #0f172a; /* Fondo de tarjetas / contenedores (Slate 900) */
+  --text-main: #f8fafc; /* Texto principal blanco/claro */
+  --text-muted: #94a3b8; /* Texto secundario gris claro (Slate 400) */
+  --border-color: #1e293b; /* Bordes oscuros sutiles (Slate 800) */
+  --accent-color: #94b2ff; /* Azul brillante de acento */
 }
 
 /* Aplicar las variables de forma global al body con transición suave */
 body {
   background-color: var(--bg-primary);
   color: var(--text-main);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   margin: 0;
 }
 @keyframes nexusWave1 {
   0% {
-    d: path("M 25,5 C 130,1 310,19 415,5 C 433,5 455,20 455,30 C 455,40 433,55 415,55 C 310,41 130,59 25,55 C 7,55 -5,40 -5,30 C -5,20 7,5 25,5 Z");
+    d: path(
+      'M 25,5 C 130,1 310,19 415,5 C 433,5 455,20 455,30 C 455,40 433,55 415,55 C 310,41 130,59 25,55 C 7,55 -5,40 -5,30 C -5,20 7,5 25,5 Z'
+    );
   }
   33% {
-    d: path("M 25,7 C 130,3 310,16 415,7 C 433,7 455,19 455,30 C 455,41 433,53 415,53 C 310,43 130,57 25,53 C 7,53 -5,41 -5,30 C -5,19 7,7 25,7 Z");
+    d: path(
+      'M 25,7 C 130,3 310,16 415,7 C 433,7 455,19 455,30 C 455,41 433,53 415,53 C 310,43 130,57 25,53 C 7,53 -5,41 -5,30 C -5,19 7,7 25,7 Z'
+    );
   }
   66% {
-    d: path("M 25,3 C 130,6 310,12 415,3 C 433,3 455,21 455,30 C 455,39 433,57 415,57 C 310,45 130,56 25,57 C 7,57 -5,39 -5,30 C -5,21 7,3 25,3 Z");
+    d: path(
+      'M 25,3 C 130,6 310,12 415,3 C 433,3 455,21 455,30 C 455,39 433,57 415,57 C 310,45 130,56 25,57 C 7,57 -5,39 -5,30 C -5,21 7,3 25,3 Z'
+    );
   }
   100% {
-    d: path("M 25,5 C 130,1 310,19 415,5 C 433,5 455,20 455,30 C 455,40 433,55 415,55 C 310,41 130,59 25,55 C 7,55 -5,40 -5,30 C -5,20 7,5 25,5 Z");
+    d: path(
+      'M 25,5 C 130,1 310,19 415,5 C 433,5 455,20 455,30 C 455,40 433,55 415,55 C 310,41 130,59 25,55 C 7,55 -5,40 -5,30 C -5,20 7,5 25,5 Z'
+    );
   }
 }
 
 @keyframes nexusWave2 {
   0% {
-    d: path("M 25,7 C 130,12 310,6 415,8 C 433,8 455,19 455,30 C 455,41 433,54 415,54 C 310,45 130,55 25,54 C 7,54 -5,41 -5,30 C -5,19 7,8 25,7 Z");
+    d: path(
+      'M 25,7 C 130,12 310,6 415,8 C 433,8 455,19 455,30 C 455,41 433,54 415,54 C 310,45 130,55 25,54 C 7,54 -5,41 -5,30 C -5,19 7,8 25,7 Z'
+    );
   }
   50% {
-    d: path("M 25,4 C 130,4 310,15 415,4 C 433,4 455,22 455,30 C 455,38 433,52 415,52 C 310,42 130,58 25,56 C 7,56 -5,38 -5,30 C -5,22 7,4 25,4 Z");
+    d: path(
+      'M 25,4 C 130,4 310,15 415,4 C 433,4 455,22 455,30 C 455,38 433,52 415,52 C 310,42 130,58 25,56 C 7,56 -5,38 -5,30 C -5,22 7,4 25,4 Z'
+    );
   }
   100% {
-    d: path("M 25,7 C 130,12 310,6 415,8 C 433,8 455,19 455,30 C 455,41 433,54 415,54 C 310,45 130,55 25,54 C 7,54 -5,41 -5,30 C -5,19 7,8 25,7 Z");
+    d: path(
+      'M 25,7 C 130,12 310,6 415,8 C 433,8 455,19 455,30 C 455,41 433,54 415,54 C 310,45 130,55 25,54 C 7,54 -5,41 -5,30 C -5,19 7,8 25,7 Z'
+    );
   }
 }
 
@@ -82,4 +135,155 @@ body {
 
 .animate-nexus-5 {
   animation: nexusWave1 4.1s ease-in-out infinite;
+}
+
+/* Layout compartido: las rejillas y componentes pueden contraerse sin cortar contenido. */
+@layer base {
+  app-root {
+    display: block;
+    min-width: 0;
+  }
+  router-outlet + * {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .grid > * {
+    min-width: 0;
+  }
+  input,
+  select,
+  textarea {
+    min-width: 0;
+    max-width: 100%;
+  }
+  img,
+  video,
+  canvas,
+  model-viewer {
+    max-width: 100%;
+  }
+}
+
+.app-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.app-table-scroll table {
+  min-width: 40rem;
+}
+.app-dialog-overlay {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.app-dialog-overlay > div {
+  min-width: 0;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+.app-dialog-overlay > div > .flex-1 {
+  min-height: 0;
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .app-content > :not(router-outlet) > :first-child {
+    padding-inline: 1rem;
+  }
+}
+
+@media print {
+  .app-table-scroll {
+    overflow: visible;
+  }
+  .app-table-scroll table {
+    min-width: 0;
+  }
+}
+
+/* Booking dialogs use horizontal space before resorting to vertical scrolling. */
+.appointment-booking-dialog {
+  width: min(100%, 64rem);
+}
+@media (min-width: 1024px) and (max-height: 850px) {
+  .appointment-booking-dialog {
+    padding: 1rem;
+  }
+  .appointment-booking-dialog .content-start {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-height: none;
+    overflow-y: visible;
+    gap: 0.4rem;
+  }
+  .appointment-booking-dialog .content-start button {
+    padding-block: 0.4rem;
+  }
+  .appointment-booking-dialog label {
+    letter-spacing: 0.04em;
+  }
+}
+
+.permission-denied {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+/* Both appointment actions and pending check-ins must remain reachable. */
+@media (min-width: 1100px) {
+  body:has(app-check-in-reminders aside) app-current-appointment .current-appointment-card {
+    right: 26rem;
+  }
+}
+@media (max-width: 1099px) {
+  body:has(app-check-in-reminders aside) app-current-appointment .current-appointment-card {
+    top: 5.5rem;
+    bottom: auto;
+    max-height: calc(48dvh - 5.5rem);
+  }
+  body:has(app-current-appointment .current-appointment-card) app-check-in-reminders aside {
+    max-height: 45dvh;
+    overflow-y: auto;
+  }
+}
+
+.booking-closed-day,
+.booking-grid-cell:disabled {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(80, 90, 110, 0.18) 0,
+    rgba(80, 90, 110, 0.18) 2px,
+    transparent 2px,
+    transparent 9px
+  );
+}
+
+@font-face {
+  font-family: Roboto;
+  src: url(/fonts/roboto.ttf) format('truetype');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+.nexus-asset-dialog .mat-mdc-dialog-surface {
+  border-radius: 24px;
+  background: var(--bg-secondary, #fff);
+}
+
+/* Un solo degradado de marca para acciones principales en ambos temas. */
+@utility bg-brand-gradient {
+  background-image: var(--brand-gradient);
+}
+@utility bg-brand-gradient-hover {
+  background-image: var(--brand-gradient-hover);
+}
+@utility text-brand-accent {
+  color: var(--accent-color);
+}
+
+body.dark .text-blue-600,
+body.dark .text-blue-700,
+body.dark .text-indigo-600,
+body.dark .text-teal-600 {
+  color: var(--accent-color);
 }

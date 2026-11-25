@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-patient-evolution',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './patient-evolution.component.html'
+  templateUrl: './patient-evolution.component.html',
 })
 export class PatientEvolutionComponent {
   // Recibe un diccionario o arreglo mapeado de los 12 meses { [monthNumber]: total }
@@ -14,7 +14,20 @@ export class PatientEvolutionComponent {
   filterMode = signal<number>(6); // 6 o 12 meses
   page = signal<number>(new Date().getMonth() >= 6 ? 1 : 0);
 
-  monthsNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  monthsNames = [
+    'Ene',
+    'Feb',
+    'Mar',
+    'Abr',
+    'May',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dic',
+  ];
 
   constructor() {
     // Effect para forzar la actualización reactiva cada vez que el input 'data' cambie o se carguen los datos del servidor
@@ -22,7 +35,7 @@ export class PatientEvolutionComponent {
       const raw = this.data();
       if (raw) {
         // Dispara la reactividad de las señales internas cuando llegan los datos nuevos
-        this.page.update(p => p);
+        this.page.update((p) => p);
       }
     });
   }
@@ -48,7 +61,7 @@ export class PatientEvolutionComponent {
         monthIndex: index,
         month: name,
         total: total,
-        isCurrentMonth: index === currentMonthIndex
+        isCurrentMonth: index === currentMonthIndex,
       };
     });
   });
@@ -65,7 +78,7 @@ export class PatientEvolutionComponent {
     if (this.page() === 1) {
       return allMonths.slice(6, 12); // Semestre 2
     } else {
-      return allMonths.slice(0, 6);  // Semestre 1
+      return allMonths.slice(0, 6); // Semestre 1
     }
   });
 
@@ -77,13 +90,13 @@ export class PatientEvolutionComponent {
 
   prevPage() {
     if (this.page() > 0) {
-      this.page.update(p => p - 1);
+      this.page.update((p) => p - 1);
     }
   }
 
   nextPage() {
     if (this.page() < 1) {
-      this.page.update(p => p + 1);
+      this.page.update((p) => p + 1);
     }
   }
 

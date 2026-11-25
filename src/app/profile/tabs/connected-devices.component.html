@@ -1,0 +1,178 @@
+<section class="devices-panel">
+  <header class="devices-heading">
+    <div class="heading-mark"><lucide-icon [img]="icons.ShieldCheck" /></div>
+    <div>
+      <span class="kicker">SEGURIDAD DE LA CUENTA</span>
+      <h2>Dispositivos conectados</h2>
+      <p>Revisa quién tiene acceso y administra sus sesiones.</p>
+    </div>
+    <button
+      type="button"
+      class="secondary refresh"
+      (click)="load()"
+      [disabled]="loading() || busy()"
+    >
+      <lucide-icon [img]="icons.RefreshCw" class="w-4 h-4" [class.spinning]="loading()" />Actualizar
+    </button>
+  </header>
+  <div class="devices-summary">
+    <div>
+      <span class="summary-icon blue"><lucide-icon [img]="icons.Layers" /></span
+      ><span
+        ><strong>{{ devices().length }}</strong
+        ><small>{{ devices().length }} dispositivos activos</small></span
+      >
+    </div>
+    <div>
+      <span class="summary-icon green"><lucide-icon [img]="icons.Wifi" /></span
+      ><span
+        ><strong>{{ onlineCount }}</strong
+        ><small>Con actividad reciente</small></span
+      >
+    </div>
+    <div>
+      <span class="summary-icon violet"><lucide-icon [img]="icons.Bell" /></span
+      ><span
+        ><strong>{{ pushCount }}</strong
+        ><small>Con notificaciones</small></span
+      >
+    </div>
+  </div>
+  <div class="session-info">
+    <lucide-icon [img]="icons.ShieldCheck" class="w-4 h-4" />
+    <p>
+      Máximo <strong>3 dispositivos por cuenta</strong>. Puedes cerrar una sesión que ya no utilices
+      para liberar un espacio. La actividad reciente es una referencia de conexión.
+    </p>
+  </div>
+  @if (error()) {
+    <div class="device-error" role="alert">{{ error() }}</div>
+  }
+  @if (loading() && !devices().length) {
+    <div class="empty-state" role="status">
+      <span class="loader"></span>
+      <h3>Consultando dispositivos…</h3>
+      <p>Recuperando las sesiones registradas de tu equipo.</p>
+    </div>
+  }
+  <div class="device-grid">
+    @for (device of devices(); track (device.userId || '') + device.id) {
+      <article class="device-card" [class.current]="device.currentDevice">
+        <div class="card-heading">
+          <span class="device-icon"><lucide-icon [img]="deviceIcon(device)" /></span>
+          <div>
+            <h3>{{ device.name || 'Dispositivo sin nombre' }}</h3>
+            <span class="presence" [class.online]="device.online"
+              ><i></i
+              >{{ device.online ? 'Con actividad reciente' : 'Sin actividad reciente' }}</span
+            >
+          </div>
+          @if (device.currentDevice) {
+            <span class="current-badge"
+              ><lucide-icon [img]="icons.Check" class="w-3 h-3" />Este dispositivo</span
+            >
+          }
+        </div>
+        <div class="device-user">
+          <span class="user-avatar"><lucide-icon [img]="icons.User" class="w-5 h-5" /></span>
+          <div>
+            <strong>{{ device.fullName || device.userId || 'Usuario de la cuenta' }}</strong
+            ><small
+              >{{ device.employee ? 'Empleado' : 'Doctor' }} ·
+              {{ device.currentDevice ? 'Tu sesión actual' : 'Sesión del equipo' }}</small
+            >
+          </div>
+        </div>
+        <div class="contact">
+          <span
+            ><lucide-icon [img]="icons.Mail" class="w-3.5 h-3.5" />{{
+              device.userId || 'Correo no disponible'
+            }}</span
+          ><span
+            ><lucide-icon [img]="icons.Phone" class="w-3.5 h-3.5" />{{
+              device.phone || 'Sin teléfono'
+            }}</span
+          >
+        </div>
+        <dl class="device-details">
+          <div>
+            <dt><lucide-icon [img]="icons.Monitor" class="w-3.5 h-3.5" />Sistema</dt>
+            <dd>{{ device.os || 'No disponible' }}</dd>
+          </div>
+          <div>
+            <dt><lucide-icon [img]="icons.Globe" class="w-3.5 h-3.5" />Navegador</dt>
+            <dd>{{ device.browser || 'No aplica' }}</dd>
+          </div>
+          <div>
+            <dt><lucide-icon [img]="icons.Smartphone" class="w-3.5 h-3.5" />Marca / modelo</dt>
+            <dd>{{ device.brand || 'No disponible' }} / {{ device.model || 'No disponible' }}</dd>
+          </div>
+          <div>
+            <dt><lucide-icon [img]="icons.Clock" class="w-3.5 h-3.5" />Último registro</dt>
+            <dd>
+              {{ device.lastSeen ? (device.lastSeen | date: 'dd/MM/yyyy HH:mm') : 'Sin registro' }}
+            </dd>
+          </div>
+        </dl>
+        <footer class="device-footer">
+          <span class="push-status" [class.enabled]="device.pushEnabled"
+            ><lucide-icon [img]="icons.Bell" class="w-3.5 h-3.5" />{{
+              device.pushEnabled ? 'Notificaciones habilitadas' : 'Notificaciones sin activar'
+            }}</span
+          ><button
+            type="button"
+            class="disconnect"
+            (click)="selected.set(device)"
+            appPermission="devices:delete"
+            [appPermissionDisabled]="busy()"
+          >
+            <lucide-icon [img]="icons.LogOut" class="w-3.5 h-3.5" />Cerrar sesión
+          </button>
+        </footer>
+      </article>
+    } @empty {
+      @if (!loading()) {
+        <div class="empty-state">
+          <span class="empty-icon"><lucide-icon [img]="icons.Monitor" /></span>
+          <h3>No hay dispositivos activos registrados.</h3>
+          <p>Las sesiones aparecerán aquí cuando se conecten a la cuenta.</p>
+          <button type="button" class="secondary" (click)="load()">Volver a consultar</button>
+        </div>
+      }
+    }
+  </div>
+  @if (selected(); as device) {
+    <div class="device-modal" role="dialog" aria-modal="true" aria-labelledby="device-logout-title">
+      <section>
+        <span class="logout-icon"><lucide-icon [img]="icons.LogOut" /></span
+        ><span class="kicker">ADMINISTRAR ACCESO</span>
+        <h3 id="device-logout-title">¿Cerrar sesión en {{ device.name }}?</h3>
+        <p>Se revocará su acceso y quedará espacio para conectar otro dispositivo.</p>
+        @if (device.currentDevice) {
+          <div class="current-warning">
+            Esta es tu sesión actual. Tendrás que iniciar sesión de nuevo.
+          </div>
+        }
+        <div class="modal-actions">
+          <button type="button" class="secondary" (click)="selected.set(null)" [disabled]="busy()">
+            Cancelar</button
+          ><button
+            type="button"
+            class="danger"
+            (click)="disconnect(device)"
+            appPermission="devices:delete"
+            [appPermissionDisabled]="busy()"
+          >
+            @if (busy()) {
+              <span class="loader light"></span>
+            }
+            {{ busy() ? 'Desconectando…' : 'Cerrar sesión' }}
+          </button>
+        </div>
+        @if (error()) {
+          <p class="device-error" role="alert">{{ error() }}</p>
+        }
+      </section>
+    </div>
+  }
+</section>

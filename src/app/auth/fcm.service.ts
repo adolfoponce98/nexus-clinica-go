@@ -1,61 +1,60 @@
 import { Injectable, inject } from '@angular/core';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
-import { AuthService } from '../auth/auth.service';
-import { getApp } from 'firebase/app';
-import { TokenInterceptorService } from './token-interceptor.service';
-import { NotificationUiService } from './notification-ui.service'; // Ajusta la ruta
-@Injectable({
-  providedIn: 'root'
-})
+import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
+import { OfficeSyncService } from './office-sync.service';
+import { AuthService } from './auth.service';
+@Injectable({ providedIn: 'root' })
 export class FcmService {
-  private tokenInterceptor = inject(TokenInterceptorService);
-  // Usar las funciones de Angular Fire directamente como inicializadores
- private firestore = getFirestore(getApp(), 'nexus-cliniq-dev');
-  private messaging = getMessaging();
-  private authService = inject(AuthService);
-private notificationUi = inject(NotificationUiService);
-  // Reemplaza con tu VAPID Key obtenida en la consola de Firebase
-  private readonly VAPID_KEY = 'BOAWodenFSAHbDkNWvq9sXK118FQMqf_fM1iUKqjnpSwD9OOddSpjS6nG32hbjb64PrWmCdrcCy_RVjR9rOO6Kc';
-
-  public initPushNotifications() {
-    Notification.requestPermission().then(permission => {
-      if (permission === 'granted') {
-        console.log('🔔 Permiso de notificaciones concedido.');
-        this.getTokenAndSave();
-      } else {
-        console.warn('⚠️ Permiso de notificaciones denegado.');
-      }
+  private readonly sync = inject(OfficeSyncService);
+  private readonly auth = inject(AuthService);
+  private unsubscribe?: () => void;
+  private initialized = false;
+  private registering = false;
+  private readonly VAPID_KEY =
+    'BOAWodenFSAHbDkNWvq9sXK118FQMqf_fM1iUKqjnpSwD9OOddSpjS6nG32hbjb64PrWmCdrcCy_RVjR9rOO6Kc';
+  async initPushNotifications() {
+    this.sync.start();
+    if (this.initialized) return;
+    this.initialized = true;
+    if ('serviceWorker' in navigator)
+      navigator.serviceWorker.addEventListener('message', this.background);
+    this.auth.branchChanged$.subscribe(() => {
+      void this.updateRegistration();
     });
-
-    // Escuchar mensajes cuando la app está abierta en primer plano
-    onMessage(this.messaging, (payload) => {
-      console.log('📥 Mensaje recibido en primer plano:', payload);
-      const audio = new Audio('assets/sounds/notification.mp3');
-       audio.play().catch(err => console.warn('⚠️ No se pudo reproducir el audio automáticamente:', err));
-      if (payload.notification) {
-        const title = payload.notification.title || 'Nexus Cliniq';
-        const body = payload.notification.body || 'Tienes una nueva actualización.';
-        new Notification(payload.notification.title || 'Nexus Cliniq', {
-          body: payload.notification.body,
-          icon: '/assets/logo_nexus.png'
-        });
-        this.notificationUi.show(title, body, payload.data);
-      }
-    });
-  }
-
-  private async getTokenAndSave() {
     try {
-      const currentToken = await getToken(this.messaging, { vapidKey: this.VAPID_KEY });
-   if (currentToken) {
-        // Llamada limpia a través de tu interceptor encriptado
-        await this.tokenInterceptor.updateFirebaseToken(currentToken);
-      } else {
-        console.warn('⚠️ No se pudo obtener el token de registro FCM.');
-      }
-    } catch (err) {
-      console.error('❌ Error al obtener el token FCM:', err);
+      if (!(await isSupported())) return;
+      const messaging = getMessaging();
+      this.unsubscribe = onMessage(messaging, (payload) =>
+        this.sync.receive(payload.data, payload.notification?.title, payload.notification?.body),
+      );
+      if (Notification.permission === 'default') await Notification.requestPermission();
+      if (Notification.permission === 'granted') await this.updateRegistration();
+    } catch {
+      /* Login and synchronization remain usable when browser push is unavailable. */
+    }
+  }
+  private readonly background = (event: MessageEvent) => {
+    if (event.data?.type === 'CLINIQ_PUSH') this.sync.receive(event.data.data);
+  };
+  async updateRegistration() {
+    if (
+      this.registering ||
+      !this.auth.isLoggedIn() ||
+      !('Notification' in window) ||
+      Notification.permission !== 'granted'
+    )
+      return;
+    this.registering = true;
+    try {
+      if (!(await isSupported())) return;
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const token = await getToken(getMessaging(), {
+        vapidKey: this.VAPID_KEY,
+        serviceWorkerRegistration: registration,
+      });
+      if (token) await this.sync.register(token);
+    } catch {
+    } finally {
+      this.registering = false;
     }
   }
 }

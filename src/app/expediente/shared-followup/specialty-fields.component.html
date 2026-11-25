@@ -1,0 +1,254 @@
+@if (mode !== 'fields') {
+  @if (schema.widgets.includes('bodyMap')) {
+    <app-anatomical-map
+      [dermatology]="code === 'DER'"
+      [marks]="value.bodyMarks || []"
+      (marksChange)="value.bodyMarks = $event; changed.emit()"
+      [disabled]="disabled"
+    />
+  }
+  @if (schema.widgets.includes('odontogram')) {
+    <app-followup-odontogram
+      [value]="value.dentalChart || []"
+      (valueChange)="value.dentalChart = $event; changed.emit()"
+      [disabled]="disabled"
+    />
+  }
+}
+@if (mode !== 'map') {
+  @for (group of groups; track group.title) {
+    @if (!group.when || value[group.when] === true) {
+      <section class="clinical-section">
+        <div class="section-title">
+          <span class="letter"
+            ><lucide-icon [img]="specialtyIcon" [size]="18" aria-hidden="true"
+          /></span>
+          <div>
+            <h3>{{ group.title }}</h3>
+            <p>Información específica de {{ schema.name }}.</p>
+          </div>
+        </div>
+        <div class="fields-grid">
+          @for (field of group.fields; track field.key) {
+            <app-followup-field
+              [field]="field"
+              [value]="value[field.key]"
+              (valueChange)="value[field.key] = $event; changed.emit()"
+              [disabled]="disabled"
+            />
+          }
+        </div>
+        @if (code === 'DENT' && group.title === 'Procedimientos de la sesión') {
+          <p class="muted">
+            El pago reportado se conserva por pieza. El registro de ingresos se realiza por separado
+            en el cobro de la cita.
+          </p>
+        }
+      </section>
+    }
+  }
+  @if (schema.widgets.includes('pregnancy') && value.pregnant === true) {
+    <section class="clinical-section">
+      <h3>Estimación obstétrica por FUM</h3>
+      @if (pregnancy; as p) {
+        <div class="calc-grid">
+          <div>
+            <small>Edad gestacional estimada</small
+            ><strong
+              >{{ p.weeks }} <em>semanas + {{ p.days }} días</em></strong
+            >
+          </div>
+          <div>
+            <small>Fecha probable de parto · 280 días</small><strong>{{ p.dueDate }}</strong>
+          </div>
+        </div>
+      } @else {
+        <p class="muted">Registra una FUM válida para estimar semanas y fecha probable de parto.</p>
+      }
+      <p class="muted">
+        Estimación por fecha menstrual. La datación clínica y ultrasonográfica la confirma el
+        profesional.
+      </p>
+    </section>
+  }
+  @if (schema.widgets.includes('growth')) {
+    <app-pediatric-growth [birthDate]="birthDate" [at]="at" [vitals]="core.vitals" [data]="value" />
+  }
+  @if (schema.widgets.includes('nutrition')) {
+    <section class="clinical-section">
+      <h3>Requerimientos calculados</h3>
+      @if (nutrition; as n) {
+        <div class="calc-grid">
+          <div>
+            <small>Gasto energético basal estimado</small
+            ><strong>{{ n.basal }} <em>kcal/día</em></strong>
+          </div>
+          <div>
+            <small>Gasto con factor de actividad</small
+            ><strong>{{ n.estimated ?? '—' }} <em>kcal/día</em></strong>
+          </div>
+          <div>
+            <small>Índice cintura/cadera</small><strong>{{ n.waistHip ?? '—' }}</strong>
+          </div>
+          <div>
+            <small>Proteínas / Carbohidratos / Lípidos</small
+            ><strong
+              >{{ n.proteinGrams ?? '—' }} / {{ n.carbohydrateGrams ?? '—' }} /
+              {{ n.fatGrams ?? '—' }} <em>g</em></strong
+            >
+          </div>
+        </div>
+        @if (macroTotal !== 100) {
+          <p class="alert">
+            La distribución de macronutrientes suma {{ macroTotal }} %. Ajusta los porcentajes para
+            llegar al 100 %.
+          </p>
+        }
+      } @else {
+        <p class="muted">
+          Completa peso, talla, fecha de nacimiento, ecuación y parámetro de sexo. Estas ecuaciones
+          se muestran únicamente para adultos (18–120 años).
+        </p>
+      }
+      <p class="muted">
+        Las calorías objetivo las define el profesional; no se asigna un plan automáticamente.
+      </p>
+    </section>
+  }
+  @if (schema.widgets.includes('photoComparison')) {
+    <section class="clinical-section">
+      <div class="section-title">
+        <span class="letter violet">↔</span>
+        <div>
+          <h3>Comparador fotográfico</h3>
+          <p>Selecciona imágenes del expediente o adjunta fotografías de esta consulta.</p>
+        </div>
+      </div>
+      <div class="photo-comparison">
+        @for (
+          item of [
+            { key: 'beforePhoto', label: 'Antes' },
+            { key: 'afterPhoto', label: 'Hoy' },
+          ];
+          track item.key
+        ) {
+          <figure>
+            <figcaption>
+              {{ item.label
+              }}<select
+                [(ngModel)]="value[item.key]"
+                (ngModelChange)="changed.emit()"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="disabled"
+              >
+                <option value="">Seleccionar imagen</option>
+                @for (p of photos; track p.url) {
+                  <option [value]="p.url">{{ p.name }}</option>
+                }
+              </select>
+            </figcaption>
+            @if (value[item.key]) {
+              <img [src]="value[item.key]" [alt]="'Imagen clínica · ' + item.label" />
+            } @else {
+              <div class="empty-photo">Sin imagen seleccionada</div>
+            }
+          </figure>
+        }
+      </div>
+    </section>
+  }
+  @if (schema.widgets.includes('psychometrics')) {
+    <section class="clinical-section">
+      <div class="section-title">
+        <span class="letter violet">Ψ</span>
+        <div>
+          <h3>Escalas psicométricas</h3>
+          <p>Registro de respuestas de los instrumentos oficiales · últimas dos semanas.</p>
+        </div>
+      </div>
+      <p class="muted">
+        Los nombres de los reactivos son referencias breves. Administra el cuestionario oficial
+        completo y registra aquí sus respuestas. El puntaje no establece un diagnóstico.
+      </p>
+      <a
+        class="instrument-link"
+        href="https://www.phqscreeners.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Consultar instrumentos oficiales PHQ-9 y GAD-7</a
+      >
+      @for (
+        scale of [
+          { key: 'phq9', name: 'PHQ-9', items: phqItems },
+          { key: 'gad7', name: 'GAD-7', items: gadItems },
+        ];
+        track scale.key
+      ) {
+        <div class="scale-heading">
+          <h4>{{ scale.name }}</h4>
+          <strong
+            >{{ score(value[scale.key], scale.items.length) ?? 'Incompleto' }} /
+            {{ scale.items.length * 3 }}</strong
+          >
+        </div>
+        @for (item of scale.items; track $index; let i = $index) {
+          <div class="scale-row">
+            <label>{{ i + 1 }}. {{ item }}</label
+            ><select
+              [ngModel]="value[scale.key]?.[i] ?? null"
+              (ngModelChange)="value[scale.key][i] = $event; changed.emit()"
+              [ngModelOptions]="{ standalone: true }"
+              [disabled]="disabled"
+            >
+              <option [ngValue]="null">Sin responder</option>
+              <option [ngValue]="0">0 · Ningún día</option>
+              <option [ngValue]="1">1 · Varios días</option>
+              <option [ngValue]="2">2 · Más de la mitad</option>
+              <option [ngValue]="3">3 · Casi todos los días</option>
+            </select>
+          </div>
+        }
+      }
+      @if (risk) {
+        <div class="alert risk-alert" role="alert">
+          Hay indicadores que requieren valoración clínica directa. Revisa el riesgo documentado y
+          registra las intervenciones y el plan de seguridad. El puntaje de una escala no determina
+          por sí solo el nivel de riesgo.
+        </div>
+      }
+    </section>
+  }
+  @if (schema.widgets.includes('privateNotes') && canSeePrivate) {
+    <section class="clinical-section private-panel">
+      <h3>Notas privadas de psicoterapia</h3>
+      <p class="muted">
+        Solo su autor puede consultarlas. Se guardan por separado y no forman parte de la nota
+        clínica oficial, del dictado enviado a IA ni de sus exportaciones.
+      </p>
+      @if (!privateNotesAvailable) {
+        <p class="alert">
+          No se pudieron cargar los apuntes privados. Su edición queda bloqueada para conservar la
+          versión guardada.
+        </p>
+        <button
+          type="button"
+          class="secondary"
+          (click)="retryPrivateNotes.emit()"
+          [disabled]="privateNotesBusy"
+        >
+          {{ privateNotesBusy ? 'Consultando…' : 'Reintentar cargar apuntes' }}
+        </button>
+      }
+      <label class="field"
+        >Apuntes personales del terapeuta<textarea
+          [ngModel]="privateNotes"
+          (ngModelChange)="privateNotesChange.emit($event)"
+          [ngModelOptions]="{ standalone: true }"
+          [disabled]="disabled || !privateNotesAvailable"
+          rows="5"
+          maxlength="30000"
+        ></textarea>
+      </label>
+    </section>
+  }
+}

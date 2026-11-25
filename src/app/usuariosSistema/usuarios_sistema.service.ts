@@ -1,3 +1,4 @@
+import { API_URLS } from '../config/api-urls';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -27,11 +28,11 @@ export interface UserSystemResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UsersSystemService {
-  private createUrl = 'https://createusersystemsucursals-rdotx3vmaq-uc.a.run.app';
-  private deleteUrl = 'https://deleteusersystemsucursal-rdotx3vmaq-uc.a.run.app';
+  private createUrl = API_URLS.CREATEUSERSYSTEMSUCURSALS;
+  private deleteUrl = API_URLS.DELETEUSERSYSTEMSUCURSAL;
 
   constructor(private http: HttpClient) {}
 
@@ -48,19 +49,23 @@ export class UsersSystemService {
     const db = getFirestore();
     const usersRef = collection(db, 'usersInSucursal', branchId, 'users');
 
-    return onSnapshot(usersRef, (snapshot) => {
-      const users: SystemUser[] = [];
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data() as SystemUser;
-        users.push({
-          ...data,
-          id: docSnap.id
+    return onSnapshot(
+      usersRef,
+      (snapshot) => {
+        const users: SystemUser[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as SystemUser;
+          users.push({
+            ...data,
+            id: docSnap.id,
+          });
         });
-      });
-      callback(users);
-    }, (error) => {
-      console.error('Error al escuchar usuarios de sistema:', error);
-      callback([]);
-    });
+        callback(users);
+      },
+      (error) => {
+        console.error('Error al escuchar usuarios de sistema:', error);
+        callback([]);
+      },
+    );
   }
 }

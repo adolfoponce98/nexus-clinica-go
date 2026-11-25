@@ -1,13 +1,57 @@
+import { PermissionDirective } from '../auth/permission.directive';
 import { Component, signal, computed, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
-  LucideAngularModule, Building2, MapPin, Phone, Mail, Image, Search,
-  ChevronLeft, ChevronRight, PlusCircle, Save, Store, DollarSign, Users,
-  Layers, Map, CheckCircle2, AlertCircle, ArrowLeft, UserPlus, Trash2,
-  Smartphone, Globe, Briefcase, Eye, EyeOff, Wrench, RotateCcw, Armchair,
-  DoorOpen, Waves, Columns3, Bike, Settings, Table, Disc, Square, Dumbbell,
-  Volume2, Fan, LogIn, LogOut, GlassWater
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import {
+  LucideAngularModule,
+  Building2,
+  MapPin,
+  Phone,
+  Mail,
+  Image,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  PlusCircle,
+  Save,
+  Store,
+  DollarSign,
+  Users,
+  Layers,
+  Map,
+  CheckCircle2,
+  AlertCircle,
+  ArrowLeft,
+  UserPlus,
+  Trash2,
+  Smartphone,
+  Globe,
+  Briefcase,
+  Eye,
+  EyeOff,
+  Wrench,
+  RotateCcw,
+  Armchair,
+  DoorOpen,
+  Waves,
+  Columns3,
+  Bike,
+  Settings,
+  Table,
+  Disc,
+  Square,
+  Dumbbell,
+  Volume2,
+  Fan,
+  LogIn,
+  LogOut,
+  GlassWater,
 } from 'lucide-angular';
 import { CdkDragEnd, DragDropModule } from '@angular/cdk/drag-drop';
 import { doc, onSnapshot, Unsubscribe, getFirestore, setDoc } from 'firebase/firestore';
@@ -76,17 +120,60 @@ interface BranchMatrix {
 @Component({
   selector: 'app-studios-matrix',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule, DragDropModule],
-  templateUrl: './studio.component.html'
+  imports: [
+    PermissionDirective,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    LucideAngularModule,
+    DragDropModule,
+  ],
+  templateUrl: './studio.component.html',
 })
 export class SucursalComponent implements OnDestroy {
   readonly icons = {
-    Building2, MapPin, Phone, Mail, Image, Search, ChevronLeft,
-    ChevronRight, PlusCircle, Save, Store, DollarSign, Users, Layers, Map,
-    CheckCircle2, AlertCircle, ArrowLeft, UserPlus, Trash2, Smartphone, Globe,
-    Briefcase, Eye, EyeOff, Wrench, RotateCcw, Armchair, DoorOpen, Waves,
-    Columns3, Bike, Settings, Table, Disc, Square, Dumbbell, Volume2, Fan,
-    LogIn, LogOut, GlassWater
+    Building2,
+    MapPin,
+    Phone,
+    Mail,
+    Image,
+    Search,
+    ChevronLeft,
+    ChevronRight,
+    PlusCircle,
+    Save,
+    Store,
+    DollarSign,
+    Users,
+    Layers,
+    Map,
+    CheckCircle2,
+    AlertCircle,
+    ArrowLeft,
+    UserPlus,
+    Trash2,
+    Smartphone,
+    Globe,
+    Briefcase,
+    Eye,
+    EyeOff,
+    Wrench,
+    RotateCcw,
+    Armchair,
+    DoorOpen,
+    Waves,
+    Columns3,
+    Bike,
+    Settings,
+    Table,
+    Disc,
+    Square,
+    Dumbbell,
+    Volume2,
+    Fan,
+    LogIn,
+    LogOut,
+    GlassWater,
   };
 
   @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
@@ -94,8 +181,19 @@ export class SucursalComponent implements OnDestroy {
   matrixForm: FormGroup;
   adminForm: FormGroup;
 
-  categories = ['Pilates', 'Gym / Musculación', 'Indoor Cycling', 'Ballet / Barre', 'Yoga', 'Functional Training'];
-  membershipTypes = ['Enterprise Global ($10,000/mes)', 'Business Pro ($6,500/mes)', 'Standard Studio ($3,500/mes)'];
+  categories = [
+    'Pilates',
+    'Gym / Musculación',
+    'Indoor Cycling',
+    'Ballet / Barre',
+    'Yoga',
+    'Functional Training',
+  ];
+  membershipTypes = [
+    'Enterprise Global ($10,000/mes)',
+    'Business Pro ($6,500/mes)',
+    'Standard Studio ($3,500/mes)',
+  ];
 
   selectedStudio = signal<BranchMatrix | null>(null);
   showPassword = signal<boolean>(false);
@@ -120,7 +218,14 @@ export class SucursalComponent implements OnDestroy {
       email: 'tesistan@omnistudio.com',
       phone: '+52 33 1234 5678',
       membershipType: 'Enterprise Global ($10,000/mes)',
-      address: { street: 'Av. Juan Gil Preciado', extNumber: '1500', intNumber: 'Local 4', neighborhood: 'Tesistán', state: 'Jalisco', zipCode: '45200' },
+      address: {
+        street: 'Av. Juan Gil Preciado',
+        extNumber: '1500',
+        intNumber: 'Local 4',
+        neighborhood: 'Tesistán',
+        state: 'Jalisco',
+        zipCode: '45200',
+      },
       location: { lat: '20.7891', lon: '-103.4512' },
       logo: 'https://ui-avatars.com/api/?name=Beast+Tesistan&background=1e1b4b&color=93c5fd',
       activeMembers: 340,
@@ -129,13 +234,36 @@ export class SucursalComponent implements OnDestroy {
       isActive: true,
       galery: [],
       subBranches: [
-        { id: 'SUB-01', name: 'Tesistán Norte', category: 'Pilates', activeStudents: 120, appBookings: 85, webBookings: 35, monthlyRevenue: 55000, coachesCount: 4 },
-        { id: 'SUB-02', name: 'Plaza Galerías Studio', category: 'Indoor Cycling', activeStudents: 220, appBookings: 160, webBookings: 60, monthlyRevenue: 90000, coachesCount: 7 }
+        {
+          id: 'SUB-01',
+          name: 'Tesistán Norte',
+          category: 'Pilates',
+          activeStudents: 120,
+          appBookings: 85,
+          webBookings: 35,
+          monthlyRevenue: 55000,
+          coachesCount: 4,
+        },
+        {
+          id: 'SUB-02',
+          name: 'Plaza Galerías Studio',
+          category: 'Indoor Cycling',
+          activeStudents: 220,
+          appBookings: 160,
+          webBookings: 60,
+          monthlyRevenue: 90000,
+          coachesCount: 7,
+        },
       ],
       adminUsers: [
-        { id: 'USR-1', fullName: 'María González', email: 'maria.admin@beast.com', role: 'ADMIN_MATRIZ' }
-      ]
-    }
+        {
+          id: 'USR-1',
+          fullName: 'María González',
+          email: 'maria.admin@beast.com',
+          role: 'ADMIN_MATRIZ',
+        },
+      ],
+    },
   ]);
 
   searchTerm = signal('');
@@ -163,13 +291,13 @@ export class SucursalComponent implements OnDestroy {
       state: ['', Validators.required],
       zipCode: ['', Validators.required],
       lat: ['20.6597'],
-      lon: ['-103.3496']
+      lon: ['-103.3496'],
     });
 
     this.adminForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
@@ -180,11 +308,16 @@ export class SucursalComponent implements OnDestroy {
   filteredStudios = computed(() => {
     let list = this.studiosList();
     const term = this.searchTerm().toLowerCase();
-    if (term) list = list.filter(s => s.name.toLowerCase().includes(term) || s.brand.toLowerCase().includes(term));
-    if (this.selectedStateFilter()) list = list.filter(s => s.address.state === this.selectedStateFilter());
-    if (this.selectedCategoryFilter()) list = list.filter(s => s.category === this.selectedCategoryFilter());
-    if (this.selectedStatusFilter() === 'active') list = list.filter(s => s.isActive);
-    else if (this.selectedStatusFilter() === 'inactive') list = list.filter(s => !s.isActive);
+    if (term)
+      list = list.filter(
+        (s) => s.name.toLowerCase().includes(term) || s.brand.toLowerCase().includes(term),
+      );
+    if (this.selectedStateFilter())
+      list = list.filter((s) => s.address.state === this.selectedStateFilter());
+    if (this.selectedCategoryFilter())
+      list = list.filter((s) => s.category === this.selectedCategoryFilter());
+    if (this.selectedStatusFilter() === 'active') list = list.filter((s) => s.isActive);
+    else if (this.selectedStatusFilter() === 'inactive') list = list.filter((s) => !s.isActive);
 
     return [...list].sort((a, b) => {
       if (this.sortBy() === 'revenueDesc') return b.monthlyRevenue - a.monthlyRevenue;
@@ -201,8 +334,12 @@ export class SucursalComponent implements OnDestroy {
 
   totalPages = computed(() => Math.ceil(this.filteredStudios().length / this.pageSize) || 1);
 
-  nextPage() { if (this.currentPage() < this.totalPages()) this.currentPage.update(p => p + 1); }
-  prevPage() { if (this.currentPage() > 1) this.currentPage.update(p => p - 1); }
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) this.currentPage.update((p) => p + 1);
+  }
+  prevPage() {
+    if (this.currentPage() > 1) this.currentPage.update((p) => p - 1);
+  }
 
   onSubmitMatrix() {
     if (this.matrixForm.invalid) {
@@ -219,18 +356,26 @@ export class SucursalComponent implements OnDestroy {
       email: val.email,
       phone: val.phone,
       membershipType: val.membershipType,
-      address: { street: val.street, extNumber: val.extNumber, intNumber: val.intNumber, neighborhood: val.neighborhood, state: val.state, zipCode: val.zipCode },
+      address: {
+        street: val.street,
+        extNumber: val.extNumber,
+        intNumber: val.intNumber,
+        neighborhood: val.neighborhood,
+        state: val.state,
+        zipCode: val.zipCode,
+      },
       location: { lat: val.lat, lon: val.lon },
-      logo: val.logo || `https://ui-avatars.com/api/?name=${val.brand}&background=1e1b4b&color=93c5fd`,
+      logo:
+        val.logo || `https://ui-avatars.com/api/?name=${val.brand}&background=1e1b4b&color=93c5fd`,
       activeMembers: 0,
       monthlyCost: 5000,
       monthlyRevenue: 0,
       isActive: true,
       galery: [],
       subBranches: [],
-      adminUsers: []
+      adminUsers: [],
     };
-    this.studiosList.update(list => [newStudio, ...list]);
+    this.studiosList.update((list) => [newStudio, ...list]);
     this.matrixForm.reset({ lat: '20.6597', lon: '-103.3496' });
     alert('¡Sucursal Matriz dada de alta exitosamente!');
   }
@@ -267,9 +412,9 @@ export class SucursalComponent implements OnDestroy {
             type: b.type || 'bike',
             subType: b.subType,
             label: b.label || b.id || `B-${index + 1}`,
-            gridX: b.gridX ?? (index % this.gridCols()),
+            gridX: b.gridX ?? index % this.gridCols(),
             gridY: b.gridY ?? Math.floor(index / this.gridCols()),
-            status: b.status || 'active'
+            status: b.status || 'active',
           }));
           this.elementsUI.set(mappedElements);
         } else {
@@ -290,7 +435,7 @@ export class SucursalComponent implements OnDestroy {
         label: `B-${i}`,
         gridX: (i - 1) % this.gridCols(),
         gridY: Math.floor((i - 1) / this.gridCols()),
-        status: 'active'
+        status: 'active',
       });
     }
     this.elementsUI.set(defaultElements);
@@ -304,8 +449,8 @@ export class SucursalComponent implements OnDestroy {
     const cellWidth = parentRect.width / this.gridCols();
     const cellHeight = parentRect.height / this.gridRows();
 
-    const relativeX = elementRect.left - parentRect.left + (cellWidth / 2);
-    const relativeY = elementRect.top - parentRect.top + (cellHeight / 2);
+    const relativeX = elementRect.left - parentRect.left + cellWidth / 2;
+    const relativeY = elementRect.top - parentRect.top + cellHeight / 2;
 
     let newGridX = Math.floor(relativeX / cellWidth);
     let newGridY = Math.floor(relativeY / cellHeight);
@@ -313,18 +458,25 @@ export class SucursalComponent implements OnDestroy {
     newGridX = Math.max(0, Math.min(newGridX, this.gridCols() - 1));
     newGridY = Math.max(0, Math.min(newGridY, this.gridRows() - 1));
 
-    this.elementsUI.update(elems =>
-      elems.map(el => el.id === elementId ? { ...el, gridX: newGridX, gridY: newGridY } : el)
+    this.elementsUI.update((elems) =>
+      elems.map((el) => (el.id === elementId ? { ...el, gridX: newGridX, gridY: newGridY } : el)),
     );
 
     event.source.reset();
   }
 
   addBike() {
-    const bikeCount = this.elementsUI().filter(e => e.type === 'bike').length + 1;
+    const bikeCount = this.elementsUI().filter((e) => e.type === 'bike').length + 1;
     const nextId = `B-${bikeCount}`;
-    const newBike: StudioElementUI = { id: nextId, type: 'bike', label: nextId, gridX: 0, gridY: 0, status: 'active' };
-    this.elementsUI.update(elems => [...elems, newBike]);
+    const newBike: StudioElementUI = {
+      id: nextId,
+      type: 'bike',
+      label: nextId,
+      gridX: 0,
+      gridY: 0,
+      status: 'active',
+    };
+    this.elementsUI.update((elems) => [...elems, newBike]);
   }
 
   addFurniture(subType: string, label: string) {
@@ -335,36 +487,52 @@ export class SucursalComponent implements OnDestroy {
       label,
       gridX: 0,
       gridY: 0,
-      status: 'active'
+      status: 'active',
     };
-    this.elementsUI.update(elems => [...elems, newFurniture]);
+    this.elementsUI.update((elems) => [...elems, newFurniture]);
   }
 
   getFurnitureIcon(subType?: string) {
     switch (subType) {
-      case 'stage': return this.icons.Columns3;
-      case 'bano': return this.icons.Waves;
-      case 'recepcion': return this.icons.DoorOpen;
-      case 'mesa': return this.icons.Table;
-      case 'cojin': return this.icons.Disc;
-      case 'sillon': return this.icons.Armchair;
-      case 'silla': return this.icons.Square;
-      case 'mancuernas': return this.icons.Dumbbell;
-      case 'audio': return this.icons.Volume2;
-      case 'ventilador': return this.icons.Fan;
-      case 'entrada': return this.icons.LogIn;
-      case 'salida': return this.icons.LogOut;
-      case 'hidratacion': return this.icons.GlassWater;
-      default: return this.icons.Armchair;
+      case 'stage':
+        return this.icons.Columns3;
+      case 'bano':
+        return this.icons.Waves;
+      case 'recepcion':
+        return this.icons.DoorOpen;
+      case 'mesa':
+        return this.icons.Table;
+      case 'cojin':
+        return this.icons.Disc;
+      case 'sillon':
+        return this.icons.Armchair;
+      case 'silla':
+        return this.icons.Square;
+      case 'mancuernas':
+        return this.icons.Dumbbell;
+      case 'audio':
+        return this.icons.Volume2;
+      case 'ventilador':
+        return this.icons.Fan;
+      case 'entrada':
+        return this.icons.LogIn;
+      case 'salida':
+        return this.icons.LogOut;
+      case 'hidratacion':
+        return this.icons.GlassWater;
+      default:
+        return this.icons.Armchair;
     }
   }
 
   removeElement(id: string) {
-    this.elementsUI.update(elems => elems.filter(e => e.id !== id));
+    this.elementsUI.update((elems) => elems.filter((e) => e.id !== id));
     this.selectedBikeForModal.set(null);
   }
 
-  resetLayout() { this.generateDefaultBikes(); }
+  resetLayout() {
+    this.generateDefaultBikes();
+  }
 
   applyCustomGrid() {
     const c = Number(this.customColsInput);
@@ -383,7 +551,9 @@ export class SucursalComponent implements OnDestroy {
   updateBikeStatusFromModal(newStatus: 'active' | 'maintenance' | 'inactive') {
     const target = this.selectedBikeForModal();
     if (!target) return;
-    this.elementsUI.update(elems => elems.map(e => e.id === target.id ? { ...e, status: newStatus } : e));
+    this.elementsUI.update((elems) =>
+      elems.map((e) => (e.id === target.id ? { ...e, status: newStatus } : e)),
+    );
     this.selectedBikeForModal.set(null);
   }
 
@@ -398,7 +568,7 @@ export class SucursalComponent implements OnDestroy {
         idBranch: studio.id,
         myBikes: bikesData,
         gridConfig: { cols: this.gridCols(), rows: this.gridRows() },
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await setDoc(stageRef, payload, { merge: true });
       alert('¡Layout y croquis guardados exitosamente!');
@@ -408,15 +578,22 @@ export class SucursalComponent implements OnDestroy {
     }
   }
 
-  togglePasswordVisibility() { this.showPassword.update(v => !v); }
+  togglePasswordVisibility() {
+    this.showPassword.update((v) => !v);
+  }
 
   onAddAdminUser() {
     if (this.adminForm.invalid || !this.selectedStudio()) return;
     const val = this.adminForm.value;
-    const newAdmin: AdminUser = { id: `USR-${Date.now()}`, fullName: val.fullName, email: val.email, role: 'ADMIN_SUCURSAL' };
+    const newAdmin: AdminUser = {
+      id: `USR-${Date.now()}`,
+      fullName: val.fullName,
+      email: val.email,
+      role: 'ADMIN_SUCURSAL',
+    };
     const current = this.selectedStudio()!;
     const updated: BranchMatrix = { ...current, adminUsers: [...current.adminUsers, newAdmin] };
-    this.studiosList.update(list => list.map(s => s.id === updated.id ? updated : s));
+    this.studiosList.update((list) => list.map((s) => (s.id === updated.id ? updated : s)));
     this.selectedStudio.set(updated);
     this.adminForm.reset();
     alert('¡Administrador registrado correctamente!');
@@ -424,8 +601,11 @@ export class SucursalComponent implements OnDestroy {
 
   removeAdminUser(adminId: string) {
     const current = this.selectedStudio()!;
-    const updated: BranchMatrix = { ...current, adminUsers: current.adminUsers.filter(u => u.id !== adminId) };
-    this.studiosList.update(list => list.map(s => s.id === updated.id ? updated : s));
+    const updated: BranchMatrix = {
+      ...current,
+      adminUsers: current.adminUsers.filter((u) => u.id !== adminId),
+    };
+    this.studiosList.update((list) => list.map((s) => (s.id === updated.id ? updated : s)));
     this.selectedStudio.set(updated);
   }
 
@@ -436,8 +616,11 @@ export class SucursalComponent implements OnDestroy {
       reader.onload = (e: any) => {
         const base64Image = e.target.result;
         const current = this.selectedStudio()!;
-        const updated: BranchMatrix = { ...current, galery: [...(current.galery || []), base64Image] };
-        this.studiosList.update(list => list.map(s => s.id === updated.id ? updated : s));
+        const updated: BranchMatrix = {
+          ...current,
+          galery: [...(current.galery || []), base64Image],
+        };
+        this.studiosList.update((list) => list.map((s) => (s.id === updated.id ? updated : s)));
         this.selectedStudio.set(updated);
         this.currentImageIndex = (updated.galery?.length || 1) - 1;
       };
@@ -449,8 +632,9 @@ export class SucursalComponent implements OnDestroy {
     const current = this.selectedStudio()!;
     const newGalery = (current.galery || []).filter((_, i) => i !== index);
     const updated: BranchMatrix = { ...current, galery: newGalery };
-    this.studiosList.update(list => list.map(s => s.id === updated.id ? updated : s));
+    this.studiosList.update((list) => list.map((s) => (s.id === updated.id ? updated : s)));
     this.selectedStudio.set(updated);
-    if (this.currentImageIndex >= newGalery.length) this.currentImageIndex = Math.max(0, newGalery.length - 1);
+    if (this.currentImageIndex >= newGalery.length)
+      this.currentImageIndex = Math.max(0, newGalery.length - 1);
   }
 }

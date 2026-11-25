@@ -1,10 +1,42 @@
+import { DirectorySkeletonComponent } from '../../shared/directory-skeleton.component';
+import { CreationAccessService } from '../../planes/creation-access.service';
+import { PlanUsageComponent } from '../../planes/plan-usage.component';
+import { BillingService } from '../../planes/billing.service';
+import { RegistrationLinkComponent } from '../../patient-registration/registration-link.component';
+import { PatientIntakeComponent } from '../../clinical/patient-intake.component';
+import { PermissionService } from '../../auth/permission.service';
+import { patientSummary } from '../patient-summary';
+import { PermissionDirective } from '../../auth/permission.directive';
+import { Subscription } from 'rxjs';
+import { versionedFetch } from '../../auth/sync-cache';
+import { SECURITY_CONFIG } from '../../config/security.config';
+import { API_URLS } from '../../config/api-urls';
 import { Component, computed, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormGroup,
+  FormControl,
+  Validators,
+} from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
-  LucideAngularModule, Search, Filter, Phone, Mail, FileText,
-  UserCheck, Calendar, ArrowUpDown, ChevronRight, Stethoscope, Plus, Loader2, Droplet, BookOpen
+  LucideAngularModule,
+  Search,
+  Filter,
+  Phone,
+  Mail,
+  FileText,
+  UserCheck,
+  Calendar,
+  ArrowUpDown,
+  ChevronRight,
+  Stethoscope,
+  Plus,
+  Loader2,
+  Droplet,
+  BookOpen,
 } from 'lucide-angular';
 import { AuthService } from '../../auth/auth.service';
 import { TokenInterceptorService } from '../../auth/token-interceptor.service';
@@ -19,6 +51,7 @@ export interface Paciente {
   correo: string;
   expedienteNum: string;
   categoriaConsulta: string;
+  ultimoMotivo?: string;
   ultimaVisita: string;
   numeroVisitas: number;
   esPrimeraVez: boolean;
@@ -29,34 +62,60 @@ export interface Paciente {
 @Component({
   selector: 'app-lista-pacientes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule],
-  templateUrl: 'lista-pacientes.component.html'
+  imports: [
+    DirectorySkeletonComponent,
+    PlanUsageComponent,
+    RegistrationLinkComponent,
+    PatientIntakeComponent,
+    PermissionDirective,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    LucideAngularModule,
+  ],
+  templateUrl: 'lista-pacientes.component.html',
 })
 export class ListaPacientesComponent implements OnInit {
+  readonly billing = inject(BillingService);
+  private readonly creationAccess = inject(CreationAccessService);
+
   private router = inject(Router);
- private tokenInterceptor = inject(TokenInterceptorService);
+  private tokenInterceptor = inject(TokenInterceptorService);
   private authService = inject(AuthService);
 
   readonly icons = {
-    Search, Filter, Phone, Mail, FileText,
-    UserCheck, Calendar, ArrowUpDown, ChevronRight, Stethoscope, Plus, Loader2, Droplet, BookOpen
+    Search,
+    Filter,
+    Phone,
+    Mail,
+    FileText,
+    UserCheck,
+    Calendar,
+    ArrowUpDown,
+    ChevronRight,
+    Stethoscope,
+    Plus,
+    Loader2,
+    Droplet,
+    BookOpen,
   };
 
   // 🔐 URLs de Cloud Functions y credenciales de seguridad
-  private readonly GET_PATIENTS_URL = 'https://getpatients-o7vmreizjq-uc.a.run.app';
-  private readonly EXTRACT_RECORD_URL = 'https://extractexpedient-o7vmreizjq-uc.a.run.app';
-  private readonly SAVE_RECORD_URL = 'https://savepatientrecord-o7vmreizjq-uc.a.run.app'; // Ajusta si tu endpoint difiere
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
+  private readonly GET_PATIENTS_URL = API_URLS.GETPATIENTS;
+  private readonly EXTRACT_RECORD_URL = API_URLS.EXTRACTEXPEDIENT;
+  private registrationRequestId = crypto.randomUUID();
+  private readonly SAVE_RECORD_URL = API_URLS.REGISTERNEWPATIENT; // Ajusta si tu endpoint difiere
+  private readonly ENCRYPTION_KEY = SECURITY_CONFIG.ENCRYPTION_KEY;
+  private readonly APP_SECRET_HEADER = SECURITY_CONFIG.APP_SECRET_HEADER;
 
   // Parámetro dinámico del consultorio
   idConsultorio = signal<string>('');
 
   // Estados reactivos con Signals
   searchQuery = signal('');
-  selectedCategory = signal('TODAS');
+  lastVisitFilter = signal('TODAS');
   selectedVisitsFilter = signal('TODOS');
-  sortBy = signal<'recientes' | 'visitas'>('recientes');
+  sortBy = signal<'recientes' | 'visitas' | 'motivo' | 'nombre'>('recientes');
 
   isLoading = signal<boolean>(true);
   pacientes = signal<Paciente[]>([]);
@@ -94,97 +153,94 @@ export class ListaPacientesComponent implements OnInit {
     ocupacion: new FormControl(''),
     actividadDeportiva: new FormControl(''),
     contactoEmergencia: new FormControl(''),
-    datosFiscales: new FormControl('')
+    datosFiscales: new FormControl(''),
   });
 
-  categorias = ['TODAS', 'Traumatología', 'Medicina General', 'Cardiología', 'Nutrición'];
-
+  private readonly permissions = inject(PermissionService);
+  private syncPatients?: Subscription;
+  private branchSub?: Subscription;
+  private loadSerial = 0;
+  readonly loadError = signal('');
+  ngOnDestroy() {
+    this.loadSerial++;
+    this.syncPatients?.unsubscribe();
+    this.branchSub?.unsubscribe();
+  }
   ngOnInit() {
-    const defaultOffice = this.authService.getSucursal();
-    if(defaultOffice!=null)
-         this.idConsultorio.set(defaultOffice.idConsultorio || 'consultorio_general');
-        else{
-          this.idConsultorio.set('consultorio_general')
-        }
-    this.cargarPacientes(this.idConsultorio());
-  }
-
-async cargarPacientes(consultorioId: string) {
-  this.isLoading.set(true); // Aseguramos que inicie encendido
-  try {
-    // 1️⃣ Cargar caché local para respuesta inmediata
-    const cachedList = this.authService.getCachedPatients();
-    if (cachedList.length > 0) {
-      this.pacientes.set(cachedList);
-    }
-
-    const lastSync = this.authService.getLastSyncDatePatients();
-
-    // 2️⃣ Ejecutamos la petición a través del interceptor centralizado
-    const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
-      console.log('🔍 [cargarPacientes] Token JWT actual in uso:', token);
-
-      const payload = {
-        idConsultorio: consultorioId,
-        ultimaSincronizacion: lastSync
-      };
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-      const fetchRes = await fetch(this.GET_PATIENTS_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ encryptedData: ciphertext })
-      });
-
-      console.log('📥 [cargarPacientes] Status HTTP recibido:', fetchRes.status);
-      return fetchRes;
+    this.syncPatients = this.authService.patientsUpdated$.subscribe(() =>
+      this.pacientes.set(this.authService.getCachedPatients()),
+    );
+    this.branchSub = this.authService.branchChanged$.subscribe((id) => {
+      this.pacientes.set([]);
+      this.idConsultorio.set(id);
+      void this.cargarPacientes(id);
     });
-
-    const jsonRes = await response.json();
-    console.log('📦 [cargarPacientes] JSON crudo devuelto por el servidor:', jsonRes);
-
-    if (!response.ok) {
-      throw new Error(jsonRes.error || 'Error al obtener los pacientes.');
-    }
-
-    const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    console.log('🔓 [cargarPacientes] Datos desencriptados:', decryptedData);
-
-    if (decryptedData.success && Array.isArray(decryptedData.patients)) {
-      const listaMapeada: Paciente[] = decryptedData.patients.map((p: any) => {
-        const ficha = p.fichaDeIdentificacion || {};
-        const numVisitas = p.contadorDeVisitas || 1;
-        return {
-          id: p.idPaciente || '',
-          nombre: ficha.nombreCompleto || p.nombre || 'Sin nombre',
-          telefono: ficha.telefono || p.telefono || 'Sin teléfono',
-          correo: ficha.correo || 'Sin correo',
-          expedienteNum: p.numeroDeExpediente || 'EXP-2026-0000',
-          categoriaConsulta: p.categoria || 'Medicina General',
-          ultimaVisita: p.ultimaVisita ? p.ultimaVisita.split('T')[0] : '2026-09-29',
-          numeroVisitas: numVisitas,
-          esPrimeraVez: numVisitas === 1,
-          edad: ficha.edad || 0,
-          sexo: ficha.sexo || 'No especificado'
-        };
-      });
-
-      this.pacientes.set(listaMapeada);
-      this.authService.saveCachedPatients(listaMapeada);
-    }
-  } catch (err) {
-    console.error('❌ Error al cargar pacientes:', err);
-  } finally {
-    // 🌟 Apagamos el loader sin importar si fue exitoso o falló
-    this.isLoading.set(false);
+    const branch = this.authService.getSucursal(),
+      office = branch?.idConsultorio || branch?.id;
+    this.idConsultorio.set(office || '');
+    if (office) void this.cargarPacientes(office);
+    else this.isLoading.set(false);
   }
-}
+
+  async cargarPacientes(consultorioId: string) {
+    const serial = ++this.loadSerial,
+      session = this.authService.getSession();
+    this.loadError.set('');
+    this.pacientes.set(this.authService.getCachedPatients());
+    if (!consultorioId || !this.permissions.can('patients', 'read')) {
+      this.isLoading.set(false);
+      return;
+    }
+    this.isLoading.set(true);
+    try {
+      const response = await this.tokenInterceptor.executeWithAuth((token) => {
+        const encryptedData = CryptoJS.AES.encrypt(
+          JSON.stringify({ idConsultorio: consultorioId }),
+          this.ENCRYPTION_KEY,
+        ).toString();
+        return versionedFetch(this.GET_PATIENTS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-app-signature': this.APP_SECRET_HEADER,
+            'x-client-source': 'angular',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ encryptedData }),
+        });
+      });
+      const envelope = await response.json(),
+        data = envelope.encryptedData
+          ? JSON.parse(
+              CryptoJS.AES.decrypt(envelope.encryptedData, this.ENCRYPTION_KEY).toString(
+                CryptoJS.enc.Utf8,
+              ),
+            )
+          : envelope;
+      if (serial !== this.loadSerial) return;
+      const branch = this.authService.getSucursal(),
+        current = this.authService.getSession();
+      if (
+        (branch?.idConsultorio || branch?.id) !== consultorioId ||
+        current?.email !== session?.email ||
+        current?.idDoctor !== session?.idDoctor ||
+        current?.sessionId !== session?.sessionId
+      )
+        return;
+      if (!response.ok || !data.success || !Array.isArray(data.patients))
+        throw new Error(data.error || 'No se pudieron cargar los pacientes.');
+      const list = data.patients.map(patientSummary);
+      this.pacientes.set(list);
+      this.authService.saveCachedPatients(list, data.lastUpdated);
+    } catch (error) {
+      if (serial === this.loadSerial)
+        this.loadError.set(
+          error instanceof Error ? error.message : 'No se pudieron cargar los pacientes.',
+        );
+    } finally {
+      if (serial === this.loadSerial) this.isLoading.set(false);
+    }
+  }
 
   // 📂 Métodos para la Importación de Expedientes con IA
   abrirModalImportar() {
@@ -216,144 +272,172 @@ async cargarPacientes(consultorioId: string) {
     reader.readAsDataURL(file);
   }
 
-async extraerInformacionIA() {
-  const file = this.selectedImportFile();
-  if (!file) {
-    console.warn('⚠️ No hay ningún archivo seleccionado para extraer.');
-    return;
-  }
+  async extraerInformacionIA() {
+    if (!this.billing.allows('ai') || !this.billing.state()?.aiCredits) {
+      alert('La importación IA requiere una suscripción activa y créditos disponibles.');
+      return;
+    }
+    const file = this.selectedImportFile();
+    if (!file) {
+      console.warn('⚠️ No hay ningún archivo seleccionado para extraer.');
+      return;
+    }
 
-  console.log('--- 🚀 1. INICIANDO EXTRACCIÓN CON IA ---');
-  console.log('Archivo seleccionado:', file.name, 'Tipo:', file.type, 'Tamaño:', file.size, 'bytes');
+    console.log('--- 🚀 1. INICIANDO EXTRACCIÓN CON IA ---');
+    console.log(
+      'Archivo seleccionado:',
+      file.name,
+      'Tipo:',
+      file.type,
+      'Tamaño:',
+      file.size,
+      'bytes',
+    );
 
-  this.isExtractingAI.set(true);
+    this.isExtractingAI.set(true);
 
-  try {
-    const sessionData = this.authService.getSession();
-    const jwtToken = sessionData?.sessionToken || '';
-    console.log('2. Token JWT obtenido:', jwtToken ? 'Presente (longitud: ' + jwtToken.length + ')' : 'NO HAY TOKEN');
+    try {
+      const sessionData = this.authService.getSession();
+      const jwtToken = sessionData?.sessionToken || '';
+      console.log(
+        '2. Token JWT obtenido:',
+        jwtToken ? 'Presente (longitud: ' + jwtToken.length + ')' : 'NO HAY TOKEN',
+      );
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
 
-    reader.onload = async () => {
-      try {
-        const base64String = (reader.result as string).split(',')[1];
-        console.log('3. Archivo convertido a Base64 correctamente. Longitud del string:', base64String.length);
-
-        const payload = {
-          imageBase64: base64String,
-          mimeType: file.type
-        };
-
-        console.log('4. Encriptando payload con AES...');
-        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-        console.log('5. Enviando petición POST a la Cloud Function:', this.EXTRACT_RECORD_URL);
-        const response = await fetch(this.EXTRACT_RECORD_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular',
-            'Authorization': `Bearer ${jwtToken}`
-          },
-          body: JSON.stringify({ encryptedData: ciphertext })
-        });
-
-        console.log('6. Respuesta HTTP recibida. Status:', response.status, response.statusText);
-        const jsonRes = await response.json();
-        console.log('7. JSON crudo devuelto por el servidor (encriptado):', jsonRes);
-
-        if (!response.ok) {
-          throw new Error(jsonRes.error || 'Error al conectar con el servidor.');
-        }
-
-        if (!jsonRes.encryptedData) {
-          throw new Error('El servidor respondió OK pero no devolvió el campo "encryptedData".');
-        }
-
-        let decryptedResponse;
+      reader.onload = async () => {
         try {
-          console.log('8. Desencriptando respuesta del servidor...');
-          const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-          const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-          console.log('9. String desencriptado:', decryptedString);
+          const base64String = (reader.result as string).split(',')[1];
+          console.log(
+            '3. Archivo convertido a Base64 correctamente. Longitud del string:',
+            base64String.length,
+          );
 
-          decryptedResponse = JSON.parse(decryptedString);
-          console.log('10. Objeto JSON desencriptado final:', decryptedResponse);
-        } catch (err) {
-          console.error('❌ Error al desencriptar la respuesta:', err);
-          throw new Error('Fallo al desencriptar la respuesta de la IA.');
-        }
+          const payload = {
+            imageBase64: base64String,
+            mimeType: file.type,
+          };
 
-        if (decryptedResponse.success && decryptedResponse.patientData) {
-          const d = decryptedResponse.patientData;
-          console.log('✅ Datos del paciente extraídos con éxito por la IA:', d);
+          console.log('4. Encriptando payload con AES...');
+          const ciphertext = CryptoJS.AES.encrypt(
+            JSON.stringify(payload),
+            this.ENCRYPTION_KEY,
+          ).toString();
 
-          // Separar fecha de nacimiento
-          if (d.fecha_nacimiento) {
-            console.log('11. Procesando fecha de nacimiento detectada:', d.fecha_nacimiento);
-            const partes = d.fecha_nacimiento.split(/[-/]/);
-            if (partes.length === 3) {
-              if (partes[0].length === 4) {
-                this.anioNac = partes[0];
-                this.mesNac = partes[1];
-                this.diaNac = partes[2];
-              } else {
-                this.diaNac = partes[0];
-                this.mesNac = partes[1];
-                this.anioNac = partes[2];
-              }
-              console.log(`Fecha parseada -> Día: ${this.diaNac}, Mes: ${this.mesNac}, Año: ${this.anioNac}`);
-            }
-          } else {
-            console.warn('⚠️ La IA no encontró la fecha de nacimiento o vino vacía.');
-          }
-
-          console.log('12. Rellenando formulario reactivo (importForm)...');
-          this.importForm.patchValue({
-            numeroExpediente: d.numero_expediente || '',
-            nombreCompleto: d.nombre || '',
-            sexo: d.sexo || '',
-            tipoSangre: d.tipo_sangre || '',
-            religion: d.religion || '',
-            telefono: d.telefono || '',
-            celular: d.telefono || '',
-            correo: d.correo || '',
-            calleNumero: d.domicilio || '',
-            ocupacion: d.ocupacion || '',
+          console.log('5. Enviando petición POST a la Cloud Function:', this.EXTRACT_RECORD_URL);
+          const response = await this.tokenInterceptor.authenticatedFetch(this.EXTRACT_RECORD_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-app-signature': this.APP_SECRET_HEADER,
+              'x-client-source': 'angular',
+              Authorization: `Bearer ${jwtToken}`,
+            },
+            body: JSON.stringify({ encryptedData: ciphertext }),
           });
 
-          console.log('13. Cerrando modal de importación y abriendo el modal de validación del formulario.');
-          this.showImportModal.set(false);
-          this.showFormModal.set(true);
-        } else {
-          console.error('❌ La IA respondió success: false o no traía patientData:', decryptedResponse);
-          throw new Error(decryptedResponse.error || 'No se pudieron extraer los datos del expediente.');
+          console.log('6. Respuesta HTTP recibida. Status:', response.status, response.statusText);
+          const jsonRes = await response.json();
+          console.log('7. JSON crudo devuelto por el servidor (encriptado):', jsonRes);
+
+          if (!response.ok) {
+            throw new Error(jsonRes.error || 'Error al conectar con el servidor.');
+          }
+
+          if (!jsonRes.encryptedData) {
+            throw new Error('El servidor respondió OK pero no devolvió el campo "encryptedData".');
+          }
+
+          let decryptedResponse;
+          try {
+            console.log('8. Desencriptando respuesta del servidor...');
+            const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
+            const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+            console.log('9. String desencriptado:', decryptedString);
+
+            decryptedResponse = JSON.parse(decryptedString);
+            console.log('10. Objeto JSON desencriptado final:', decryptedResponse);
+          } catch (err) {
+            console.error('❌ Error al desencriptar la respuesta:', err);
+            throw new Error('Fallo al desencriptar la respuesta de la IA.');
+          }
+
+          if (decryptedResponse.success && decryptedResponse.patientData) {
+            const d = decryptedResponse.patientData;
+            console.log('✅ Datos del paciente extraídos con éxito por la IA:', d);
+
+            // Separar fecha de nacimiento
+            if (d.fecha_nacimiento) {
+              console.log('11. Procesando fecha de nacimiento detectada:', d.fecha_nacimiento);
+              const partes = d.fecha_nacimiento.split(/[-/]/);
+              if (partes.length === 3) {
+                if (partes[0].length === 4) {
+                  this.anioNac = partes[0];
+                  this.mesNac = partes[1];
+                  this.diaNac = partes[2];
+                } else {
+                  this.diaNac = partes[0];
+                  this.mesNac = partes[1];
+                  this.anioNac = partes[2];
+                }
+                console.log(
+                  `Fecha parseada -> Día: ${this.diaNac}, Mes: ${this.mesNac}, Año: ${this.anioNac}`,
+                );
+              }
+            } else {
+              console.warn('⚠️ La IA no encontró la fecha de nacimiento o vino vacía.');
+            }
+
+            console.log('12. Rellenando formulario reactivo (importForm)...');
+            this.importForm.patchValue({
+              numeroExpediente: d.numero_expediente || '',
+              nombreCompleto: d.nombre || '',
+              sexo: d.sexo || '',
+              tipoSangre: d.tipo_sangre || '',
+              religion: d.religion || '',
+              telefono: d.telefono || '',
+              celular: d.telefono || '',
+              correo: d.correo || '',
+              calleNumero: d.domicilio || '',
+              ocupacion: d.ocupacion || '',
+            });
+
+            console.log(
+              '13. Cerrando modal de importación y abriendo el modal de validación del formulario.',
+            );
+            this.showImportModal.set(false);
+            this.showFormModal.set(true);
+          } else {
+            console.error(
+              '❌ La IA respondió success: false o no traía patientData:',
+              decryptedResponse,
+            );
+            throw new Error(
+              decryptedResponse.error || 'No se pudieron extraer los datos del expediente.',
+            );
+          }
+        } catch (innerError: any) {
+          console.error('❌ Error dentro del FileReader / Proceso de fetch:', innerError);
+          alert(innerError.message || 'Error procesando el archivo.');
+        } finally {
+          this.isExtractingAI.set(false);
+          console.log('--- FIN DE EXTRACCIÓN CON IA ---');
         }
+      };
 
-      } catch (innerError: any) {
-        console.error('❌ Error dentro del FileReader / Proceso de fetch:', innerError);
-        alert(innerError.message || 'Error procesando el archivo.');
-      } finally {
+      reader.onerror = (fileError) => {
+        console.error('❌ Error leyendo el archivo con FileReader:', fileError);
+        alert('No se pudo leer el archivo seleccionado.');
         this.isExtractingAI.set(false);
-        console.log('--- FIN DE EXTRACCIÓN CON IA ---');
-      }
-    };
-
-    reader.onerror = (fileError) => {
-      console.error('❌ Error leyendo el archivo con FileReader:', fileError);
-      alert('No se pudo leer el archivo seleccionado.');
+      };
+    } catch (error: any) {
+      console.error('❌ Excepción general en extraerInformacionIA:', error);
+      alert(error.message || 'Hubo un error al procesar el archivo.');
       this.isExtractingAI.set(false);
-    };
-
-  } catch (error: any) {
-    console.error('❌ Excepción general en extraerInformacionIA:', error);
-    alert(error.message || 'Hubo un error al procesar el archivo.');
-    this.isExtractingAI.set(false);
+    }
   }
-}
 
   async guardarFichaImportada() {
     if (this.importForm.invalid) {
@@ -373,13 +457,20 @@ async extraerInformacionIA() {
         return;
       }
 
-      const idDoctor = sessionData.email ? sessionData.email.trim().toLowerCase().replace(/[\/\\]/g, "_") : 'default_doctor';
+      const idDoctor =
+        sessionData.idDoctor || sessionData.email
+          ? (sessionData.idDoctor || sessionData.email)
+              .trim()
+              .toLowerCase()
+              .replace(/[\/\\]/g, '_')
+          : 'default_doctor';
       const formVal = this.importForm.value;
 
       const rawData = {
         idDoctor: idDoctor,
         idConsultorio: this.idConsultorio(),
-        numeroDeExpediente: formVal.numeroExpediente || `EXP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+        referenciaExpedienteFisico: formVal.numeroExpediente || '',
+        requestId: this.registrationRequestId,
         fichaDeIdentificacion: {
           nombreCompleto: formVal.nombreCompleto,
           sexo: formVal.sexo,
@@ -395,21 +486,24 @@ async extraerInformacionIA() {
           contactoEmergencia: formVal.contactoEmergencia,
           datosFiscales: formVal.datosFiscales,
           fechaNacimiento: `${this.diaNac}/${this.mesNac}/${this.anioNac}`,
-          alergias: []
-        }
+          alergias: [],
+        },
       };
 
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(rawData), this.ENCRYPTION_KEY).toString();
+      const ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify(rawData),
+        this.ENCRYPTION_KEY,
+      ).toString();
 
-      const response = await fetch(this.SAVE_RECORD_URL, {
+      const response = await this.tokenInterceptor.authenticatedFetch(this.SAVE_RECORD_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-app-signature': this.APP_SECRET_HEADER,
           'x-client-source': 'angular',
-          'Authorization': `Bearer ${jwtToken}`
+          Authorization: `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify({ encryptedData: ciphertext })
+        body: JSON.stringify({ encryptedData: ciphertext }),
       });
 
       const jsonRes = await response.json();
@@ -417,10 +511,16 @@ async extraerInformacionIA() {
         throw new Error(jsonRes.error || 'Error al guardar el expediente.');
       }
 
+      const saved = JSON.parse(
+        CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY).toString(
+          CryptoJS.enc.Utf8,
+        ),
+      );
+      if (!saved.success) throw new Error(saved.error || 'No se pudo guardar el expediente.');
+      this.registrationRequestId = crypto.randomUUID();
       this.showFormModal.set(false);
       this.showSuccessModal.set(true);
       this.cargarPacientes(this.idConsultorio());
-
     } catch (err: any) {
       console.error('Error al guardar:', err);
       alert(err.message || 'Error de conexión.');
@@ -431,36 +531,32 @@ async extraerInformacionIA() {
 
   // Pacientes filtrados y ordenados mediante Computed Signals
   filteredPacientes = computed(() => {
-    let lista = this.pacientes();
-    const query = this.searchQuery().toLowerCase().trim();
-    const cat = this.selectedCategory();
-    const visitFilter = this.selectedVisitsFilter();
-    const sort = this.sortBy();
-
-    if (query) {
-      lista = lista.filter(p =>
-        p.nombre.toLowerCase().includes(query) ||
-        p.expedienteNum.toLowerCase().includes(query)
-      );
-    }
-
-    if (cat !== 'TODAS') {
-      lista = lista.filter(p => p.categoriaConsulta === cat);
-    }
-
-    if (visitFilter === 'PRIMERA_VEZ') {
-      lista = lista.filter(p => p.esPrimeraVez);
-    } else if (visitFilter === 'MULTIPLE_VISITAS') {
-      lista = lista.filter(p => p.numeroVisitas > 1);
-    }
-
-    return lista.sort((a, b) => {
-      if (sort === 'recientes') {
-        return new Date(b.ultimaVisita).getTime() - new Date(a.ultimaVisita).getTime();
-      } else {
-        return b.numeroVisitas - a.numeroVisitas;
+    const query = this.searchQuery().toLocaleLowerCase('es').trim(),
+      visit = this.selectedVisitsFilter(),
+      date = this.lastVisitFilter();
+    const list = this.pacientes().filter((p) => {
+      if (query && !p.nombre.toLocaleLowerCase('es').includes(query)) return false;
+      if (
+        (visit === 'PRIMERA_VEZ' && !p.esPrimeraVez) ||
+        (visit === 'MULTIPLE_VISITAS' && p.numeroVisitas === 0)
+      )
+        return false;
+      if (date === 'NUNCA') return !p.ultimaVisita;
+      if (date !== 'TODAS') {
+        const age = Date.now() - new Date(p.ultimaVisita + 'T00:00:00').getTime();
+        return age >= 0 && age <= Number(date) * 86400000;
       }
+      return true;
     });
+    return list.sort((a, b) =>
+      this.sortBy() === 'motivo'
+        ? (a.ultimoMotivo || '').localeCompare(b.ultimoMotivo || '', 'es')
+        : this.sortBy() === 'nombre'
+          ? a.nombre.localeCompare(b.nombre, 'es')
+          : this.sortBy() === 'visitas'
+            ? b.numeroVisitas - a.numeroVisitas
+            : b.ultimaVisita.localeCompare(a.ultimaVisita),
+    );
   });
 
   verDetalleExpediente(paciente: Paciente) {
@@ -472,6 +568,9 @@ async extraerInformacionIA() {
   }
 
   nuevoExpediente() {
-    this.router.navigate(['/expediente/nuevo'], { queryParams: { idConsultorio: this.idConsultorio() } });
+    if (!this.permissions.can('records', 'write') || !this.creationAccess.allow('patients')) return;
+    this.router.navigate(['/expediente/nuevo'], {
+      queryParams: { idConsultorio: this.idConsultorio() },
+    });
   }
 }

@@ -1,0 +1,179 @@
+<dialog #guideDialog class="review-guide" aria-labelledby="review-guide-title">
+  <header class="review-guide-header">
+    <span class="review-guide-emblem"><lucide-icon [img]="icons.MapPin" [size]="25" /></span>
+    <div>
+      <small>GUÍA RÁPIDA</small>
+      <h2 id="review-guide-title">Elige cómo obtener tu enlace</h2>
+    </div>
+    <button
+      type="button"
+      class="review-guide-close"
+      aria-label="Cerrar guía de reseñas"
+      (click)="guideDialog.close()"
+    >
+      <lucide-icon [img]="icons.X" [size]="19" />
+    </button>
+  </header>
+  <div class="review-guide-body">
+    <p class="review-guide-intro">
+      Configura el enlace de <strong>{{ officeName }}</strong
+      >. Puedes usar el formulario directo de opiniones o, como alternativa, la ficha pública del
+      negocio en Maps.
+    </p>
+    <nav class="guide-options" aria-label="Opciones para conseguir el enlace">
+      <button
+        type="button"
+        [class.selected]="mode() === 'reviews'"
+        [attr.aria-pressed]="mode() === 'reviews'"
+        (click)="mode.set('reviews')"
+      >
+        <strong>Opción 1 · Recomendada</strong><span>Administro el negocio</span></button
+      ><button
+        type="button"
+        [class.selected]="mode() === 'maps'"
+        [attr.aria-pressed]="mode() === 'maps'"
+        (click)="mode.set('maps')"
+      >
+        <strong>Opción 2 · Alternativa</strong><span>No tengo acceso a la cuenta</span>
+      </button>
+    </nav>
+    @if (mode() === 'reviews') {
+      <ol class="review-guide-steps">
+        <li>
+          <span>1</span>
+          <div>
+            <h3>Abre tu negocio en Google</h3>
+            <p>Usa la cuenta que administra el consultorio y busca su nombre.</p>
+            <a href="https://business.google.com/" target="_blank" rel="noopener noreferrer"
+              >Abrir Perfil de Empresa <lucide-icon [img]="icons.ExternalLink" [size]="14"
+            /></a>
+          </div>
+        </li>
+        <li>
+          <span>2</span>
+          <div>
+            <h3>Selecciona «Solicita opiniones»</h3>
+            <p>
+              También puedes entrar por <strong>Leer opiniones</strong> y luego
+              <strong>Consigue más opiniones</strong>. Los nombres pueden aparecer como «reseñas»
+              según tu versión de Google.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span>3</span>
+          <div>
+            <h3>Copia el «Vínculo de la opinión»</h3>
+            <p>
+              Usa el icono de copiar, regresa a Clínica Go, pega el enlace y guarda la
+              configuración.
+            </p>
+          </div>
+        </li>
+      </ol>
+      <section class="guide-gallery" aria-label="Capturas de ejemplo">
+        <figure>
+          <a
+            href="assets/guides/google-business-review-menu.png"
+            target="_blank"
+            rel="noopener noreferrer"
+            ><img
+              src="assets/guides/google-business-review-menu.png"
+              alt="Ejemplo del panel Tu negocio en Google con Leer opiniones y Solicita opiniones"
+          /></a>
+          <figcaption>
+            <strong>1. Localiza «Solicita opiniones»</strong
+            ><span>Presiona la imagen para ampliarla.</span>
+          </figcaption>
+        </figure>
+        <figure>
+          <a
+            href="assets/guides/google-business-review-link.png"
+            target="_blank"
+            rel="noopener noreferrer"
+            ><img
+              src="assets/guides/google-business-review-link.png"
+              alt="Ejemplo de Consigue más opiniones con el campo Vínculo de la opinión y su icono de copiar"
+          /></a>
+          <figcaption>
+            <strong>2. Copia el vínculo de tu negocio</strong
+            ><span>Las capturas son ejemplos: no copies su enlace ni uses su QR.</span>
+          </figcaption>
+        </figure>
+      </section>
+      <div class="review-guide-example">
+        <lucide-icon [img]="icons.CheckCircle2" [size]="19" />
+        <div>
+          <strong>El paciente llega directamente a calificar</strong>
+          <p>
+            Este enlace suele terminar en <code>/review</code>. Comprueba que corresponda a tu
+            consultorio antes de guardarlo.
+          </p>
+        </div>
+      </div>
+    } @else {
+      <ol class="review-guide-steps">
+        <li>
+          <span>1</span>
+          <div>
+            <h3>Busca el consultorio en Google Maps</h3>
+            <p>
+              Puedes hacerlo sin administrar la cuenta del negocio. Abre la ficha pública y revisa
+              que el nombre y domicilio sean correctos.
+            </p>
+            <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer"
+              >Abrir Google Maps <lucide-icon [img]="icons.ExternalLink" [size]="14"
+            /></a>
+          </div>
+        </li>
+        <li>
+          <span>2</span>
+          <div>
+            <h3>Presiona «Compartir» → «Copiar enlace»</h3>
+            <p>
+              Copia el enlace de la ficha del negocio, no el de un pin colocado manualmente ni el de
+              una ruta para llegar.
+            </p>
+          </div>
+        </li>
+        <li>
+          <span>3</span>
+          <div>
+            <h3>Pégalo en la card y guarda</h3>
+            <p>Clínica Go usará este destino para el enlace de invitación del consultorio.</p>
+          </div>
+        </li>
+      </ol>
+      <div class="review-guide-example">
+        <lucide-icon [img]="icons.MapPin" [size]="19" />
+        <div>
+          <strong>¿Qué verá el paciente?</strong>
+          <p>
+            Primero se abrirá la ficha de Google Maps. Allí podrá entrar a
+            <strong>Opiniones / Reseñas</strong> y elegir
+            <strong>Escribir una opinión / Escribir reseña</strong>.
+          </p>
+        </div>
+      </div>
+      <div class="review-guide-tip">
+        <lucide-icon [img]="icons.CircleAlert" [size]="18" />
+        <p>
+          Esta alternativa no garantiza abrir directamente el formulario de opinión. El negocio debe
+          tener una ficha en Maps que permita reseñas.
+        </p>
+      </div>
+    }
+  </div>
+  <footer class="review-guide-footer">
+    <a
+      [href]="
+        mode() === 'reviews'
+          ? 'https://support.google.com/business/answer/16816815?hl=es'
+          : 'https://support.google.com/maps/answer/6230175?hl=es'
+      "
+      target="_blank"
+      rel="noopener noreferrer"
+      >Ver ayuda de Google</a
+    ><button type="button" class="review-save" (click)="guideDialog.close()">Entendido</button>
+  </footer>
+</dialog>

@@ -1,72 +1,158 @@
-<div class="min-h-screen font-sans p-4 sm:p-6 space-y-6 max-w-5xl mx-auto" style="background-color: var(--bg-primary); color: var(--text-main);">
-
+<div
+  class="min-h-screen font-sans p-4 sm:p-6 space-y-6 max-w-5xl mx-auto"
+  style="background-color: var(--bg-primary); color: var(--text-main)"
+>
   <!-- BARRA DE NAVEGACIÓN SUPERIOR (BOTÓN DE REGRESO) -->
   <div class="flex items-center justify-between">
-    <button (click)="volverAlListado()"
-            class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+    <button
+      (click)="volverAlListado()"
+      class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-md"
+      style="
+        background-color: var(--bg-secondary);
+        border-color: var(--border-color);
+        color: var(--text-main);
+      "
+    >
       <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-blue-500"></lucide-icon>
       Regresar al listado de pacientes
     </button>
   </div>
 
   <!-- ENCABEZADO PRINCIPAL -->
-  <div class="border px-6 py-5 rounded-3xl shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+  <div
+    class="border px-6 py-5 rounded-3xl shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+    style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+  >
     <div>
-      <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Nuevo Ingreso</span>
-      <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main);">Registro de Paciente</h1>
-      <p class="text-xs mt-0.5" style="color: var(--text-muted);">Ingresa la información general, datos clínicos y de contacto del nuevo expediente.</p>
+      <span
+        class="px-2.5 py-0.5 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider"
+        >Nuevo Ingreso</span
+      >
+      <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main)">
+        Registro de Paciente
+      </h1>
+      <p class="text-xs mt-0.5" style="color: var(--text-muted)">
+        Ingresa la información general, datos clínicos y de contacto del nuevo expediente.
+      </p>
     </div>
   </div>
 
   <!-- FORMULARIO PRINCIPAL -->
   <form [formGroup]="registerForm" (ngSubmit)="guardarPaciente()" class="space-y-6">
-
     <!-- SECCIÓN 1: DATOS GENERALES Y PERSONALES -->
-    <div class="border p-6 rounded-3xl shadow-xl space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+    <div
+      class="border p-6 rounded-3xl shadow-xl space-y-4"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
       <h3 class="text-xs font-black uppercase tracking-wider text-blue-500 flex items-center gap-2">
         <lucide-icon [img]="icons.User" class="w-4 h-4"></lucide-icon>
         Información Personal y Demográfica
       </h3>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
         <!-- Nombre Completo -->
         <div class="space-y-1 sm:col-span-2">
-          <label class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Nombre Completo del Paciente</label>
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider"
+            style="color: var(--text-muted)"
+            >Nombre Completo del Paciente</label
+          >
           <div class="relative">
-            <lucide-icon [img]="icons.User" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
-            <input type="text" formControlName="nombreCompleto" placeholder="Ej. María Fernanda Gómez R."
-                   class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-blue-500 transition-colors shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <lucide-icon
+              [img]="icons.User"
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
+              style="color: var(--text-muted)"
+            ></lucide-icon>
+            <input
+              type="text"
+              formControlName="nombreCompleto"
+              placeholder="Ej. María Fernanda Gómez R."
+              class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-blue-500 transition-colors shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+              appPermission="records:write"
+            />
           </div>
         </div>
 
         <!-- Fecha de Nacimiento (Día, Mes, Año en casillas separadas sin diagonales) -->
         <div class="space-y-1">
-          <label class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Fecha de Nacimiento (Día / Mes / Año)</label>
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider"
+            style="color: var(--text-muted)"
+            >Fecha de Nacimiento (Día / Mes / Año)</label
+          >
           <div class="flex items-center gap-2">
-            <div class="relative flex-1">
-              <input type="text" maxlength="2" placeholder="DD" (input)="onDiaInput($event)"
-                     class="w-full border rounded-2xl py-3 px-3 text-center text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <div class="min-w-0 relative flex-1">
+              <input
+                type="text"
+                maxlength="2"
+                placeholder="DD"
+                (input)="onDiaInput($event)"
+                class="w-full border rounded-2xl py-3 px-3 text-center text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+              />
             </div>
-            <span style="color: var(--text-muted);">/</span>
-            <div class="relative flex-1">
-              <input id="mesInput" type="text" maxlength="2" placeholder="MM" (input)="onMesInput($event)"
-                     class="w-full border rounded-2xl py-3 px-3 text-center text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <span style="color: var(--text-muted)">/</span>
+            <div class="min-w-0 relative flex-1">
+              <input
+                id="mesInput"
+                type="text"
+                maxlength="2"
+                placeholder="MM"
+                (input)="onMesInput($event)"
+                class="w-full border rounded-2xl py-3 px-3 text-center text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+              />
             </div>
-            <span style="color: var(--text-muted);">/</span>
+            <span style="color: var(--text-muted)">/</span>
             <div class="relative flex-[1.5]">
-              <input id="anioInput" type="text" maxlength="4" placeholder="AAAA" (input)="onAnioInput($event)"
-                     class="w-full border rounded-2xl py-3 px-3 text-center text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+              <input
+                id="anioInput"
+                type="text"
+                maxlength="4"
+                placeholder="AAAA"
+                (input)="onAnioInput($event)"
+                class="w-full border rounded-2xl py-3 px-3 text-center text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+              />
             </div>
           </div>
         </div>
 
         <!-- Sexo con selector moderno -->
         <div class="space-y-1">
-          <label class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Sexo / Identidad de Género</label>
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider"
+            style="color: var(--text-muted)"
+            >Sexo / Identidad de Género</label
+          >
           <div class="relative">
-            <select formControlName="sexo"
-                    class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-blue-500 transition-colors shadow-inner appearance-none cursor-pointer" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <select
+              formControlName="sexo"
+              class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-blue-500 transition-colors shadow-inner appearance-none cursor-pointer"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+              appPermission="records:write"
+            >
               <option value="" disabled selected>Selecciona una opción</option>
               @for (s of sexosList; track s) {
                 <option [value]="s">{{ s }}</option>
@@ -77,12 +163,25 @@
 
         <!-- Tipo de Sangre (Combo o manual) -->
         <div class="space-y-1">
-          <label class="text-[10px] uppercase font-bold tracking-wider text-rose-500 flex items-center gap-1">
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider text-rose-500 flex items-center gap-1"
+          >
             <lucide-icon [img]="icons.Droplet" class="w-3.5 h-3.5"></lucide-icon> Tipo de Sangre
           </label>
           <div class="relative">
-            <input type="text" formControlName="tiposSangre" list="sangreList" placeholder="Selecciona o escribe ej. O+"
-                   class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-rose-500 transition-colors shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <input
+              type="text"
+              formControlName="tiposSangre"
+              list="sangreList"
+              placeholder="Selecciona o escribe ej. O+"
+              class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-rose-500 transition-colors shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+              appPermission="records:write"
+            />
             <datalist id="sangreList">
               @for (ts of tiposSangre; track ts) {
                 <option [value]="ts"></option>
@@ -93,48 +192,88 @@
 
         <!-- Religión con Buscador Integrado y Manual -->
         <div class="space-y-1 relative">
-          <label class="text-[10px] uppercase font-bold tracking-wider text-purple-500 flex items-center gap-1">
-            <lucide-icon [img]="icons.BookOpen" class="w-3.5 h-3.5"></lucide-icon> Religión (Buscador o Libre)
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider text-purple-500 flex items-center gap-1"
+          >
+            <lucide-icon [img]="icons.BookOpen" class="w-3.5 h-3.5"></lucide-icon> Religión
+            (Buscador o Libre)
           </label>
           <div class="relative">
-            <input type="text" [value]="religionSearch" (input)="filterReligions($event)" (focus)="showReligionDropdown = true" placeholder="Buscar o escribir religión..."
-                   class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-purple-500 transition-colors shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <input
+              type="text"
+              [value]="religionSearch"
+              (input)="filterReligions($event)"
+              (focus)="showReligionDropdown = true"
+              placeholder="Buscar o escribir religión..."
+              class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-purple-500 transition-colors shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+            />
           </div>
           <!-- Dropdown inteligente -->
           @if (showReligionDropdown && filteredReligions().length > 0) {
-            <div class="absolute z-30 left-0 right-0 mt-1 border rounded-2xl shadow-xl max-h-40 overflow-y-auto" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+            <div
+              class="absolute z-30 left-0 right-0 mt-1 border rounded-2xl shadow-xl max-h-40 overflow-y-auto"
+              style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+            >
               @for (rel of filteredReligions(); track rel) {
-                <div (click)="selectReligion(rel)"
-                     class="px-4 py-2.5 text-xs font-bold cursor-pointer hover:bg-purple-500/10 transition-colors" style="color: var(--text-main);">
+                <div
+                  (click)="selectReligion(rel)"
+                  class="px-4 py-2.5 text-xs font-bold cursor-pointer hover:bg-purple-500/10 transition-colors"
+                  style="color: var(--text-main)"
+                >
                   {{ rel }}
                 </div>
               }
             </div>
           }
         </div>
-
       </div>
     </div>
 
     <!-- SECCIÓN 2: ANTECEDENTES Y ALERGIAS (CHIPS INTERACTIVOS) -->
-    <div class="border p-6 rounded-3xl shadow-xl space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <h3 class="text-xs font-black uppercase tracking-wider text-amber-500 flex items-center gap-2">
-        <lucide-icon [img]="icons.AlertTriangle" class="w-4 h-4"></lucide-icon> Alergias y Restricciones Médicas
+    <div
+      class="border p-6 rounded-3xl shadow-xl space-y-4"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
+      <h3
+        class="text-xs font-black uppercase tracking-wider text-amber-500 flex items-center gap-2"
+      >
+        <lucide-icon [img]="icons.AlertTriangle" class="w-4 h-4"></lucide-icon> Alergias y
+        Restricciones Médicas
       </h3>
 
       <div class="space-y-2">
-        <label class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Escribe las alergias (separadas por comas, espacios o presiona Agregar)</label>
+        <label
+          class="text-[10px] uppercase font-bold tracking-wider"
+          style="color: var(--text-muted)"
+          >Escribe las alergias (separadas por comas, espacios o presiona Agregar)</label
+        >
         <div class="flex gap-2">
-       <input type="text"
-       [(ngModel)]="tempAlergiaInput"
-       [ngModelOptions]="{standalone: true}"
-       (input)="onAlergiaInput($event)"
-       (keyup.enter)="agregarAlergiaManual()"
-       placeholder="Ej. Penicilina, Polen, Mariscos..."
-       class="flex-1 border rounded-2xl py-3 px-4 text-xs outline-none focus:border-amber-500 transition-colors shadow-inner"
-       style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-         <button type="button" (click)="agregarAlergiaManual()"
-                  class="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl text-xs font-black uppercase tracking-wider cursor-pointer shadow-md transition-all">
+          <input
+            type="text"
+            [(ngModel)]="tempAlergiaInput"
+            [ngModelOptions]="{ standalone: true }"
+            (input)="onAlergiaInput($event)"
+            (keyup.enter)="agregarAlergiaManual()"
+            placeholder="Ej. Penicilina, Polen, Mariscos..."
+            class="min-w-0 flex-1 border rounded-2xl py-3 px-4 text-xs outline-none focus:border-amber-500 transition-colors shadow-inner"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+            appPermission="records:write"
+          />
+          <button
+            type="button"
+            (click)="agregarAlergiaManual()"
+            class="px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl text-xs font-black uppercase tracking-wider cursor-pointer shadow-md transition-all"
+            appPermission="records:write"
+          >
             Agregar
           </button>
         </div>
@@ -142,12 +281,21 @@
         <!-- Visualización en Chips -->
         <div class="flex flex-wrap gap-2 pt-2">
           @if (alergiasList().length === 0) {
-            <span class="text-xs italic" style="color: var(--text-muted);">No se han agregado alergias (Sin registros previos).</span>
+            <span class="text-xs italic" style="color: var(--text-muted)"
+              >No se han agregado alergias (Sin registros previos).</span
+            >
           }
           @for (alergia of alergiasList(); track alergia) {
-            <span class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-xl text-xs font-bold shadow-sm">
+            <span
+              class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-xl text-xs font-bold shadow-sm"
+            >
               {{ alergia }}
-              <button type="button" (click)="removerAlergia(alergia)" class="hover:text-rose-500 cursor-pointer">
+              <button
+                type="button"
+                (click)="removerAlergia(alergia)"
+                class="hover:text-rose-500 cursor-pointer"
+                appPermission="records:delete"
+              >
                 <lucide-icon [img]="icons.X" class="w-3.5 h-3.5"></lucide-icon>
               </button>
             </span>
@@ -157,72 +305,166 @@
     </div>
 
     <!-- SECCIÓN 3: CONTACTO Y DOMICILIO -->
-    <div class="border p-6 rounded-3xl shadow-xl space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <h3 class="text-xs font-black uppercase tracking-wider text-emerald-500 flex items-center gap-2">
-        <lucide-icon [img]="icons.Phone" class="w-4 h-4"></lucide-icon> Información de Contacto y Domicilio
+    <div
+      class="border p-6 rounded-3xl shadow-xl space-y-4"
+      style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+    >
+      <h3
+        class="text-xs font-black uppercase tracking-wider text-emerald-500 flex items-center gap-2"
+      >
+        <lucide-icon [img]="icons.Phone" class="w-4 h-4"></lucide-icon> Información de Contacto y
+        Domicilio
       </h3>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
         <!-- Teléfono fijo (10 dígitos) -->
         <div class="space-y-1">
-          <label class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Teléfono Fijo (10 dígitos)</label>
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider"
+            style="color: var(--text-muted)"
+            >Teléfono Fijo (10 dígitos)</label
+          >
           <div class="relative">
-            <lucide-icon [img]="icons.Phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
-            <input type="text" formControlName="telefono" maxlength="10" (input)="validarTelefono($event, 'telefono')" placeholder="3312345678"
-                   class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <lucide-icon
+              [img]="icons.Phone"
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
+              style="color: var(--text-muted)"
+            ></lucide-icon>
+            <input
+              type="text"
+              formControlName="telefono"
+              maxlength="10"
+              (input)="validarTelefono($event, 'telefono')"
+              placeholder="3312345678"
+              class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+              appPermission="records:write"
+            />
           </div>
         </div>
 
         <!-- Celular (10 dígitos) -->
         <div class="space-y-1">
-          <label class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Celular / Móvil (10 dígitos)</label>
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider"
+            style="color: var(--text-muted)"
+            >Celular / Móvil (10 dígitos)</label
+          >
           <div class="relative">
-            <lucide-icon [img]="icons.Smartphone" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
-            <input type="text" formControlName="celular" maxlength="10" (input)="validarTelefono($event, 'celular')" placeholder="3387654321"
-                   class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <lucide-icon
+              [img]="icons.Smartphone"
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
+              style="color: var(--text-muted)"
+            ></lucide-icon>
+            <input
+              type="text"
+              formControlName="celular"
+              maxlength="10"
+              (input)="validarTelefono($event, 'celular')"
+              placeholder="3387654321"
+              class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+              appPermission="records:write"
+            />
           </div>
         </div>
 
         <!-- Correo Electrónico -->
         <div class="space-y-1">
-          <label class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Correo Electrónico</label>
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider"
+            style="color: var(--text-muted)"
+            >Correo Electrónico</label
+          >
           <div class="relative">
-            <lucide-icon [img]="icons.Mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
-            <input type="email" formControlName="correo" placeholder="paciente@correo.com"
-                   class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <lucide-icon
+              [img]="icons.Mail"
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
+              style="color: var(--text-muted)"
+            ></lucide-icon>
+            <input
+              type="email"
+              formControlName="correo"
+              placeholder="paciente@correo.com"
+              class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+              appPermission="records:write"
+            />
           </div>
         </div>
 
         <!-- Dirección / Calle y Número -->
         <div class="space-y-1 sm:col-span-2">
-          <label class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Calle y Número</label>
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider"
+            style="color: var(--text-muted)"
+            >Calle y Número</label
+          >
           <div class="relative">
-            <lucide-icon [img]="icons.MapPin" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
-            <input type="text" formControlName="calleNumero" placeholder="Ej. Av. Patria #1200, Int. 4B"
-                   class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+            <lucide-icon
+              [img]="icons.MapPin"
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
+              style="color: var(--text-muted)"
+            ></lucide-icon>
+            <input
+              type="text"
+              formControlName="calleNumero"
+              placeholder="Ej. Av. Patria #1200, Int. 4B"
+              class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+              appPermission="records:write"
+            />
           </div>
         </div>
 
         <!-- Colonia / Ciudad -->
         <div class="space-y-1">
-          <label class="text-[10px] uppercase font-bold tracking-wider" style="color: var(--text-muted);">Colonia / Ciudad</label>
-          <input type="text" formControlName="coloniaCiudad" placeholder="Ej. Zapopan Centro"
-                 class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+          <label
+            class="text-[10px] uppercase font-bold tracking-wider"
+            style="color: var(--text-muted)"
+            >Colonia / Ciudad</label
+          >
+          <input
+            type="text"
+            formControlName="coloniaCiudad"
+            placeholder="Ej. Zapopan Centro"
+            class="w-full border rounded-2xl py-3 px-4 text-xs outline-none focus:border-emerald-500 transition-colors shadow-inner"
+            style="
+              background-color: var(--bg-primary);
+              border-color: var(--border-color);
+              color: var(--text-main);
+            "
+            appPermission="records:write"
+          />
         </div>
-
       </div>
     </div>
 
     <!-- BOTÓN FINAL DE GUARDAR -->
     <div class="flex justify-end pt-4">
-      <button type="submit"
-              class="flex items-center gap-2 px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-wider bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl shadow-emerald-600/25 transition-all cursor-pointer">
+      <button
+        type="submit"
+        class="flex items-center gap-2 px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-wider bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl shadow-emerald-600/25 transition-all cursor-pointer"
+      >
         <lucide-icon [img]="icons.Save" class="w-4 h-4"></lucide-icon>
         Guardar y Registrar Paciente
       </button>
     </div>
-
   </form>
-
 </div>

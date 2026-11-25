@@ -1,3 +1,4 @@
+import { PermissionDirective } from '../../../auth/permission.directive';
 import { Component, EventEmitter, Input, Output, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,22 +8,21 @@ import { StudentService, UserDataModelAuth } from '../../../alumnas/alumnas.serv
 @Component({
   selector: 'app-nueva-alumna-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [PermissionDirective, CommonModule, FormsModule, LucideAngularModule],
   providers: [StudentService],
-  templateUrl: 'nueva-alumna-modal.component.html'
+  templateUrl: 'nueva-alumna-modal.component.html',
 })
 export class AlumnaModalComponent implements OnInit {
-
   constructor(
     private studentService: StudentService,
-    private cdr: ChangeDetectorRef // <--- 1. Inyectamos ChangeDetectorRef
+    private cdr: ChangeDetectorRef, // <--- 1. Inyectamos ChangeDetectorRef
   ) {}
 
   // Iconos
   readonly X = X;
   readonly CheckCircle2 = CheckCircle2;
   readonly AlertCircle = AlertCircle;
-   showFirmaModal = false;
+  showFirmaModal = false;
   // Entradas desde el componente padre
   @Input() isOpen = false;
   @Input() isEditing = false;
@@ -47,7 +47,7 @@ export class AlumnaModalComponent implements OnInit {
     email: '',
     password: 'Beast123',
     status: 'ACTIVO',
-    avatar: 'https://i.pravatar.cc/150?u=default'
+    avatar: 'https://i.pravatar.cc/150?u=default',
   };
 
   ngOnInit(): void {
@@ -74,7 +74,7 @@ export class AlumnaModalComponent implements OnInit {
       email: '',
       password: 'Beast123',
       status: 'ACTIVO',
-      avatar: `https://i.pravatar.cc/150?u=${Math.random()}`
+      avatar: `https://i.pravatar.cc/150?u=${Math.random()}`,
     };
   }
 
@@ -94,10 +94,10 @@ export class AlumnaModalComponent implements OnInit {
         password: this.formStudent.password,
         fullName: this.formStudent.name,
         phone: this.formStudent.phone,
-        createBy: "admin@spinpro.com",
+        createBy: 'admin@spinpro.com',
         typeCreation: 1,
         idSucursal: this.idBranch,
-        tokenFirebase: ""
+        tokenFirebase: '',
       };
 
       this.studentService.registrarAlumna(payload).subscribe({
@@ -109,9 +109,10 @@ export class AlumnaModalComponent implements OnInit {
             this.studentSaved.emit(this.formStudent);
           } else {
             const serverError = response?.error || 'Error desconocido al registrar.';
-            this.errorMessage = serverError === 'User already exists'
-              ? 'El usuario o correo electrónico ya se encuentra registrado en el sistema.'
-              : serverError;
+            this.errorMessage =
+              serverError === 'User already exists'
+                ? 'El usuario o correo electrónico ya se encuentra registrado en el sistema.'
+                : serverError;
 
             this.showErrorPopup = true;
           }
@@ -121,14 +122,14 @@ export class AlumnaModalComponent implements OnInit {
         },
         error: (err) => {
           this.isLoading = false;
-          console.error("Error HTTP al registrar alumna", err);
+          console.error('Error HTTP al registrar alumna', err);
 
           this.errorMessage = 'Ocurrió un error al conectar con el servidor.';
           this.showErrorPopup = true;
 
           // <--- 3. FORZAMOS TAMBIÉN EN EL ERROR HTTP
           this.cdr.detectChanges();
-        }
+        },
       });
     }
   }
@@ -139,9 +140,7 @@ export class AlumnaModalComponent implements OnInit {
   }
 
   // Método para abrir el panel/modal de la firma en pantalla
-abrirModalFirmaResponsiva() {
-  this.showFirmaModal = true;
-}
-
-
+  abrirModalFirmaResponsiva() {
+    this.showFirmaModal = true;
+  }
 }

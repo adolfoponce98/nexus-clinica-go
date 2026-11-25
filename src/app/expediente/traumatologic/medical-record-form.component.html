@@ -1,27 +1,49 @@
-<div class="min-h-screen bg-[var(--bg-primary)] text-[var(--text-main)] font-sans p-4 sm:p-5 space-y-4 max-w-full mx-auto transition-colors duration-300">
-
+<div
+  class="min-h-screen bg-[var(--bg-primary)] text-[var(--text-main)] font-sans p-4 sm:p-5 space-y-4 max-w-full mx-auto transition-colors duration-300"
+>
   <!-- ENCABEZADO -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] px-5 py-4 rounded-3xl shadow-xl">
+  <div
+    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] px-5 py-4 rounded-3xl shadow-xl"
+  >
     <div>
       <div class="flex items-center gap-2">
-        <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Traumatología y Ortopedia</span>
-        <span class="text-xs text-[var(--text-muted)]">Folio: EXP-2026-8942</span>
+        <span
+          class="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider"
+          >Traumatología y Ortopedia</span
+        >
+        <span class="text-xs text-[var(--text-muted)]">{{
+          savedRecordNumber() || 'El folio se asignará al guardar'
+        }}</span>
       </div>
-      <h1 class="text-xl font-black tracking-tight text-[var(--text-main)] mt-0.5">Levantamiento de Expediente Clínico</h1>
-      <p class="text-xs text-[var(--text-muted)]">Completa la ficha de identificación y antecedentes del paciente.</p>
+      <h1 class="text-xl font-black tracking-tight text-[var(--text-main)] mt-0.5">
+        Levantamiento de Expediente Clínico
+      </h1>
+      <p class="text-xs text-[var(--text-muted)]">
+        Completa la ficha de identificación y antecedentes del paciente.
+      </p>
     </div>
   </div>
 
   <!-- CONTENEDOR PRINCIPAL CON EL COMPONENTE DE IDENTIFICACIÓN -->
-  <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-5 sm:p-6 rounded-3xl shadow-xl">
-    <app-patient-identification (savePatientData)="handleSavePatientData($event)"></app-patient-identification>
+  <div
+    class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-5 sm:p-6 rounded-3xl shadow-xl"
+  >
+    <app-patient-identification
+      (savePatientData)="handleSavePatientData($event)"
+    ></app-patient-identification>
   </div>
 
   <!-- MODAL DE CARGA -->
   @if (isLoading()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-3">
-        <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    <div
+      class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    >
+      <div
+        class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-3"
+      >
+        <div
+          class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
+        ></div>
         <p class="text-xs font-bold text-[var(--text-main)]">{{ loadingMessage() }}</p>
       </div>
     </div>
@@ -29,17 +51,25 @@
 
   <!-- MODAL DE ÉXITO -->
   @if (showSuccessModal()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-sm text-center">
-        <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+    <div
+      class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    >
+      <div
+        class="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-sm text-center"
+      >
+        <div
+          class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30"
+        >
           <lucide-icon [img]="icons.Check" class="w-6 h-6"></lucide-icon>
         </div>
         <p class="text-xs font-bold text-[var(--text-main)]">{{ successMessage() }}</p>
-        <button (click)="showSuccessModal.set(false)" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl text-xs transition-colors cursor-pointer">
+        <button
+          (click)="showSuccessModal.set(false)"
+          class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl text-xs transition-colors cursor-pointer"
+        >
           Aceptar
         </button>
       </div>
     </div>
   }
-
 </div>

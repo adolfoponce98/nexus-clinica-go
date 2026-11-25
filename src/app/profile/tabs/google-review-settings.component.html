@@ -1,0 +1,139 @@
+@if (owner) {
+  <article class="review-integration-card" [attr.aria-busy]="loading() || saving()">
+    <div class="review-card-top">
+      <span class="review-logo"
+        ><lucide-icon [img]="icons.MapPin" [size]="34" /><span
+          ><lucide-icon [img]="icons.Star" [size]="13" /></span></span
+      ><span class="review-status" [class.preference-on]="enabled"
+        ><span></span
+        >{{ loading() ? 'Cargando…' : enabled ? 'Preferencia activada' : 'Deshabilitado' }}</span
+      >
+    </div>
+    <span class="review-category">EXPERIENCIA DEL PACIENTE</span>
+    <h3>Reseñas en Google Maps</h3>
+    <p class="review-description">
+      Invita a los pacientes nuevos a compartir su experiencia en Google después de concluir su
+      primera consulta, mediante un mensaje de WhatsApp.
+    </p>
+    <div class="review-office">
+      <lucide-icon [img]="icons.MapPin" [size]="17" />
+      <div>
+        <small>CONSULTORIO ACTUAL</small><strong>{{ officeName }}</strong>
+      </div>
+    </div>
+    @if (loading()) {
+      <div class="review-skeleton" role="status" aria-label="Cargando configuración de reseñas">
+        <span></span><span></span><span></span>
+      </div>
+    } @else {
+      <label class="review-toggle-row"
+        ><span class="review-toggle-icon"
+          ><lucide-icon [img]="icons.MessageCircle" [size]="22" /></span
+        ><span class="review-toggle-copy"
+          ><strong>Invitar a dejar una reseña</strong
+          ><small
+            >Una invitación por paciente y consultorio después de su primera consulta
+            firmada.</small
+          ></span
+        ><input
+          type="checkbox"
+          role="switch"
+          [(ngModel)]="enabled"
+          (ngModelChange)="save()"
+          [disabled]="saving() || !loaded()"
+          aria-label="Habilitar invitaciones a reseñas por WhatsApp" /><span
+          class="review-switch"
+          aria-hidden="true"
+        ></span
+      ></label>
+      <div class="review-template-pending">
+        <lucide-icon [img]="icons.Clock3" [size]="19" />
+        <div>
+          <strong>Plantilla de WhatsApp pendiente</strong>
+          <p>
+            Puedes guardar tu preferencia. Todavía no se enviarán mensajes; el envío se habilitará
+            cuando se integre la plantilla aprobada.
+          </p>
+        </div>
+      </div>
+      <label class="review-field"
+        ><span
+          ><lucide-icon [img]="icons.Link2" [size]="16" />Enlace de reseñas o de Google Maps</span
+        ><input
+          type="url"
+          [(ngModel)]="reviewUrl"
+          [disabled]="saving()"
+          placeholder="https://g.page/r/.../review"
+          maxlength="2048"
+        /><small
+          >Recomendado: enlace de «Solicitar opiniones». Si no lo tienes, puedes usar la ficha
+          pública de Google Maps.</small
+        ></label
+      >
+      <button type="button" class="review-guide-trigger" (click)="reviewGuide.open()">
+        <lucide-icon [img]="icons.CircleAlert" [size]="16" />¿Cómo obtengo el enlace de reseñas?
+      </button>
+      @if (reviewLink) {
+        <div class="review-public-link">
+          <label for="office-review-public-link"
+            ><lucide-icon [img]="icons.Link2" [size]="16" />Enlace de reseñas de Clínica Go</label
+          >
+          <div>
+            <input
+              id="office-review-public-link"
+              [value]="reviewLink"
+              readonly
+              aria-label="Enlace público de reseñas del consultorio"
+            /><button type="button" (click)="copyReviewLink()">Copiar enlace</button>
+          </div>
+          <small
+            >Este enlace abre las reseñas del consultorio actual. Si cambias el destino de Google y
+            guardas, el enlace seguirá siendo el mismo.</small
+          >
+        </div>
+      }
+      <label class="review-field"
+        ><span><lucide-icon [img]="icons.Clock3" [size]="16" />Cuándo enviar la invitación</span
+        ><select [(ngModel)]="delayMinutes" [disabled]="saving()">
+          @for (delay of delays; track delay.value) {
+            <option [ngValue]="delay.value">{{ delay.label }}</option>
+          }
+        </select></label
+      >
+    }
+    @if (error()) {
+      <div class="review-feedback error" role="alert">
+        <lucide-icon [img]="icons.CircleAlert" [size]="17" />
+        <p>{{ error() }}</p>
+        <button type="button" (click)="load()" [disabled]="loading() || saving()">
+          Reintentar
+        </button>
+      </div>
+    }
+    @if (notice()) {
+      <div class="review-feedback success" role="status">
+        <lucide-icon [img]="icons.CheckCircle2" [size]="17" />
+        <p>{{ notice() }}</p>
+      </div>
+    }
+    <footer>
+      <span
+        ><lucide-icon [img]="icons.ShieldCheck" [size]="17" />Configuración independiente por
+        consultorio.</span
+      ><button
+        type="button"
+        class="review-save"
+        (click)="save()"
+        [disabled]="loading() || saving() || !loaded()"
+      >
+        <lucide-icon
+          [img]="saving() ? icons.LoaderCircle : icons.Save"
+          [class.spin]="saving()"
+          [size]="17"
+        />{{ saving() ? 'Guardando…' : 'Guardar configuración' }}
+      </button>
+    </footer>
+  </article>
+}
+
+<app-google-review-guide #reviewGuide [officeName]="officeName" />

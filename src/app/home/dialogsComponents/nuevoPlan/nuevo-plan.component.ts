@@ -1,3 +1,5 @@
+import { PermissionDirective } from '../../../auth/permission.directive';
+import { API_URLS } from '../../../config/api-urls';
 import { Component, EventEmitter, Input, Output, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,8 +10,8 @@ import { PaqueteMemberShipModel } from '../../../planes/planes.model';
 @Component({
   selector: 'app-plan-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
-  templateUrl: 'nuevo-plan-modal.component.html'
+  imports: [PermissionDirective, CommonModule, FormsModule, LucideAngularModule],
+  templateUrl: 'nuevo-plan-modal.component.html',
 })
 export class PlanModalComponent {
   private http = inject(HttpClient);
@@ -27,7 +29,7 @@ export class PlanModalComponent {
   @Output() close = new EventEmitter<void>();
   @Output() planCreated = new EventEmitter<void>();
 
-  private apiUrl = 'https://crearmembresia-rdotx3vmaq-uc.a.run.app';
+  private apiUrl = API_URLS.CREARMEMBRESIA;
 
   isLoading = false;
   showSuccessDialog = false;
@@ -47,7 +49,7 @@ export class PlanModalComponent {
     tipoMmebresia: 1,
     creditos: 0,
     precioRegular: 0,
-    visibleParaUsuario: true
+    visibleParaUsuario: true,
   });
 
   cerrarModal() {
@@ -76,7 +78,7 @@ export class PlanModalComponent {
       fechaCreacion: new Date().toISOString(),
       idAdmin: this.userEmail,
       idBranch: this.idBranch,
-      visibleParaUsuario: plan.visibleParaUsuario
+      visibleParaUsuario: plan.visibleParaUsuario,
     };
 
     this.http.post<{ success: boolean; branchId: string }>(this.apiUrl, payload).subscribe({
@@ -92,7 +94,7 @@ export class PlanModalComponent {
         this.isLoading = false;
         console.error('Error al consumir el servicio de membresía:', error);
         alert('Hubo un error al guardar los cambios en el servidor.');
-      }
+      },
     });
   }
 
@@ -109,7 +111,7 @@ export class PlanModalComponent {
       tipoMmebresia: 1,
       creditos: 0,
       precioRegular: 0,
-      visibleParaUsuario: true
+      visibleParaUsuario: true,
     });
   }
 }

@@ -1,3 +1,4 @@
+import { API_URLS } from '../config/api-urls';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -19,16 +20,16 @@ export interface RegisterUserResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StudentService {
-  private apiUrl = 'https://register-rdotx3vmaq-uc.a.run.app';
+  private apiUrl = API_URLS.REGISTER;
   private headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
   asignarMembresiaAPI(url: string, body: any): Observable<any> {
-  const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-  return this.http.post<any>(url, body, { headers });
-}
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post<any>(url, body, { headers });
+  }
 
   constructor(private http: HttpClient) {}
 

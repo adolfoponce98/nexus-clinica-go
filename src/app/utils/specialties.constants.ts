@@ -10,15 +10,18 @@ export const SPECIALTIES_CATALOG: Specialty[] = [
   { code: 'DER', name: 'Dermatología' },
   { code: 'GINE', name: 'Ginecología y Obstetricia' },
   { code: 'TRAUM', name: 'Traumatología y Ortopedia' },
-  { code: 'DENT', name: 'Odontologia' },
+  { code: 'DENT', name: 'Odontología' },
   { code: 'ONC', name: 'Oncología' },
-  { code: 'OFTA', name: 'Oftamología' },
+  { code: 'OFTA', name: 'Oftalmología' },
+  { code: 'NUT', name: 'Nutrición' },
+  { code: 'PSI', name: 'Psicología' },
+  { code: 'FIS', name: 'Terapia Física y Rehabilitación' },
 ];
 
 // Objeto de mapeo rápido para traducciones O(1)
 export const SPECIALTY_MAP: Record<string, string> = SPECIALTIES_CATALOG.reduce(
   (acc, curr) => ({ ...acc, [curr.code]: curr.name }),
-  {}
+  {},
 );
 
 // Función auxiliar para traducir en el TS si lo necesitas

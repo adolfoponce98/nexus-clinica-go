@@ -1,305 +1,885 @@
-<div class="min-h-screen font-sans p-3 sm:p-4 space-y-4 w-full mx-auto" style="background-color: var(--bg-primary); color: var(--text-main);">
+@if (tutorialOpen()) {
+  <app-calendar-onboarding [initialView]="currentView()" (dismissed)="endTutorial()" />
+}
+<div
+  [attr.inert]="tutorialOpen() ? '' : null"
+  class="min-h-screen font-sans p-3 sm:p-4 space-y-4 w-full mx-auto"
+  style="background-color: var(--bg-primary); color: var(--text-main)"
+>
+  @if (loadError()) {
+    <div role="alert" class="p-4 border border-rose-500/30 rounded-xl text-sm text-rose-500">
+      <p>{{ loadError() }}</p>
+      <button
+        type="button"
+        (click)="loadAppointments(true)"
+        [disabled]="isLoading"
+        class="underline mt-2"
+      >
+        Reintentar
+      </button>
+    </div>
+  }
 
   <!-- Cabecera -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border px-5 py-4 rounded-3xl shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+  <div
+    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border px-5 py-4 rounded-3xl shadow-xl"
+    style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+  >
     <div class="flex items-center gap-3">
-      <div class="w-11 h-11 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-2xl flex items-center justify-center font-black">
+      <div
+        class="w-11 h-11 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-2xl flex items-center justify-center font-black"
+      >
         <lucide-icon [img]="icons.CalendarIcon" class="w-5 h-5"></lucide-icon>
       </div>
       <div>
-        <h2 class="text-lg sm:text-xl font-black uppercase tracking-tight" style="color: var(--text-main);">{{ currentMonthYearLabel }}</h2>
-        <p class="text-[10px] font-bold uppercase tracking-widest mt-0.5" style="color: var(--text-muted);">Programación y Agenda de Pacientes</p>
+        <h2
+          class="text-lg sm:text-xl font-black uppercase tracking-tight"
+          style="color: var(--text-main)"
+        >
+          {{ currentMonthYearLabel }}
+        </h2>
+        <p
+          class="text-[10px] font-bold uppercase tracking-widest mt-0.5"
+          style="color: var(--text-muted)"
+        >
+          Programación y Agenda de Pacientes
+        </p>
       </div>
     </div>
 
     <!-- Navegación y Vistas -->
     <div class="flex items-center gap-3 flex-wrap">
-      <div class="flex items-center rounded-2xl p-1 border shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-        <button (click)="navigate(-1)" class="p-2 rounded-xl transition-all cursor-pointer" style="color: var(--text-muted);">
+      <app-google-calendar-connection />
+      <button
+        type="button"
+        (click)="startTutorial()"
+        class="flex items-center gap-2 border border-blue-500/25 bg-blue-500/5 text-blue-500 px-3.5 py-2.5 rounded-2xl text-[11px] font-bold"
+        aria-label="Practicar cómo agendar una cita"
+      >
+        <lucide-icon [img]="icons.GraduationCap" [size]="17" />Practicar agenda
+      </button>
+      <div
+        class="flex items-center rounded-2xl p-1 border shadow-sm"
+        style="background-color: var(--bg-primary); border-color: var(--border-color)"
+      >
+        <button
+          (click)="navigate(-1)"
+          class="p-2 rounded-xl transition-all cursor-pointer"
+          style="color: var(--text-muted)"
+        >
           <lucide-icon [img]="icons.ChevronLeft" class="w-4 h-4"></lucide-icon>
         </button>
-        <span class="px-3 text-xs font-black uppercase" style="color: var(--text-main);">Hoy</span>
-        <button (click)="navigate(1)" class="p-2 rounded-xl transition-all cursor-pointer" style="color: var(--text-muted);">
+        <span class="px-3 text-xs font-black uppercase" style="color: var(--text-main)">Hoy</span>
+        <button
+          (click)="navigate(1)"
+          class="p-2 rounded-xl transition-all cursor-pointer"
+          style="color: var(--text-muted)"
+        >
           <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4"></lucide-icon>
         </button>
       </div>
 
-      <div class="flex p-1 rounded-2xl border shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-        <button (click)="currentView.set('month')" [style.background-color]="currentView() === 'month' ? '#2563eb' : 'transparent'" [style.color]="currentView() === 'month' ? '#ffffff' : 'var(--text-muted)'" class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer">Mes</button>
-        <button (click)="currentView.set('week')" [style.background-color]="currentView() === 'week' ? '#2563eb' : 'transparent'" [style.color]="currentView() === 'week' ? '#ffffff' : 'var(--text-muted)'" class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer">Semana</button>
-        <button (click)="currentView.set('day')" [style.background-color]="currentView() === 'day' ? '#2563eb' : 'transparent'" [style.color]="currentView() === 'day' ? '#ffffff' : 'var(--text-muted)'" class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer">Día</button>
+      <div
+        class="flex p-1 rounded-2xl border shadow-sm"
+        style="background-color: var(--bg-primary); border-color: var(--border-color)"
+      >
+        <button
+          (click)="currentView.set('month')"
+          [style.background-color]="currentView() === 'month' ? '#2563eb' : 'transparent'"
+          [style.color]="currentView() === 'month' ? '#ffffff' : 'var(--text-muted)'"
+          class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer"
+        >
+          Mes
+        </button>
+        <button
+          (click)="currentView.set('week')"
+          [style.background-color]="currentView() === 'week' ? '#2563eb' : 'transparent'"
+          [style.color]="currentView() === 'week' ? '#ffffff' : 'var(--text-muted)'"
+          class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer"
+        >
+          Semana
+        </button>
+        <button
+          (click)="currentView.set('day')"
+          [style.background-color]="currentView() === 'day' ? '#2563eb' : 'transparent'"
+          [style.color]="currentView() === 'day' ? '#ffffff' : 'var(--text-muted)'"
+          class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer"
+        >
+          Día
+        </button>
       </div>
     </div>
   </div>
 
   @if (isLoading) {
-    <div class="py-20 text-center font-bold uppercase text-xs tracking-widest animate-pulse" style="color: var(--text-muted);">
-      Sincronizando agenda de pacientes...
-    </div>
+    <app-calendar-skeleton [view]="currentView()" />
   } @else {
+    <!-- ================= VISTA MENSUAL (Tarjetas de colores sin puntos) ================= -->
+    @if (currentView() === 'month') {
+      <div
+        class="space-y-2 border p-4 sm:p-5 rounded-3xl shadow-xl w-full"
+        style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+      >
+        <div class="grid grid-cols-7 gap-1.5 text-center">
+          @for (d of ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; track d) {
+            <div class="text-[10px] font-black uppercase py-1.5" style="color: var(--text-muted)">
+              {{ d }}
+            </div>
+          }
+        </div>
+        <div class="grid grid-cols-7 gap-1.5">
+          @for (day of daysInMonthGrid; track $index) {
+            @if (day.dateStr) {
+              <div
+                (click)="openAppointmentModal(day.dateStr)"
+                [class.cursor-not-allowed]="!canBookDay(day.dateStr)"
+                [class.cursor-pointer]="canBookDay(day.dateStr)"
+                [attr.title]="
+                  !canBookDay(day.dateStr)
+                    ? 'Consultorio cerrado, sin horario disponible o fecha anterior'
+                    : 'Agendar cita'
+                "
+                [class.booking-closed-day]="!canBookDay(day.dateStr)"
+                class="transition-all rounded-2xl p-2 border flex flex-col justify-start group h-full min-h-[130px] shadow-sm hover:opacity-90"
+                style="background-color: var(--bg-primary); border-color: var(--border-color)"
+              >
+                <div class="flex justify-between items-center mb-1.5">
+                  <span class="text-xs font-black ml-1" style="color: var(--text-muted)">{{
+                    day.dayNumber
+                  }}</span>
+                  <button
+                    type="button"
+                    (click)="$event.stopPropagation(); openAppointmentModal(day.dateStr)"
+                    [appPermissionDisabled]="!canBookDay(day.dateStr)"
+                    [attr.aria-label]="'Agendar cita ' + day.dateStr"
+                    class="text-[11px] font-bold text-blue-500 opacity-0 group-hover:opacity-100 focus:opacity-100 uppercase tracking-tighter disabled:opacity-30 disabled:cursor-not-allowed"
+                    appPermission="calendar:write"
+                  >
+                    Cita +
+                  </button>
+                </div>
 
-  <!-- ================= VISTA MENSUAL (Tarjetas de colores sin puntos) ================= -->
-  @if (currentView() === 'month') {
-    <div class="space-y-2 border p-4 sm:p-5 rounded-3xl shadow-xl w-full" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="grid grid-cols-7 gap-1.5 text-center">
-        @for (d of ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']; track d) {
-          <div class="text-[10px] font-black uppercase py-1.5" style="color: var(--text-muted);">{{ d }}</div>
-        }
-      </div>
-      <div class="grid grid-cols-7 gap-1.5">
-        @for (day of daysInMonthGrid; track $index) {
-          @if (day.dateStr) {
-            <div (click)="openAppointmentModal(day.dateStr)" class="transition-all rounded-2xl p-2 border flex flex-col justify-start cursor-pointer group h-full min-h-[130px] shadow-sm hover:opacity-90" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-              <div class="flex justify-between items-center mb-1.5">
-                <span class="text-xs font-black ml-1" style="color: var(--text-muted);">{{ day.dayNumber }}</span>
-                <span class="text-[11px] font-bold text-blue-500 opacity-0 group-hover:opacity-100 uppercase tracking-tighter">Cita +</span>
-              </div>
-
-              <div class="space-y-1 flex-1">
-                @if (day.appointments.length === 0) {
-                  <p class="text-[9px] font-bold text-center uppercase tracking-tighter pt-4" style="color: var(--text-muted); opacity: 0.5;">Sin citas</p>
-                } @else {
-                  @for (app of day.appointments; track app.time) {
-                    <div (click)="$event.stopPropagation(); openAppointmentDetail(app)"
-                         class="relative flex items-center justify-between gap-1 px-2 py-1 rounded-lg border text-[10px] font-bold truncate shadow-sm hover:brightness-110 text-white"
-                         [ngClass]="app.status === 2 ? 'bg-zinc-700/80 border-zinc-600 opacity-75' : (app.colorClass || 'bg-blue-600 border-blue-400')"
-                         style="border-color: rgba(255,255,255,0.2);">
-                      <div class="flex items-center gap-1 truncate w-full justify-between">
-                        <div class="flex items-center gap-1 truncate">
-                          <span class="font-black shrink-0 opacity-90" [class.line-through]="app.status === 2">{{ app.time }}</span>
-                          <span class="truncate" [class.line-through]="app.status === 2">{{ app.patientName }}</span>
+                <div class="min-w-0 space-y-1 flex-1">
+                  @if (day.appointments.length === 0) {
+                    <p
+                      class="text-[9px] font-bold text-center uppercase tracking-tighter pt-4"
+                      style="color: var(--text-muted); opacity: 0.5"
+                    >
+                      Sin citas
+                    </p>
+                  } @else {
+                    @for (app of day.appointments; track app.time) {
+                      <div
+                        (click)="$event.stopPropagation(); openAppointmentDetail(app)"
+                        class="relative flex items-center justify-between gap-1 px-2 py-1 rounded-lg border text-[10px] font-bold truncate shadow-sm hover:brightness-110 text-white"
+                        [ngClass]="
+                          app.status === 2
+                            ? 'bg-zinc-700/80 border-zinc-600 opacity-75'
+                            : app.colorClass || 'bg-blue-600 border-blue-400'
+                        "
+                        style="border-color: rgba(255, 255, 255, 0.2)"
+                      >
+                        <div class="flex items-center gap-1 truncate w-full justify-between">
+                          <div class="flex items-center gap-1 truncate">
+                            <span
+                              class="font-black shrink-0 opacity-90"
+                              [class.line-through]="app.status === 2"
+                              >{{ app.time }}</span
+                            >
+                            <span class="truncate" [class.line-through]="app.status === 2">{{
+                              app.patientName
+                            }}</span>
+                          </div>
+                          @if (app.status === 1) {
+                            <span
+                              class="text-emerald-300 font-black text-xs shrink-0 ml-1"
+                              title="Cita Confirmada"
+                              >✓</span
+                            >
+                          }
                         </div>
-                        @if (app.status === 1) {
-                          <span class="text-emerald-300 font-black text-xs shrink-0 ml-1" title="Cita Confirmada">✓</span>
-                        }
                       </div>
-                    </div>
+                    }
                   }
+                </div>
+              </div>
+            } @else {
+              <div class="bg-transparent rounded-2xl p-2 min-h-[130px]"></div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ================= VISTA SEMANAL ================= -->
+    @if (currentView() === 'week') {
+      <div class="space-y-3 w-full">
+        <div
+          class="flex justify-between items-center border px-4 py-2.5 rounded-2xl shadow-xl"
+          style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+        >
+          <span
+            class="text-[10px] font-black uppercase tracking-wider"
+            style="color: var(--text-muted)"
+            >Semana Completa (Carrusel de Citas Concurrentes)</span
+          >
+        </div>
+
+        <div
+          class="calendar-week-scroll border rounded-3xl shadow-xl flex flex-col overflow-x-auto"
+          style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+        >
+          <!-- Cabecera fija de los días de la semana -->
+          <div
+            class="min-w-[1044px] flex border-b text-center sticky top-0 z-30 shadow-sm"
+            style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+          >
+            <div
+              class="w-16 flex-shrink-0 py-3 border-r text-[10px] font-bold uppercase flex items-center justify-center"
+              style="border-color: var(--border-color); color: var(--text-muted)"
+            >
+              Hora
+            </div>
+            <div class="min-w-0 grid grid-cols-7 flex-1">
+              @for (day of weekDaysGrid; track day.dateStr) {
+                <div
+                  class="py-3 border-r last:border-r-0"
+                  style="border-color: var(--border-color)"
+                >
+                  <p class="text-[10px] font-bold uppercase" style="color: var(--text-muted)">
+                    {{ day.name }}
+                  </p>
+                  <p class="text-sm font-black mt-0.5" style="color: var(--text-main)">
+                    {{ day.dayNumber }}
+                  </p>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- 💡 Contenedor principal con scroll vertical global -->
+          <div class="min-w-[1044px] flex overflow-y-auto max-h-[650px] relative">
+            <!-- Columna de Horas Izquierda -->
+            <div
+              class="w-16 flex-shrink-0 border-r select-none sticky left-0 z-20 shadow-sm"
+              style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+            >
+              @for (hour of hoursList; track hour) {
+                <div
+                  class="h-16 border-b border-white/10 text-[10px] font-bold text-right pr-2 pt-1 box-border"
+                  style="border-color: var(--border-color); color: var(--text-muted)"
+                >
+                  {{ hour }}
+                </div>
+              }
+            </div>
+
+            <!-- Parrilla de Días y Horarios -->
+            <div class="min-w-0 grid grid-cols-7 flex-1 relative">
+              @for (day of weekDaysGrid; track day.dateStr) {
+                <!-- 💡 Quitamos absolute inset-0 y usamos altura total calculada para permitir scroll vertical fluido -->
+                <div
+                  class="border-r last:border-r-0 relative min-w-[140px] group/day"
+                  [style.height.px]="calendarHeight"
+                  style="border-color: var(--border-color)"
+                >
+                  <!-- ⬅️ ➡️ Flechas de navegación del carrusel flotantes -->
+
+                  <!-- Contenedor scrolleable horizontal por día para el carrusel -->
+                  <div
+                    class="absolute inset-0 overflow-x-auto scrollable-day-container scrollbar-none"
+                    [attr.data-date]="day.dateStr"
+                    style="
+                      scrollbar-width: none;
+                      -ms-overflow-style: none;
+                      scroll-behavior: smooth;
+                      padding-left: 6px;
+                      padding-right: 20px;
+                    "
+                  >
+                    <!-- 🔴 LÍNEA ROJA DE HORA ACTUAL -->
+                    @if (isToday(day.dateStr) && currentTimeInsideRange) {
+                      <div
+                        class="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+                        [style.top.px]="currentTimeTopPx()"
+                      >
+                        <div class="w-2.5 h-2.5 bg-red-500 rounded-full -ml-1.5 shadow-sm"></div>
+                        <div class="min-w-0 flex-1 border-t-2 border-red-500 shadow-sm"></div>
+                      </div>
+                    }
+
+                    <!-- Celdas de las horas -->
+                    @for (hour of hoursList; track hour) {
+                      <button
+                        type="button"
+                        (click)="openAppointmentModal(day.dateStr, hour)"
+                        [appPermissionDisabled]="!canBookSlot(day.dateStr, hour)"
+                        [attr.aria-label]="'Agendar cita ' + day.dateStr + ' ' + hour"
+                        class="block h-16 border-b border-dashed border-white/20 enabled:hover:bg-blue-500/20 enabled:cursor-pointer box-border transition-colors disabled:cursor-not-allowed disabled:bg-zinc-500/10 booking-grid-cell"
+                        style="width: 500px"
+                        appPermission="calendar:write"
+                      ></button>
+                    }
+
+                    <!-- Tarjetas de Citas -->
+                    @for (
+                      appointment of day.appointments;
+                      track appointment.syncId || appointment.time
+                    ) {
+                      <div
+                        (click)="focusAppointment(appointment, day.dateStr, $event)"
+                        class="absolute rounded-xl p-2 overflow-hidden shadow-md cursor-pointer border transition-all duration-300 flex flex-col justify-between z-10 text-white"
+                        [ngClass]="[
+                          appointment.status === 2
+                            ? 'bg-zinc-700/90 border-zinc-600'
+                            : appointment.colorClass || 'bg-blue-600 border-blue-400',
+                          getFocusedIndex(day.dateStr) === appointment.colIndex
+                            ? 'scale-100 opacity-100 ring-2 ring-white/80 shadow-xl'
+                            : 'scale-95 opacity-60 hover:opacity-90',
+                        ]"
+                        [style.top.px]="appointment.topPx"
+                        [style.height.px]="appointment.heightPx"
+                        [style.left.px]="6 + appointment.colIndex * 175"
+                        [style.width.px]="165"
+                      >
+                        @if (appointment.status === 1) {
+                          <div
+                            class="absolute top-1 right-1 bg-emerald-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-black shadow-sm"
+                          >
+                            ✓
+                          </div>
+                        } @else if (appointment.status === 2) {
+                          <div
+                            class="absolute top-1 right-1 bg-red-500 text-white px-1.5 py-0.5 rounded text-[7px] font-black shadow-sm"
+                          >
+                            CANCELADA
+                          </div>
+                        }
+
+                        <div>
+                          <div class="flex justify-between items-center pr-3">
+                            <p
+                              class="text-[10px] font-black leading-tight truncate"
+                              [class.line-through]="appointment.status === 2"
+                            >
+                              {{ appointment.patientName }}
+                            </p>
+                            <span class="text-[8px] bg-black/30 px-1 rounded">{{
+                              appointment.durationLabel
+                            }}</span>
+                          </div>
+                          <p
+                            class="text-[9px] opacity-90 truncate"
+                            [class.line-through]="appointment.status === 2"
+                          >
+                            {{ appointment.time }} – {{ appointment.endTime }}
+                          </p>
+                        </div>
+                        <p class="text-[9px] font-bold truncate opacity-90">
+                          Tel: {{ appointment.phone || 'N/A' }}
+                        </p>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+    <!-- ================= VISTA DIARIA ================= -->
+    @if (currentView() === 'day') {
+      <div class="w-full space-y-3">
+        <div
+          class="border p-5 rounded-3xl flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl"
+          style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+        >
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-blue-500">
+              Agenda del Día
+            </p>
+            <h3 class="text-xl font-black capitalize" style="color: var(--text-main)">
+              {{ formatDateHeader() }}
+            </h3>
+          </div>
+          <div class="flex items-center gap-3">
+            <span
+              class="px-3.5 py-1.5 border rounded-xl text-xs font-black shadow-sm"
+              style="
+                background-color: var(--bg-primary);
+                border-color: var(--border-color);
+                color: var(--text-main);
+              "
+              >{{ currentDayData.appointments.length }} Citas Agendadas</span
+            >
+          </div>
+        </div>
+
+        <div
+          class="border rounded-3xl overflow-hidden shadow-xl flex flex-col"
+          style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+        >
+          <div class="flex relative overflow-y-auto max-h-[600px]">
+            <div
+              class="w-16 flex-shrink-0 border-r select-none"
+              style="border-color: var(--border-color)"
+            >
+              @for (hour of hoursList; track hour) {
+                <div
+                  class="h-16 border-b text-[10px] font-bold text-right pr-2 pt-1"
+                  style="border-color: var(--border-color); color: var(--text-muted)"
+                >
+                  {{ hour }}
+                </div>
+              }
+            </div>
+
+            <div class="min-w-0 flex-1 relative">
+              <div class="min-w-0 flex-1 relative overflow-x-auto">
+                <!-- 🔴 LÍNEA ROJA DE HORA ACTUAL EN VISTA DIARIA -->
+                @if (isToday(currentDayData.dateStr) && currentTimeInsideRange) {
+                  <div
+                    class="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+                    [style.top.px]="currentTimeTopPx()"
+                  >
+                    <div class="w-3 h-3 bg-red-500 rounded-full -ml-1.5 shadow-md"></div>
+                    <div class="min-w-0 flex-1 border-t-2 border-red-500 shadow-md"></div>
+                  </div>
+                }
+
+                @for (hour of hoursList; track hour) {
+                  <button
+                    type="button"
+                    (click)="openAppointmentModal(currentDayData.dateStr, hour)"
+                    [appPermissionDisabled]="!canBookSlot(currentDayData.dateStr, hour)"
+                    [attr.aria-label]="'Agendar cita ' + currentDayData.dateStr + ' ' + hour"
+                    class="block h-16 border-b border-dashed w-full enabled:hover:bg-blue-500/5 enabled:cursor-pointer disabled:cursor-not-allowed disabled:bg-zinc-500/10 booking-grid-cell"
+                    style="border-color: var(--border-color); opacity: 0.3"
+                    appPermission="calendar:write"
+                  ></button>
+                }
+
+                @for (
+                  appointment of currentDayData.appointments;
+                  track appointment.syncId || appointment.time
+                ) {
+                  <div
+                    (click)="openAppointmentDetail(appointment)"
+                    class="absolute rounded-xl p-3.5 shadow-lg cursor-pointer border transition-all hover:brightness-110 flex flex-col justify-between z-10 text-white"
+                    [ngClass]="
+                      appointment.status === 2
+                        ? 'bg-zinc-700/90 border-zinc-600 opacity-75'
+                        : appointment.colorClass || 'bg-blue-600 border-blue-400'
+                    "
+                    [style.top.px]="appointment.topPx"
+                    [style.height.px]="appointment.heightPx"
+                    [style.left.px]="8 + appointment.colIndex * 240"
+                    [style.width.px]="230"
+                  >
+                    <div class="flex justify-between items-start">
+                      <p
+                        class="text-xs font-black leading-tight truncate pr-2"
+                        [class.line-through]="appointment.status === 2"
+                      >
+                        {{ appointment.patientName }}
+                        <span
+                          class="text-[9px] font-normal opacity-80"
+                          [class.line-through]="appointment.status === 2"
+                          >({{ appointment.durationLabel }})</span
+                        >
+                      </p>
+                      <span
+                        class="text-[9px] px-2 py-0.5 bg-black/25 rounded-md font-bold shrink-0"
+                        [class.line-through]="appointment.status === 2"
+                        >{{ appointment.time }} – {{ appointment.endTime }}</span
+                      >
+                    </div>
+                    <p class="text-[10px] font-medium opacity-90 truncate mt-1">
+                      Contacto: {{ appointment.phone || appointment.email || 'No registrado' }}
+                    </p>
+
+                    <div class="flex justify-between items-center mt-1">
+                      <p class="text-[10px] font-medium opacity-90 truncate">
+                        Motivo: {{ appointment.reason }}
+                      </p>
+                      @if (appointment.status === 1) {
+                        <span
+                          class="bg-emerald-500 text-white px-2 py-0.5 rounded-md text-[9px] font-black flex items-center gap-1 shadow-sm shrink-0"
+                        >
+                          ✓ Confirmada
+                        </span>
+                      } @else if (appointment.status === 2) {
+                        <span
+                          class="bg-red-500 text-white px-2 py-0.5 rounded-md text-[9px] font-black flex items-center gap-1 shadow-sm shrink-0"
+                        >
+                          CANCELADA
+                        </span>
+                      }
+                    </div>
+                  </div>
                 }
               </div>
             </div>
-          } @else {
-            <div class="bg-transparent rounded-2xl p-2 min-h-[130px]"></div>
-          }
-        }
-      </div>
-    </div>
-  }
-
-<!-- ================= VISTA SEMANAL ================= -->
-  @if (currentView() === 'week') {
-    <div class="space-y-3 w-full">
-      <div class="flex justify-between items-center border px-4 py-2.5 rounded-2xl shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-        <span class="text-[10px] font-black uppercase tracking-wider" style="color: var(--text-muted);">Semana Completa (Carrusel de Citas Concurrentes)</span>
-      </div>
-
-      <div class="border rounded-3xl shadow-xl flex flex-col overflow-hidden" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-        <!-- Cabecera fija de los días de la semana -->
-        <div class="flex border-b text-center sticky top-0 z-30 shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-          <div class="w-16 flex-shrink-0 py-3 border-r text-[10px] font-bold uppercase flex items-center justify-center" style="border-color: var(--border-color); color: var(--text-muted);">
-            Hora
-          </div>
-          <div class="grid grid-cols-7 flex-1">
-            @for (day of weekDaysGrid; track day.dateStr) {
-              <div class="py-3 border-r last:border-r-0" style="border-color: var(--border-color);">
-                <p class="text-[10px] font-bold uppercase" style="color: var(--text-muted);">{{ day.name }}</p>
-                <p class="text-sm font-black mt-0.5" style="color: var(--text-main);">{{ day.dayNumber }}</p>
-              </div>
-            }
           </div>
         </div>
+      </div>
+    }
+  }
 
-        <!-- 💡 Contenedor principal con scroll vertical global -->
-        <div class="flex overflow-y-auto max-h-[650px] relative">
-          <!-- Columna de Horas Izquierda -->
-          <div class="w-16 flex-shrink-0 border-r select-none sticky left-0 z-20 shadow-sm" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-            @for (hour of hoursList; track hour) {
-              <div class="h-16 border-b border-white/10 text-[10px] font-bold text-right pr-2 pt-1 box-border" style="border-color: var(--border-color); color: var(--text-muted);">
-                {{ hour }}
-              </div>
-            }
+  <!-- ================= MODAL DE AGENDAR CITA ================= -->
+  @if (showAppointmentModal) {
+    <div
+      class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in"
+    >
+      <!-- Si es el modal avanzado (Mensual) -->
+      @if (isAdvancedModal) {
+        <div
+          class="appointment-booking-dialog border w-full max-w-5xl rounded-[2.5rem] p-5 shadow-2xl relative space-y-3"
+          style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+        >
+          <button
+            (click)="showAppointmentModal = false"
+            class="absolute right-6 top-6 cursor-pointer z-10"
+            style="color: var(--text-muted)"
+          >
+            <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+          </button>
+
+          <div>
+            <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main)">
+              Agendar Cita de Paciente
+            </h3>
+            <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted)">
+              Selecciona la fecha, duración y horario disponible
+            </p>
           </div>
 
-          <!-- Parrilla de Días y Horarios -->
-          <div class="grid grid-cols-7 flex-1 relative">
-            @for (day of weekDaysGrid; track day.dateStr) {
-              <!-- 💡 Quitamos absolute inset-0 y usamos altura total calculada para permitir scroll vertical fluido -->
-              <div class="border-r last:border-r-0 relative min-w-[140px] group/day" style="height: 1152px; border-color: var(--border-color);">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Columna Izquierda: Datos -->
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest"
+                    style="color: var(--text-muted)"
+                    >Fecha</label
+                  >
+                  <app-booking-date-picker
+                    [(date)]="targetDate"
+                    [office]="bookingOffice"
+                    [duration]="selectedDurationMinutes"
+                    (dateChange)="generateTimeSlots()"
+                    appPermission="calendar:write"
+                  />
+                </div>
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest"
+                    style="color: var(--text-muted)"
+                    >Duración</label
+                  >
+                  <select
+                    [(ngModel)]="selectedDurationMinutes"
+                    (change)="generateTimeSlots()"
+                    class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                    style="
+                      background-color: var(--bg-primary);
+                      border-color: var(--border-color);
+                      color: var(--text-main);
+                    "
+                    appPermission="calendar:write"
+                  >
+                    <option [value]="30">30 min</option>
+                    <option [value]="60">1 hr</option>
+                    <option [value]="90">1:30 hr</option>
+                    <option [value]="120">2 hrs</option>
+                  </select>
+                </div>
+              </div>
 
-                <!-- ⬅️ ➡️ Flechas de navegación del carrusel flotantes -->
-
-
-                <!-- Contenedor scrolleable horizontal por día para el carrusel -->
-                <div class="absolute inset-0 overflow-x-auto scrollable-day-container scrollbar-none" [attr.data-date]="day.dateStr" style="scrollbar-width: none; -ms-overflow-style: none; scroll-behavior: smooth; padding-left: 6px; padding-right: 20px;">
-
-                  <!-- 🔴 LÍNEA ROJA DE HORA ACTUAL -->
-                  @if (isToday(day.dateStr)) {
-                    <div class="absolute left-0 right-0 z-20 pointer-events-none flex items-center" [style.top.px]="currentTimeTopPx()">
-                      <div class="w-2.5 h-2.5 bg-red-500 rounded-full -ml-1.5 shadow-sm"></div>
-                      <div class="flex-1 border-t-2 border-red-500 shadow-sm"></div>
-                    </div>
-                  }
-
-                  <!-- Celdas de las horas -->
-                  @for (hour of hoursList; track hour) {
-                    <div (click)="openAppointmentModal(day.dateStr, hour)"
-                         class="h-16 border-b border-dashed border-white/20 hover:bg-blue-500/20 cursor-pointer box-border transition-colors"
-                         style="width: 500px;">
-                    </div>
-                  }
-
-                  <!-- Tarjetas de Citas -->
-                  @for (appointment of day.appointments; track appointment.syncId || appointment.time) {
-                    <div (click)="focusAppointment(appointment, day.dateStr, $event)"
-                         class="absolute rounded-xl p-2 overflow-hidden shadow-md cursor-pointer border transition-all duration-300 flex flex-col justify-between z-10 text-white"
-                         [ngClass]="[
-                           appointment.status === 2 ? 'bg-zinc-700/90 border-zinc-600' : (appointment.colorClass || 'bg-blue-600 border-blue-400'),
-                           getFocusedIndex(day.dateStr) === appointment.colIndex ? 'scale-100 opacity-100 ring-2 ring-white/80 shadow-xl' : 'scale-95 opacity-60 hover:opacity-90'
-                         ]"
-                         [style.top.px]="appointment.topPx"
-                         [style.height.px]="appointment.heightPx"
-                         [style.left.px]="6 + (appointment.colIndex * 175)"
-                         [style.width.px]="165">
-
-                      @if (appointment.status === 1) {
-                        <div class="absolute top-1 right-1 bg-emerald-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-black shadow-sm">✓</div>
-                      } @else if (appointment.status === 2) {
-                        <div class="absolute top-1 right-1 bg-red-500 text-white px-1.5 py-0.5 rounded text-[7px] font-black shadow-sm">CANCELADA</div>
-                      }
-
-                      <div>
-                        <div class="flex justify-between items-center pr-3">
-                          <p class="text-[10px] font-black leading-tight truncate" [class.line-through]="appointment.status === 2">{{ appointment.patientName }}</p>
-                          <span class="text-[8px] bg-black/30 px-1 rounded">{{ appointment.durationLabel }}</span>
-                        </div>
-                        <p class="text-[9px] opacity-90 truncate" [class.line-through]="appointment.status === 2">{{ appointment.time }} – {{ appointment.endTime }}</p>
+              <!-- Buscador Híbrido de Paciente con Caché -->
+              <div class="space-y-1 relative">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest"
+                  style="color: var(--text-muted)"
+                  >Nombre del Paciente</label
+                >
+                <input
+                  [ngModel]="patientForm.name"
+                  (input)="onPatientInput($event)"
+                  (focus)="onPatientFocus()"
+                  type="text"
+                  placeholder="Ej. Carlos Ramírez o selecciona del caché..."
+                  class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                  style="
+                    background-color: var(--bg-primary);
+                    border-color: var(--border-color);
+                    color: var(--text-main);
+                  "
+                  appPermission="calendar:write"
+                />
+                @if (showPatientDropdown && filteredPatients.length > 0) {
+                  <div
+                    class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1"
+                    style="background-color: var(--bg-primary); border-color: var(--border-color)"
+                  >
+                    @for (p of filteredPatients; track p.id) {
+                      <div
+                        (click)="selectPatient(p)"
+                        class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                        style="color: var(--text-main)"
+                      >
+                        <span>{{ p.nombre }}</span>
+                        <span class="text-[10px]" style="color: var(--text-muted)">{{
+                          p.telefono
+                        }}</span>
                       </div>
-                      <p class="text-[9px] font-bold truncate opacity-90">Tel: {{ appointment.phone || 'N/A' }}</p>
-                    </div>
-                  }
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest"
+                    style="color: var(--text-muted)"
+                    >Teléfono</label
+                  >
+                  <input
+                    [(ngModel)]="patientForm.phone"
+                    type="text"
+                    placeholder="Ej. 33 1234 5678"
+                    class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                    style="
+                      background-color: var(--bg-primary);
+                      border-color: var(--border-color);
+                      color: var(--text-main);
+                    "
+                    appPermission="calendar:write"
+                  />
                 </div>
-
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  }
-  <!-- ================= VISTA DIARIA ================= -->
-  @if (currentView() === 'day') {
-    <div class="w-full space-y-3">
-      <div class="border p-5 rounded-3xl flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-        <div>
-          <p class="text-[10px] font-black uppercase tracking-widest text-blue-500">Agenda del Día</p>
-          <h3 class="text-xl font-black capitalize" style="color: var(--text-main);">{{ formatDateHeader() }}</h3>
-        </div>
-        <div class="flex items-center gap-3">
-          <span class="px-3.5 py-1.5 border rounded-xl text-xs font-black shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">{{ currentDayData.appointments.length }} Citas Agendadas</span>
-        </div>
-      </div>
-
-      <div class="border rounded-3xl overflow-hidden shadow-xl flex flex-col" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-        <div class="flex relative overflow-y-auto max-h-[600px]">
-          <div class="w-16 flex-shrink-0 border-r select-none" style="border-color: var(--border-color);">
-            @for (hour of hoursList; track hour) {
-              <div class="h-16 border-b text-[10px] font-bold text-right pr-2 pt-1" style="border-color: var(--border-color); color: var(--text-muted);">
-                {{ hour }}
-              </div>
-            }
-          </div>
-
-          <div class="flex-1 relative">
-    <div class="flex-1 relative overflow-x-auto">
-            <!-- 🔴 LÍNEA ROJA DE HORA ACTUAL EN VISTA DIARIA -->
-            @if (isToday(currentDayData.dateStr)) {
-              <div class="absolute left-0 right-0 z-20 pointer-events-none flex items-center" [style.top.px]="currentTimeTopPx()">
-                <div class="w-3 h-3 bg-red-500 rounded-full -ml-1.5 shadow-md"></div>
-                <div class="flex-1 border-t-2 border-red-500 shadow-md"></div>
-              </div>
-            }
-
-            @for (hour of hoursList; track hour) {
-              <div (click)="openAppointmentModal(currentDayData.dateStr, hour)" class="h-16 border-b border-dashed w-full hover:bg-blue-500/5 cursor-pointer" style="border-color: var(--border-color); opacity: 0.3;"></div>
-            }
-
-            @for (appointment of currentDayData.appointments; track appointment.syncId || appointment.time) {
-              <div (click)="openAppointmentDetail(appointment)"
-                   class="absolute rounded-xl p-3.5 shadow-lg cursor-pointer border transition-all hover:brightness-110 flex flex-col justify-between z-10 text-white"
-                   [ngClass]="appointment.status === 2 ? 'bg-zinc-700/90 border-zinc-600 opacity-75' : (appointment.colorClass || 'bg-blue-600 border-blue-400')"
-                   [style.top.px]="appointment.topPx"
-                   [style.height.px]="appointment.heightPx"
-                   [style.left.px]="8 + (appointment.colIndex * 240)"
-                   [style.width.px]="230">
-                <div class="flex justify-between items-start">
-                  <p class="text-xs font-black leading-tight truncate pr-2" [class.line-through]="appointment.status === 2">
-                    {{ appointment.patientName }}
-                    <span class="text-[9px] font-normal opacity-80" [class.line-through]="appointment.status === 2">({{ appointment.durationLabel }})</span>
-                  </p>
-                  <span class="text-[9px] px-2 py-0.5 bg-black/25 rounded-md font-bold shrink-0" [class.line-through]="appointment.status === 2">{{ appointment.time }} – {{ appointment.endTime }}</span>
-                </div>
-                <p class="text-[10px] font-medium opacity-90 truncate mt-1">Contacto: {{ appointment.phone || appointment.email || 'No registrado' }}</p>
-
-                <div class="flex justify-between items-center mt-1">
-                  <p class="text-[10px] font-medium opacity-90 truncate">Motivo: {{ appointment.reason }}</p>
-                  @if (appointment.status === 1) {
-                    <span class="bg-emerald-500 text-white px-2 py-0.5 rounded-md text-[9px] font-black flex items-center gap-1 shadow-sm shrink-0">
-                      ✓ Confirmada
-                    </span>
-                  } @else if (appointment.status === 2) {
-                    <span class="bg-red-500 text-white px-2 py-0.5 rounded-md text-[9px] font-black flex items-center gap-1 shadow-sm shrink-0">
-                      CANCELADA
-                    </span>
-                  }
+                <div class="space-y-1">
+                  <label
+                    class="text-[10px] font-black uppercase tracking-widest"
+                    style="color: var(--text-muted)"
+                    >Correo</label
+                  >
+                  <input
+                    [(ngModel)]="patientForm.email"
+                    type="email"
+                    placeholder="correo@email.com"
+                    class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                    style="
+                      background-color: var(--bg-primary);
+                      border-color: var(--border-color);
+                      color: var(--text-main);
+                    "
+                    appPermission="calendar:write"
+                  />
                 </div>
               </div>
-            }
-          </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
-  }
 
-<!-- ================= MODAL DE AGENDAR CITA ================= -->
-@if (showAppointmentModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-
-    <!-- Si es el modal avanzado (Mensual) -->
-    @if (isAdvancedModal) {
-      <div class="border w-full max-w-4xl rounded-[2.5rem] p-7 shadow-2xl relative space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-        <button (click)="showAppointmentModal = false" class="absolute right-6 top-6 cursor-pointer z-10" style="color: var(--text-muted);">
-          <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
-        </button>
-
-        <div>
-          <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main);">Agendar Cita de Paciente</h3>
-          <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted);">Selecciona la fecha, duración y horario disponible</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <!-- Columna Izquierda: Datos -->
-          <div class="space-y-3">
-            <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-1">
-                <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Fecha</label>
-                <input type="date" [(ngModel)]="targetDate" (change)="generateTimeSlots()" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-              </div>
-              <div class="space-y-1">
-                <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Duración</label>
-                <select [(ngModel)]="selectedDurationMinutes" (change)="generateTimeSlots()" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-                  <option [value]="30">30 min</option>
-                  <option [value]="60">1 hr</option>
-                  <option [value]="90">1:30 hr</option>
-                  <option [value]="120">2 hrs</option>
-                </select>
+              <!-- Motivo Híbrido (Servicios) -->
+              <div class="space-y-1 relative">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest"
+                  style="color: var(--text-muted)"
+                  >Motivo *</label
+                >
+                <input
+                  [ngModel]="patientForm.reason"
+                  required
+                  [readOnly]="reasonUnknown"
+                  [attr.aria-required]="true"
+                  (input)="onReasonInput($event)"
+                  (focus)="showServiceDropdown = !reasonUnknown"
+                  type="text"
+                  placeholder="Ej. Dolor agudo o selecciona servicio..."
+                  class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                  style="
+                    background-color: var(--bg-primary);
+                    border-color: var(--border-color);
+                    color: var(--text-main);
+                  "
+                  appPermission="calendar:write"
+                />
+                <label
+                  class="mt-2 flex items-center gap-2 text-xs cursor-pointer"
+                  style="color: var(--text-main)"
+                >
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    [ngModel]="reasonUnknown"
+                    (ngModelChange)="toggleUnknownReason($event)"
+                    class="accent-blue-600"
+                    appPermission="calendar:write"
+                  />
+                  <span>No lo sé aún</span>
+                </label>
+                @if (showServiceDropdown && filteredServices.length > 0) {
+                  <div
+                    class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1"
+                    style="background-color: var(--bg-primary); border-color: var(--border-color)"
+                  >
+                    @for (s of filteredServices; track s.id) {
+                      <div
+                        (click)="selectServiceReason(s)"
+                        class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                        style="color: var(--text-main)"
+                      >
+                        <span>{{ s.nombre }}</span>
+                        <span class="text-[10px] font-semibold text-blue-500"
+                          >${{ s.precioFinal }}</span
+                        >
+                      </div>
+                    }
+                  </div>
+                }
               </div>
             </div>
 
+            <!-- Columna Derecha: Chips de Horarios Libres -->
+            <div class="space-y-2 flex flex-col">
+              <label
+                class="text-[10px] font-black uppercase tracking-widest flex justify-between items-center"
+                style="color: var(--text-muted)"
+              >
+                <span>Horarios Libres Disponibles</span>
+                @if (selectedModalHour) {
+                  <span class="text-blue-500 font-bold lowercase"
+                    >Seleccionado: {{ selectedModalHour }}</span
+                  >
+                }
+              </label>
+
+              <div
+                class="min-w-0 grid grid-cols-3 gap-2.5 p-3 border rounded-2xl shadow-inner flex-1 content-start max-h-[310px] overflow-y-auto"
+                style="background-color: var(--bg-primary); border-color: var(--border-color)"
+              >
+                @for (slot of filteredAvailableTimeSlots; track slot.time) {
+                  <button
+                    type="button"
+                    (click)="selectModalHour(slot.time)"
+                    [disabled]="!slot.available || !canBookSlot(targetDate, slot.time)"
+                    [attr.aria-pressed]="selectedModalHour === slot.time"
+                    [style.background-color]="
+                      selectedModalHour === slot.time ? '#2563eb' : 'var(--bg-secondary)'
+                    "
+                    [style.color]="selectedModalHour === slot.time ? '#ffffff' : 'var(--text-main)'"
+                    [style.border-color]="
+                      selectedModalHour === slot.time ? '#2563eb' : 'var(--border-color)'
+                    "
+                    class="py-2.5 px-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center cursor-pointer hover:border-blue-500"
+                  >
+                    {{ slot.label }}
+                  </button>
+                } @empty {
+                  <p class="col-span-3 text-center text-xs py-8" style="color: var(--text-muted)">
+                    No hay horarios libres
+                  </p>
+                }
+              </div>
+            </div>
+          </div>
+
+          @if (bookingTimeError()) {
+            <p role="alert" class="text-xs text-rose-500">{{ bookingTimeError() }}</p>
+          }
+          <button
+            (click)="saveAppointment()"
+            [appPermissionDisabled]="isSaving || !canSaveBookingTime()"
+            class="w-full bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-500 text-white py-2.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 mt-2"
+            appPermission="calendar:write"
+          >
+            @if (isSaving) {
+              <div
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></div>
+              <span>Guardando cita...</span>
+            } @else {
+              <span>Guardar Cita</span>
+            }
+          </button>
+        </div>
+      } @else {
+        <!-- Si es el modal clásico (Semanal / Diario con hora fija ya seleccionada) -->
+        <div
+          class="appointment-booking-dialog border w-full max-w-3xl rounded-[2.5rem] p-5 shadow-2xl relative space-y-3"
+          style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+        >
+          <button
+            (click)="showAppointmentModal = false"
+            class="absolute right-6 top-6 cursor-pointer"
+            style="color: var(--text-muted)"
+          >
+            <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+          </button>
+
+          <div>
+            <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main)">
+              Agendar Cita de Paciente
+            </h3>
+            <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted)">
+              Fecha: {{ targetDate }}
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1.5">
+              <label
+                class="text-[10px] font-black uppercase tracking-widest"
+                style="color: var(--text-muted)"
+                >Hora de Inicio</label
+              >
+              <input
+                type="text"
+                [value]="targetHour"
+                disabled
+                class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold opacity-75 cursor-not-allowed shadow-inner"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+              />
+            </div>
+
+            <div class="space-y-1.5">
+              <label
+                class="text-[10px] font-black uppercase tracking-widest"
+                style="color: var(--text-muted)"
+                >Duración</label
+              >
+              <select
+                [(ngModel)]="selectedDurationMinutes"
+                class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+                appPermission="calendar:write"
+              >
+                <option [value]="30">30 min</option>
+                <option [value]="60">1 hr</option>
+                <option [value]="90">1:30 hr</option>
+                <option [value]="120">2 hrs</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Campos del formulario clásico -->
+          <div class="space-y-3 pt-1">
             <!-- Buscador Híbrido de Paciente con Caché -->
             <div class="space-y-1 relative">
-              <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Nombre del Paciente</label>
+              <label
+                class="text-[10px] font-black uppercase tracking-widest"
+                style="color: var(--text-muted)"
+                >Nombre Completo del Paciente</label
+              >
               <input
                 [ngModel]="patientForm.name"
                 (input)="onPatientInput($event)"
@@ -307,14 +887,28 @@
                 type="text"
                 placeholder="Ej. Carlos Ramírez o selecciona del caché..."
                 class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
-                style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
-              >
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+                appPermission="calendar:write"
+              />
               @if (showPatientDropdown && filteredPatients.length > 0) {
-                <div class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                <div
+                  class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1"
+                  style="background-color: var(--bg-primary); border-color: var(--border-color)"
+                >
                   @for (p of filteredPatients; track p.id) {
-                    <div (click)="selectPatient(p)" class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center" style="color: var(--text-main);">
+                    <div
+                      (click)="selectPatient(p)"
+                      class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                      style="color: var(--text-main)"
+                    >
                       <span>{{ p.nombre }}</span>
-                      <span class="text-[10px]" style="color: var(--text-muted);">{{ p.telefono }}</span>
+                      <span class="text-[10px]" style="color: var(--text-muted)">{{
+                        p.telefono
+                      }}</span>
                     </div>
                   }
                 </div>
@@ -323,33 +917,98 @@
 
             <div class="grid grid-cols-2 gap-3">
               <div class="space-y-1">
-                <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Teléfono</label>
-                <input [(ngModel)]="patientForm.phone" type="text" placeholder="Ej. 33 1234 5678" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest"
+                  style="color: var(--text-muted)"
+                  >Teléfono</label
+                >
+                <input
+                  [(ngModel)]="patientForm.phone"
+                  type="text"
+                  placeholder="Ej. 33 1234 5678"
+                  class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                  style="
+                    background-color: var(--bg-primary);
+                    border-color: var(--border-color);
+                    color: var(--text-main);
+                  "
+                  appPermission="calendar:write"
+                />
               </div>
               <div class="space-y-1">
-                <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Correo</label>
-                <input [(ngModel)]="patientForm.email" type="email" placeholder="correo@email.com" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest"
+                  style="color: var(--text-muted)"
+                  >Correo Electrónico</label
+                >
+                <input
+                  [(ngModel)]="patientForm.email"
+                  type="email"
+                  placeholder="Ej. correo@email.com"
+                  class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
+                  style="
+                    background-color: var(--bg-primary);
+                    border-color: var(--border-color);
+                    color: var(--text-main);
+                  "
+                  appPermission="calendar:write"
+                />
               </div>
             </div>
 
             <!-- Motivo Híbrido (Servicios) -->
             <div class="space-y-1 relative">
-              <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Motivo</label>
+              <label
+                class="text-[10px] font-black uppercase tracking-widest"
+                style="color: var(--text-muted)"
+                >Motivo de la Consulta *</label
+              >
               <input
                 [ngModel]="patientForm.reason"
+                required
+                [readOnly]="reasonUnknown"
+                [attr.aria-required]="true"
                 (input)="onReasonInput($event)"
-                (focus)="showServiceDropdown = true"
+                (focus)="showServiceDropdown = !reasonUnknown"
                 type="text"
                 placeholder="Ej. Dolor agudo o selecciona servicio..."
                 class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
-                style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+                style="
+                  background-color: var(--bg-primary);
+                  border-color: var(--border-color);
+                  color: var(--text-main);
+                "
+                appPermission="calendar:write"
+              />
+              <label
+                class="mt-2 flex items-center gap-2 text-xs cursor-pointer"
+                style="color: var(--text-main)"
               >
+                <input
+                  type="checkbox"
+                  role="switch"
+                  [ngModel]="reasonUnknown"
+                  (ngModelChange)="toggleUnknownReason($event)"
+                  class="accent-blue-600"
+                  appPermission="calendar:write"
+                />
+                <span>No lo sé aún</span>
+              </label>
               @if (showServiceDropdown && filteredServices.length > 0) {
-                <div class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                <div
+                  class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1"
+                  style="background-color: var(--bg-primary); border-color: var(--border-color)"
+                >
                   @for (s of filteredServices; track s.id) {
-                    <div (click)="selectServiceReason(s)" class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center" style="color: var(--text-main);">
+                    <div
+                      (click)="selectServiceReason(s)"
+                      class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center"
+                      style="color: var(--text-main)"
+                    >
                       <span>{{ s.nombre }}</span>
-                      <span class="text-[10px] font-semibold text-blue-500">${{ s.precioFinal }}</span>
+                      <span class="text-[10px] font-semibold text-blue-500"
+                        >${{ s.precioFinal }}</span
+                      >
                     </div>
                   }
                 </div>
@@ -357,286 +1016,301 @@
             </div>
           </div>
 
-          <!-- Columna Derecha: Chips de Horarios Libres -->
-          <div class="space-y-2 flex flex-col">
-            <label class="text-[10px] font-black uppercase tracking-widest flex justify-between items-center" style="color: var(--text-muted);">
-              <span>Horarios Libres Disponibles</span>
-              @if (selectedModalHour) {
-                <span class="text-blue-500 font-bold lowercase">Seleccionado: {{ selectedModalHour }}</span>
-              }
-            </label>
-
-            <div class="grid grid-cols-3 gap-2.5 p-3 border rounded-2xl shadow-inner flex-1 content-start max-h-[310px] overflow-y-auto" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-              @for (slot of filteredAvailableTimeSlots; track slot.time) {
-                <button type="button"
-                        (click)="selectedModalHour = slot.time"
-                        [class.bg-blue-600]="selectedModalHour === slot.time"
-                        [class.text-white]="selectedModalHour === slot.time"
-                        class="py-2.5 px-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center cursor-pointer hover:border-blue-500"
-                        style="border-color: var(--border-color); background-color: var(--bg-secondary); color: var(--text-main);">
-                  {{ slot.label }}
-                </button>
-              } @empty {
-                <p class="col-span-3 text-center text-xs py-8" style="color: var(--text-muted);">No hay horarios libres</p>
-              }
-            </div>
-          </div>
-        </div>
-
-        <button (click)="saveAppointment()" [disabled]="isSaving" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 mt-2">
-          @if (isSaving) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>Guardando cita...</span>
-          } @else {
-            <span>Guardar Cita</span>
+          @if (bookingTimeError()) {
+            <p role="alert" class="text-xs text-rose-500">{{ bookingTimeError() }}</p>
           }
-        </button>
-      </div>
+          <button
+            (click)="saveAppointment()"
+            [appPermissionDisabled]="isSaving || !canSaveBookingTime()"
+            class="w-full bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-500 text-white py-2.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+            appPermission="calendar:write"
+          >
+            @if (isSaving) {
+              <div
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></div>
+              <span>Guardando cita...</span>
+            } @else {
+              <span>Guardar Cita</span>
+            }
+          </button>
+        </div>
+      }
+    </div>
+  }
 
-    } @else {
-      <!-- Si es el modal clásico (Semanal / Diario con hora fija ya seleccionada) -->
-      <div class="border w-full max-w-md rounded-[2.5rem] p-7 shadow-2xl relative space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-        <button (click)="showAppointmentModal = false" class="absolute right-6 top-6 cursor-pointer" style="color: var(--text-muted);">
+  <!-- ================= MODAL DE DETALLE DE CITA ================= -->
+  @if (isAppointmentDetailModalOpen() && selectedAppointment()) {
+    <div
+      class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in"
+    >
+      <div
+        class="border w-full max-w-md rounded-[2.5rem] p-7 shadow-2xl relative space-y-4"
+        style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+      >
+        <button
+          (click)="closeAppointmentDetailModal()"
+          class="absolute right-6 top-6 cursor-pointer"
+          style="color: var(--text-muted)"
+        >
           <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
         </button>
 
         <div>
-          <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main);">Agendar Cita de Paciente</h3>
-          <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted);">Fecha: {{ targetDate }}</p>
+          <h3 class="text-lg font-black uppercase tracking-tight text-blue-500">
+            Detalles de la Cita
+          </h3>
+          <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted)">
+            Fecha: {{ selectedAppointment().date }}
+          </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div class="space-y-1.5">
-            <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Hora de Inicio</label>
-            <input type="text" [value]="targetHour" disabled class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold opacity-75 cursor-not-allowed shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Duración</label>
-            <select [(ngModel)]="selectedDurationMinutes" class="w-full border rounded-2xl px-3 py-2.5 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-              <option [value]="30">30 min</option>
-              <option [value]="60">1 hr</option>
-              <option [value]="90">1:30 hr</option>
-              <option [value]="120">2 hrs</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Campos del formulario clásico -->
-        <div class="space-y-3 pt-1">
-          <!-- Buscador Híbrido de Paciente con Caché -->
-          <div class="space-y-1 relative">
-            <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Nombre Completo del Paciente</label>
-            <input
-              [ngModel]="patientForm.name"
-              (input)="onPatientInput($event)"
-              (focus)="onPatientFocus()"
-              type="text"
-              placeholder="Ej. Carlos Ramírez o selecciona del caché..."
-              class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
-              style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+        <div class="space-y-3 text-xs">
+          <div>
+            <span
+              class="text-[10px] font-black uppercase tracking-widest"
+              style="color: var(--text-muted)"
+              >Paciente</span
             >
-            @if (showPatientDropdown && filteredPatients.length > 0) {
-              <div class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                @for (p of filteredPatients; track p.id) {
-                  <div (click)="selectPatient(p)" class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center" style="color: var(--text-main);">
-                    <span>{{ p.nombre }}</span>
-                    <span class="text-[10px]" style="color: var(--text-muted);">{{ p.telefono }}</span>
-                  </div>
-                }
-              </div>
-            }
+            <p class="font-black text-sm" style="color: var(--text-main)">
+              {{ selectedAppointment().patientName }}
+            </p>
           </div>
 
-          <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Teléfono</label>
-            <input [(ngModel)]="patientForm.phone" type="text" placeholder="Ej. 33 1234 5678" class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-          </div>
-
-          <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Correo Electrónico</label>
-            <input [(ngModel)]="patientForm.email" type="email" placeholder="Ej. correo@email.com" class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-          </div>
-
-          <!-- Motivo Híbrido (Servicios) -->
-          <div class="space-y-1 relative">
-            <label class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Motivo de la Consulta</label>
-            <input
-              [ngModel]="patientForm.reason"
-              (input)="onReasonInput($event)"
-              (focus)="showServiceDropdown = true"
-              type="text"
-              placeholder="Ej. Dolor agudo o selecciona servicio..."
-              class="w-full border rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-500 shadow-inner"
-              style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"
+          <div>
+            <span
+              class="text-[10px] font-black uppercase tracking-widest"
+              style="color: var(--text-muted)"
+              >Horario Reservado</span
             >
-            @if (showServiceDropdown && filteredServices.length > 0) {
-              <div class="absolute left-0 right-0 z-50 mt-1 max-h-36 overflow-y-auto border rounded-2xl shadow-xl py-1" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                @for (s of filteredServices; track s.id) {
-                  <div (click)="selectServiceReason(s)" class="px-4 py-2 text-xs font-bold cursor-pointer hover:bg-blue-500/10 transition-colors flex justify-between items-center" style="color: var(--text-main);">
-                    <span>{{ s.nombre }}</span>
-                    <span class="text-[10px] font-semibold text-blue-500">${{ s.precioFinal }}</span>
-                  </div>
-                }
-              </div>
-            }
+            <p class="font-bold text-blue-400">
+              {{ selectedAppointment().time }} hrs –
+              {{ selectedAppointment().endTime || 'N/A' }} hrs ({{
+                selectedAppointment().durationLabel
+              }})
+            </p>
+          </div>
+
+          <div>
+            <span
+              class="text-[10px] font-black uppercase tracking-widest"
+              style="color: var(--text-muted)"
+              >Teléfono de Contacto</span
+            >
+            <p class="font-medium" style="color: var(--text-main)">
+              {{ selectedAppointment().phone || 'No registrado' }}
+            </p>
+          </div>
+
+          <div>
+            <span
+              class="text-[10px] font-black uppercase tracking-widest"
+              style="color: var(--text-muted)"
+              >Correo Electrónico</span
+            >
+            <p class="font-medium" style="color: var(--text-main)">
+              {{ selectedAppointment().email || 'No registrado' }}
+            </p>
+          </div>
+
+          <div>
+            <span
+              class="text-[10px] font-black uppercase tracking-widest"
+              style="color: var(--text-muted)"
+              >Motivo de Consulta</span
+            >
+            <p class="font-medium" style="color: var(--text-main)">
+              {{ selectedAppointment().reason || 'Sin motivo especificado' }}
+            </p>
           </div>
         </div>
 
-        <button (click)="saveAppointment()" [disabled]="isSaving" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2">
-          @if (isSaving) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>Guardando cita...</span>
+        <app-appointment-billing
+          [appointment]="selectedAppointment()"
+          (updated)="selectedAppointment.set($event)"
+        />
+        <!-- 💡 Botones de acción dinámicos -->
+        <div class="flex flex-col gap-2 pt-2">
+          @if (selectedAppointment().status === 2) {
+            <button
+              (click)="reassignAppointment()"
+              class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20"
+              appPermission="calendar:write"
+            >
+              Reasignar Horario
+            </button>
           } @else {
-            <span>Guardar Cita</span>
+            <button
+              (click)="promptCancelAppointment()"
+              class="w-full bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 border border-amber-500/30 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              appPermission="calendar:write"
+            >
+              Cancelar Cita
+            </button>
           }
-        </button>
-      </div>
-    }
-
-  </div>
-}
-
-<!-- ================= MODAL DE DETALLE DE CITA ================= -->
-@if (isAppointmentDetailModalOpen() && selectedAppointment()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-    <div class="border w-full max-w-md rounded-[2.5rem] p-7 shadow-2xl relative space-y-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <button (click)="closeAppointmentDetailModal()" class="absolute right-6 top-6 cursor-pointer" style="color: var(--text-muted);">
-        <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
-      </button>
-
-      <div>
-        <h3 class="text-lg font-black uppercase tracking-tight text-blue-500">Detalles de la Cita</h3>
-        <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted);">Fecha: {{ selectedAppointment().date }}</p>
-      </div>
-
-      <div class="space-y-3 text-xs">
-        <div>
-          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Paciente</span>
-          <p class="font-black text-sm" style="color: var(--text-main);">{{ selectedAppointment().patientName }}</p>
-        </div>
-
-        <div>
-          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Horario Reservado</span>
-          <p class="font-bold text-blue-400">{{ selectedAppointment().time }} hrs – {{ selectedAppointment().endTime || 'N/A' }} hrs ({{ selectedAppointment().durationLabel }})</p>
-        </div>
-
-        <div>
-          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Teléfono de Contacto</span>
-          <p class="font-medium" style="color: var(--text-main);">{{ selectedAppointment().phone || 'No registrado' }}</p>
-        </div>
-
-        <div>
-          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Correo Electrónico</span>
-          <p class="font-medium" style="color: var(--text-main);">{{ selectedAppointment().email || 'No registrado' }}</p>
-        </div>
-
-        <div>
-          <span class="text-[10px] font-black uppercase tracking-widest" style="color: var(--text-muted);">Motivo de Consulta</span>
-          <p class="font-medium" style="color: var(--text-main);">{{ selectedAppointment().reason || 'Sin motivo especificado' }}</p>
-        </div>
-      </div>
-
-      <!-- 💡 Botones de acción dinámicos -->
-      <div class="flex flex-col gap-2 pt-2">
-        @if (selectedAppointment().status === 2) {
-          <button (click)="reassignAppointment()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20">
-            Reasignar Horario
+          <button
+            (click)="closeAppointmentDetailModal()"
+            class="w-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer"
+          >
+            Cerrar
           </button>
-        } @else {
-          <button (click)="promptCancelAppointment()" class="w-full bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 border border-amber-500/30 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5">
-            Cancelar Cita
-          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ================= DIÁLOGO DE CONFIRMACIÓN DE CANCELACIÓN ================= -->
+  @if (showCancelConfirmModal) {
+    <div
+      class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in"
+    >
+      <div
+        class="border w-full max-w-sm rounded-[2.5rem] p-7 shadow-2xl relative space-y-5 text-center"
+        style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+      >
+        <div
+          class="w-14 h-14 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-sm"
+        >
+          <lucide-icon [img]="icons.Clock" class="w-7 h-7"></lucide-icon>
+        </div>
+        <div>
+          <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main)">
+            ¿Cancelar Cita?
+          </h3>
+          <p class="text-xs font-medium mt-1" style="color: var(--text-muted)">
+            Estás a punto de cancelar la cita de
+            <span class="font-bold" style="color: var(--text-main)">{{
+              selectedAppointment()?.patientName
+            }}</span
+            >.
+          </p>
+        </div>
+
+        @if (cancelSuccessMessage()) {
+          <div
+            class="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 rounded-2xl text-xs font-black animate-in fade-in"
+          >
+            {{ cancelSuccessMessage() }}
+          </div>
         }
-        <button (click)="closeAppointmentDetailModal()" class="w-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer">
-          Cerrar
-        </button>
-      </div>
-    </div>
-  </div>
-}
 
-<!-- ================= DIÁLOGO DE CONFIRMACIÓN DE CANCELACIÓN ================= -->
-@if (showCancelConfirmModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-    <div class="border w-full max-w-sm rounded-[2.5rem] p-7 shadow-2xl relative space-y-5 text-center" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="w-14 h-14 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-sm">
-        <lucide-icon [img]="icons.Clock" class="w-7 h-7"></lucide-icon>
-      </div>
-      <div>
-        <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main);">¿Cancelar Cita?</h3>
-        <p class="text-xs font-medium mt-1" style="color: var(--text-muted);">Estás a punto de cancelar la cita de <span class="font-bold" style="color: var(--text-main);">{{ selectedAppointment()?.patientName }}</span>.</p>
-      </div>
-
-      @if (cancelSuccessMessage()) {
-        <div class="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 rounded-2xl text-xs font-black animate-in fade-in">
-          {{ cancelSuccessMessage() }}
+        <div class="flex gap-2">
+          <button
+            (click)="showCancelConfirmModal = false"
+            [disabled]="isCancelling"
+            class="min-w-0 flex-1 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer"
+          >
+            Volver
+          </button>
+          <button
+            (click)="executeCancelAppointment()"
+            [appPermissionDisabled]="isCancelling"
+            class="min-w-0 flex-1 bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2"
+            appPermission="calendar:write"
+          >
+            @if (isCancelling) {
+              <div
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></div>
+              <span>Cancelando...</span>
+            } @else {
+              <span>Sí, Cancelar</span>
+            }
+          </button>
         </div>
-      }
-
-      <div class="flex gap-2">
-        <button (click)="showCancelConfirmModal = false" [disabled]="isCancelling" class="flex-1 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer">
-          Volver
-        </button>
-        <button (click)="executeCancelAppointment()" [disabled]="isCancelling" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2">
-          @if (isCancelling) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>Cancelando...</span>
-          } @else {
-            <span>Sí, Cancelar</span>
-          }
-        </button>
       </div>
     </div>
-  </div>
-}
-@if (showCancelConfirmModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-    <div class="border w-full max-w-sm rounded-[2.5rem] p-7 shadow-2xl relative space-y-5 text-center" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="w-14 h-14 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-sm">
-        <lucide-icon [img]="icons.Clock" class="w-7 h-7"></lucide-icon>
-      </div>
-      <div>
-        <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main);">¿Cancelar Cita?</h3>
-        <p class="text-xs font-medium mt-1" style="color: var(--text-muted);">Estás a punto de cancelar la cita de <span class="font-bold" style="color: var(--text-main);">{{ selectedAppointment()?.patientName }}</span>.</p>
-      </div>
-
-      @if (cancelSuccessMessage()) {
-        <div class="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 rounded-2xl text-xs font-black animate-in fade-in">
-          {{ cancelSuccessMessage() }}
+  }
+  @if (showCancelConfirmModal) {
+    <div
+      class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in"
+    >
+      <div
+        class="border w-full max-w-sm rounded-[2.5rem] p-7 shadow-2xl relative space-y-5 text-center"
+        style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+      >
+        <div
+          class="w-14 h-14 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-sm"
+        >
+          <lucide-icon [img]="icons.Clock" class="w-7 h-7"></lucide-icon>
         </div>
-      }
+        <div>
+          <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main)">
+            ¿Cancelar Cita?
+          </h3>
+          <p class="text-xs font-medium mt-1" style="color: var(--text-muted)">
+            Estás a punto de cancelar la cita de
+            <span class="font-bold" style="color: var(--text-main)">{{
+              selectedAppointment()?.patientName
+            }}</span
+            >.
+          </p>
+        </div>
 
-      <div class="flex gap-2">
-        <button (click)="showCancelConfirmModal = false" [disabled]="isCancelling" class="flex-1 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer">
-          Volver
-        </button>
-        <button (click)="executeCancelAppointment()" [disabled]="isCancelling" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2">
-          @if (isCancelling) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>Cancelando...</span>
-          } @else {
-            <span>Sí, Cancelar</span>
-          }
+        @if (cancelSuccessMessage()) {
+          <div
+            class="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 rounded-2xl text-xs font-black animate-in fade-in"
+          >
+            {{ cancelSuccessMessage() }}
+          </div>
+        }
+
+        <div class="flex gap-2">
+          <button
+            (click)="showCancelConfirmModal = false"
+            [disabled]="isCancelling"
+            class="min-w-0 flex-1 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer"
+          >
+            Volver
+          </button>
+          <button
+            (click)="executeCancelAppointment()"
+            [appPermissionDisabled]="isCancelling"
+            class="min-w-0 flex-1 bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2"
+            appPermission="calendar:write"
+          >
+            @if (isCancelling) {
+              <div
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></div>
+              <span>Cancelando...</span>
+            } @else {
+              <span>Sí, Cancelar</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+  <!-- ================= DIÁLOGO DE ÉXITO ================= -->
+  @if (showSuccessModal) {
+    <div
+      class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in"
+    >
+      <div
+        class="border w-full max-w-sm rounded-[2.5rem] p-7 shadow-2xl relative space-y-5 text-center"
+        style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+      >
+        <div
+          class="w-14 h-14 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-sm"
+        >
+          <lucide-icon [img]="icons.CheckCircle2" class="w-7 h-7"></lucide-icon>
+        </div>
+        <div>
+          <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main)">
+            ¡Cita Agendada!
+          </h3>
+          <p class="text-xs font-medium mt-1" style="color: var(--text-muted)">
+            El paciente y su rango de horario se registraron correctamente.
+          </p>
+        </div>
+        <button
+          (click)="showSuccessModal = false"
+          class="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-emerald-500/20"
+        >
+          Aceptar
         </button>
       </div>
     </div>
-  </div>
-}
-<!-- ================= DIÁLOGO DE ÉXITO ================= -->
-@if (showSuccessModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-    <div class="border w-full max-w-sm rounded-[2.5rem] p-7 shadow-2xl relative space-y-5 text-center" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="w-14 h-14 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-sm">
-        <lucide-icon [img]="icons.CheckCircle2" class="w-7 h-7"></lucide-icon>
-      </div>
-      <div>
-        <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main);">¡Cita Agendada!</h3>
-        <p class="text-xs font-medium mt-1" style="color: var(--text-muted);">El paciente y su rango de horario se registraron correctamente.</p>
-      </div>
-      <button (click)="showSuccessModal = false" class="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 py-3.5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-emerald-500/20">
-        Aceptar
-      </button>
-    </div>
-  </div>
-}
+  }
+</div>

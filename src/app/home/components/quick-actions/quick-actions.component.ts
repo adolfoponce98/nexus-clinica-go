@@ -6,7 +6,7 @@ import { LucideAngularModule, Activity, ChevronRight } from 'lucide-angular';
   selector: 'app-quick-actions',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
-  templateUrl: './quick-actions.component.html'
+  templateUrl: './quick-actions.component.html',
 })
 export class QuickActionsComponent {
   readonly Activity = Activity;

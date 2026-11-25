@@ -14,14 +14,14 @@ import {
   CheckCircle2,
   Layers,
   HelpCircle,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-angular';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule],
-  templateUrl: './layout.component.html'
+  templateUrl: './layout.component.html',
 })
 export class LayoutComponent {
   // Iconos para el menú y componentes visuales del sidebar

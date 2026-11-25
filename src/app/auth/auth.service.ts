@@ -1,20 +1,31 @@
-import { Injectable } from '@angular/core';
+import { uniqueAppointments } from './appointment-cache';
+import { browserDevice } from './browser-device';
+import { clearSyncCache } from './sync-cache';
+import { versionedFetch } from './sync-cache';
+import { API_URLS } from '../config/api-urls';
+import { SECURITY_CONFIG } from '../config/security.config';
+import * as CryptoJS from 'crypto-js';
+import { Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  readonly sessionRevision = signal(0);
   private readonly STORAGE_KEY = 'cliniq-go-session';
   private readonly STORAGE_SUCURSAL = 'cliniq-go-sucursal_data';
-  private readonly STORAGE_PATIENTS = 'cliniq-go-patients_cache';
-  private readonly STORAGE_SYNC_DATE = 'cliniq-go-patients_sync_date';
+  private readonly STORAGE_PATIENTS = 'cliniq-go-patients_cache:v2';
+  private readonly STORAGE_SYNC_DATE = 'cliniq-go-patients_sync_date:v2';
 
   // 🆕 Nuevas constantes para el manejo local de próximas citas
   private readonly STORAGE_APPOINTMENTS = 'cliniq-go-appointments_cache';
   private readonly STORAGE_APPOINTMENTS_SYNC_DATE = 'cliniq-go-appointments_sync_date';
   // 🆕 Constante para la caché del listado completo de consultorios
   private readonly STORAGE_ALL_BRANCHES = 'cliniq-go-all_branches_cache';
-  
+
   // 🆕 Constante para almacenar localmente el token FCM del navegador
   private readonly STORAGE_FCM_TOKEN = 'cliniq-go-fcm_token';
+
+  private patientsUpdatedSource = new Subject<void>();
+  readonly patientsUpdated$ = this.patientsUpdatedSource.asObservable();
 
   private appointmentsUpdatedSource = new Subject<void>();
   appointmentsUpdated$ = this.appointmentsUpdatedSource.asObservable();
@@ -34,7 +45,7 @@ export class AuthService {
   // 🆕 Actualizar los servicios dentro de un consultorio específico en la lista general de sucursales
   updateServicesInBranch(branchId: string, services: any[]) {
     const branches = this.getAllBranches();
-    const updatedBranches = branches.map(b => {
+    const updatedBranches = branches.map((b) => {
       const currentId = b.idConsultorio || b.id;
       if (currentId === branchId) {
         return { ...b, services: services };
@@ -50,7 +61,9 @@ export class AuthService {
 
   // 🆕 Guardar el listado completo de consultorios
   saveAllBranches(branches: any[]) {
+    branches = branches.filter((branch) => branch.active !== false && branch.status !== 'disabled');
     localStorage.setItem(this.STORAGE_ALL_BRANCHES, JSON.stringify(branches));
+    this.selectAvailableBranch(branches);
   }
 
   // 🆕 Obtener el listado completo de consultorios de la caché
@@ -60,60 +73,293 @@ export class AuthService {
   }
 
   // 🔄 Sustituye este método en tu AuthService
-  saveCachedAppointments(appointments: any[], overwrite: boolean = false) {
-    console.log(appointments);
-    if (overwrite) {
-      // Si se indica overwrite (útil para borrados o reemplazos limpios), guardamos la lista tal cual
-      localStorage.setItem(this.STORAGE_APPOINTMENTS, JSON.stringify(appointments));
-    } else {
-      // Comportamiento de fusión anterior
-      const currentCached = this.getCachedAppointments();
-      const mergedMap = new Map();
-      [...currentCached, ...appointments].forEach(app => {
-        const key = app.syncId || app.id;
-        mergedMap.set(key, app);
-      });
-      const combinedList = Array.from(mergedMap.values());
-      localStorage.setItem(this.STORAGE_APPOINTMENTS, JSON.stringify(combinedList));
-
-      if (appointments.length > 0) {
-        const latest = appointments[appointments.length - 1];
-        const newSyncValue = latest.syncId || new Date().toISOString();
-        localStorage.setItem(this.STORAGE_APPOINTMENTS_SYNC_DATE, newSyncValue);
-      }
-    }
+  saveCachedAppointments(appointments: any[], overwrite: boolean = false, serverVersion?: string) {
+    const appointmentsToStore = uniqueAppointments(
+      overwrite ? appointments : [...this.getCachedAppointments(), ...appointments],
+    );
+    localStorage.setItem(
+      this.scopedKey(this.STORAGE_APPOINTMENTS),
+      JSON.stringify(appointmentsToStore),
+    );
 
     // 🚀 Notificar a todos los componentes suscritos que la caché cambió
+    if (serverVersion)
+      localStorage.setItem(this.scopedKey(this.STORAGE_APPOINTMENTS_SYNC_DATE), serverVersion);
     this.notifyAppointmentsUpdated();
   }
 
+  private scopedKey(key: string): string {
+    const raw = localStorage.getItem(this.STORAGE_KEY),
+      session = raw ? JSON.parse(raw) : {};
+    const office = this.getSucursal();
+    return (
+      key +
+      ':' +
+      JSON.stringify([
+        session.email || '',
+        session.idDoctor || session.email || '',
+        office?.idConsultorio || office?.id || '',
+      ])
+    );
+  }
+
   clearBranchCache() {
-    localStorage.removeItem(this.STORAGE_PATIENTS);
-    localStorage.removeItem(this.STORAGE_SYNC_DATE);
-    localStorage.removeItem(this.STORAGE_APPOINTMENTS);
-    localStorage.removeItem(this.STORAGE_APPOINTMENTS_SYNC_DATE);
+    localStorage.removeItem(this.scopedKey(this.STORAGE_PATIENTS));
+    localStorage.removeItem(this.scopedKey(this.STORAGE_SYNC_DATE));
+    localStorage.removeItem(this.scopedKey(this.STORAGE_APPOINTMENTS));
+    localStorage.removeItem(this.scopedKey(this.STORAGE_APPOINTMENTS_SYNC_DATE));
     // Nota: Mantenemos STORAGE_KEY (sesión) y STORAGE_SUCURSAL (se actualizará con la nueva)
   }
 
+  hasCachedAppointments(): boolean {
+    return localStorage.getItem(this.scopedKey(this.STORAGE_APPOINTMENTS)) !== null;
+  }
+  hasCachedPatients(): boolean {
+    return localStorage.getItem(this.scopedKey(this.STORAGE_PATIENTS)) !== null;
+  }
   getCachedAppointments(): any[] {
-    const data = localStorage.getItem(this.STORAGE_APPOINTMENTS);
-    return data ? JSON.parse(data) : [];
+    const data = localStorage.getItem(this.scopedKey(this.STORAGE_APPOINTMENTS));
+    return data ? uniqueAppointments(JSON.parse(data)) : [];
   }
 
   getLastSyncDateAppointments(): string {
-    return localStorage.getItem(this.STORAGE_APPOINTMENTS_SYNC_DATE) || '';
+    return localStorage.getItem(this.scopedKey(this.STORAGE_APPOINTMENTS_SYNC_DATE)) || '';
   }
 
-  // Guardar datos tras el login
+  private accessToken = '';
+  private refreshInFlight: Promise<string> | null = null;
+  private restoreAttempted = false;
+  private sessionVersion = 0;
+  private sessionQueue: Promise<unknown> = Promise.resolve();
+
+  // Tokens never persist in Web Storage. Metadata is not an authentication credential.
   saveSession(userData: any) {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
+    const { sessionToken, accessToken, refreshToken, ...metadata } = userData;
+    const previous = this.getSession();
+    if (previous?.email && metadata.email && previous.email !== metadata.email) {
+      this.clearBranchCache();
+      localStorage.removeItem(this.STORAGE_SUCURSAL);
+      localStorage.removeItem(this.STORAGE_ALL_BRANCHES);
+      localStorage.removeItem(this.STORAGE_FCM_TOKEN);
+    }
+    this.accessToken = sessionToken || accessToken || this.accessToken;
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(metadata));
+    this.restoreAttempted = true;
+    this.sessionRevision.update((v) => v + 1);
+  }
+
+  private withSessionLock<T>(operation: () => Promise<T>): Promise<T> {
+    // Serialize within this tab even on browsers without Web Locks.
+    const run = this.sessionQueue.then(async (): Promise<T> => {
+      if (navigator.locks) return await navigator.locks.request('cliniq-go-session', operation);
+      return await operation();
+    });
+    this.sessionQueue = run.catch(() => {});
+    return run;
+  }
+
+  login(url: string, encryptedData: string): Promise<Response> {
+    const payload = JSON.parse(
+      CryptoJS.AES.decrypt(encryptedData, SECURITY_CONFIG.ENCRYPTION_KEY).toString(
+        CryptoJS.enc.Utf8,
+      ),
+    );
+    payload.device = browserDevice();
+    encryptedData = CryptoJS.AES.encrypt(
+      JSON.stringify(payload),
+      SECURITY_CONFIG.ENCRYPTION_KEY,
+    ).toString();
+    if (url !== API_URLS.LOGINUSER && url !== API_URLS.LOGINEMPLOYEE)
+      throw new Error('URL de login inválida');
+    this.sessionVersion++;
+    return this.withSessionLock(() =>
+      versionedFetch(url, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: this.sessionHeaders(),
+        body: JSON.stringify({ encryptedData }),
+      }),
+    );
+  }
+
+  async ensureSession(): Promise<boolean> {
+    if (!this.getSession()) {
+      this.accessToken = '';
+      return false;
+    }
+    if (this.accessToken) return true;
+    if (this.restoreAttempted || !this.getSession()) return false;
+    this.restoreAttempted = true;
+    try {
+      await this.refreshAccessToken();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  refreshAccessToken(): Promise<string> {
+    if (this.refreshInFlight) return this.refreshInFlight;
+    const version = this.sessionVersion;
+    this.refreshInFlight = this.withSessionLock(async () => {
+      if (version !== this.sessionVersion) throw new Error('Sesión cerrada');
+      const response = await versionedFetch(API_URLS.REFRESHTOKEN, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: this.sessionHeaders(),
+        body: JSON.stringify({
+          encryptedData: CryptoJS.AES.encrypt(
+            JSON.stringify({ deviceId: browserDevice().id }),
+            SECURITY_CONFIG.ENCRYPTION_KEY,
+          ).toString(),
+        }),
+      });
+      if (!response.ok) {
+        const error = new Error(
+          response.status === 401 || response.status === 403
+            ? 'La sesión expiró. Inicia sesión nuevamente.'
+            : 'No se pudo renovar la sesión. Intenta nuevamente.',
+        );
+        error.name =
+          response.status === 401 || response.status === 403
+            ? 'SessionExpiredError'
+            : 'SessionUnavailableError';
+        throw error;
+      }
+      const json = await response.json();
+      const data = JSON.parse(
+        CryptoJS.AES.decrypt(json.encryptedData, SECURITY_CONFIG.ENCRYPTION_KEY).toString(
+          CryptoJS.enc.Utf8,
+        ),
+      );
+      if (!data.success || !data.accessToken || version !== this.sessionVersion) {
+        const error = new Error('Sesión inválida o cerrada');
+        error.name = 'SessionExpiredError';
+        throw error;
+      }
+      this.updateSessionToken(data.accessToken);
+      return this.accessToken;
+    }).finally(() => {
+      this.refreshInFlight = null;
+    });
+    return this.refreshInFlight;
+  }
+
+  private sessionHeaders(): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'x-app-signature': SECURITY_CONFIG.APP_SECRET_HEADER,
+      'x-client-source': 'angular',
+      'x-session-request': '1',
+    };
+  }
+
+  clearSession() {
+    this.sessionRevision.update((v) => v + 1);
+    clearSyncCache();
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (
+        key &&
+        [
+          'cliniq-go-patients_cache:',
+          'cliniq-go-patients_sync_date:',
+          'cliniq-go-appointments_cache:',
+          'cliniq-go-appointments_sync_date:',
+        ].some((prefix) => key.startsWith(prefix))
+      )
+        localStorage.removeItem(key);
+    }
+    this.sessionVersion++;
+    this.accessToken = '';
+    this.restoreAttempted = true;
+    for (const key of [
+      this.STORAGE_KEY,
+      this.STORAGE_PATIENTS,
+      this.STORAGE_SUCURSAL,
+      this.STORAGE_SYNC_DATE,
+      this.STORAGE_ALL_BRANCHES,
+      this.STORAGE_APPOINTMENTS,
+      this.STORAGE_APPOINTMENTS_SYNC_DATE,
+      this.STORAGE_FCM_TOKEN,
+    ])
+      localStorage.removeItem(key);
+  }
+
+  async logout(): Promise<void> {
+    const session = this.getSession(),
+      office = this.getSucursal();
+    const logoutPayload = {
+      deviceId: browserDevice().id,
+      idDoctor: session?.idDoctor || session?.email,
+      idConsultorio: office?.idConsultorio || office?.id,
+    };
+    this.clearSession();
+    await this.withSessionLock(async () => {
+      const response = await versionedFetch(API_URLS.LOGOUT_SESSION, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: this.sessionHeaders(),
+        body: JSON.stringify({
+          encryptedData: CryptoJS.AES.encrypt(
+            JSON.stringify(logoutPayload),
+            SECURITY_CONFIG.ENCRYPTION_KEY,
+          ).toString(),
+        }),
+      });
+      if (!response.ok)
+        throw new Error('No se pudo cerrar la sesión en el servidor. Intenta nuevamente.');
+    });
+  }
+
+  private preferredOfficeKey(): string | null {
+    const session = this.getSession();
+    return session?.email
+      ? 'cliniq-go-preferred-office:' +
+          JSON.stringify([session.email, session.idDoctor || session.email])
+      : null;
+  }
+
+  initializeEmployeeOffice(): void {
+    const session = this.getSession();
+    if (!session?.idDoctor) return;
+    const allowed: string[] = session.allowedOfficeIds || [session.idConsultorio].filter(Boolean);
+    const key = this.preferredOfficeKey(),
+      preferred = key ? localStorage.getItem(key) : null;
+    const id = preferred && allowed.includes(preferred) ? preferred : allowed[0];
+    if (id) this.saveSucursal({ idConsultorio: id });
+  }
+
+  private selectAvailableBranch(branches: any[]): void {
+    const session = this.getSession();
+    if (!session) return;
+    const allowed = session.idDoctor ? session.allowedOfficeIds || [session.idConsultorio] : null;
+    const available = branches.filter((b) => !allowed || allowed.includes(b.idConsultorio || b.id));
+    const key = this.preferredOfficeKey(),
+      preferred = key ? localStorage.getItem(key) : null;
+    const current = this.getSucursal(),
+      currentId = current?.idConsultorio || current?.id;
+    const selected =
+      available.find((b) => (b.idConsultorio || b.id) === preferred) ||
+      available.find((b) => (b.idConsultorio || b.id) === currentId) ||
+      available[0];
+    if (selected) this.saveSucursal(selected);
+    else {
+      this.clearBranchCache();
+      localStorage.removeItem(this.STORAGE_SUCURSAL);
+      if (currentId) this.branchChangedSource.next('');
+    }
   }
 
   saveSucursal(userData: any) {
+    const previous = this.getSucursal(),
+      previousId = previous?.idConsultorio || previous?.id;
     localStorage.setItem(this.STORAGE_SUCURSAL, JSON.stringify(userData));
     const branchId = userData?.idConsultorio || userData?.id;
     if (branchId) {
-      this.branchChangedSource.next(branchId);
+      const key = this.preferredOfficeKey();
+      if (key) localStorage.setItem(key, branchId);
+      if (branchId !== previousId) this.branchChangedSource.next(branchId);
     }
   }
 
@@ -131,13 +377,8 @@ export class AuthService {
     }
   }
 
-  updateSessionTokens(newToken: string, newRefreshToken: string) {
-    const currentSession = this.getSession();
-    if (currentSession) {
-      currentSession.sessionToken = newToken;
-      currentSession.refreshToken = newRefreshToken; // Actualiza el refresh token rotado
-      this.saveSession(currentSession);
-    }
+  updateSessionTokens(newToken: string, _newRefreshToken?: string) {
+    this.updateSessionToken(newToken);
   }
 
   // 🆕 Gestión local del Token FCM
@@ -150,42 +391,36 @@ export class AuthService {
   }
 
   // 🔄 Gestión de caché de pacientes y fecha de sincronización
-  saveCachedPatients(patients: any[]) {
-    localStorage.setItem(this.STORAGE_PATIENTS, JSON.stringify(patients));
-    const now = new Date();
-    const formattedDate = now.toISOString().slice(0, 19).replace('T', ' '); // Formato: YYYY-MM-DD HH:MM:SS
-    localStorage.setItem(this.STORAGE_SYNC_DATE, formattedDate);
+  saveCachedPatients(patients: any[], serverVersion?: string) {
+    localStorage.setItem(this.scopedKey(this.STORAGE_PATIENTS), JSON.stringify(patients));
+    if (serverVersion) localStorage.setItem(this.scopedKey(this.STORAGE_SYNC_DATE), serverVersion);
+    this.patientsUpdatedSource.next();
   }
 
   getCachedPatients(): any[] {
-    const data = localStorage.getItem(this.STORAGE_PATIENTS);
+    const data = localStorage.getItem(this.scopedKey(this.STORAGE_PATIENTS));
     return data ? JSON.parse(data) : [];
   }
 
   getLastSyncDatePatients(): string {
-    return localStorage.getItem(this.STORAGE_SYNC_DATE) || ''; // Si está vacío, el servidor sabrá que debe mandar todo
+    return localStorage.getItem(this.scopedKey(this.STORAGE_SYNC_DATE)) || ''; // Si está vacío, el servidor sabrá que debe mandar todo
   }
 
-  // Obtener datos para otros servicios
   getSession() {
-    const data = localStorage.getItem(this.STORAGE_KEY);
-    return data ? JSON.parse(data) : null;
+    const raw = localStorage.getItem(this.STORAGE_KEY);
+    if (!raw) return null;
+    try {
+      const { sessionToken, accessToken, refreshToken, ...metadata } = JSON.parse(raw);
+      if (sessionToken || accessToken || refreshToken)
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(metadata));
+      return { ...metadata, sessionToken: this.accessToken };
+    } catch {
+      localStorage.removeItem(this.STORAGE_KEY);
+      return null;
+    }
   }
 
-  // Verificar si hay sesión activa
   isLoggedIn(): boolean {
-    return !!localStorage.getItem(this.STORAGE_KEY);
-  }
-
-  // Logout
-  logout() {
-    localStorage.removeItem(this.STORAGE_KEY);
-    localStorage.removeItem(this.STORAGE_PATIENTS);
-    localStorage.removeItem(this.STORAGE_SUCURSAL);
-    localStorage.removeItem(this.STORAGE_SYNC_DATE);
-    localStorage.removeItem(this.STORAGE_ALL_BRANCHES);
-    localStorage.removeItem(this.STORAGE_APPOINTMENTS);
-    localStorage.removeItem(this.STORAGE_APPOINTMENTS_SYNC_DATE);
-    localStorage.removeItem(this.STORAGE_FCM_TOKEN);
+    return !!this.accessToken;
   }
 }

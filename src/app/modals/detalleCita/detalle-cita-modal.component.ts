@@ -1,22 +1,51 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  LucideAngularModule, Calendar, Clock, User, Phone, Mail, MessageSquare,
-  CheckCircle2, X, Scissors, Sparkles, Copy, DollarSign, FileText, Activity,
-  ArrowRight, ShieldCheck, Star
+  LucideAngularModule,
+  Calendar,
+  Clock,
+  User,
+  Phone,
+  Mail,
+  MessageSquare,
+  CheckCircle2,
+  X,
+  Scissors,
+  Sparkles,
+  Copy,
+  DollarSign,
+  FileText,
+  Activity,
+  ArrowRight,
+  ShieldCheck,
+  Star,
 } from 'lucide-angular';
 
 @Component({
   selector: 'app-detalle-cita-modal',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
-  templateUrl: 'detalle-cita-modal.component.html'
+  templateUrl: 'detalle-cita-modal.component.html',
 })
 export class DetalleCitaModalComponent {
   readonly icons = {
-    Calendar, Clock, User, Phone, Mail, MessageSquare,
-    CheckCircle2, X, Scissors, Sparkles, Copy, DollarSign, FileText, Activity,
-    ArrowRight, ShieldCheck, Star
+    Calendar,
+    Clock,
+    User,
+    Phone,
+    Mail,
+    MessageSquare,
+    CheckCircle2,
+    X,
+    Scissors,
+    Sparkles,
+    Copy,
+    DollarSign,
+    FileText,
+    Activity,
+    ArrowRight,
+    ShieldCheck,
+    Star,
   };
 
   @Input() citaData: any = {
@@ -39,7 +68,8 @@ export class DetalleCitaModalComponent {
     totalPrice: 68000,
     depositPaid: 20000,
     pendingBalance: 48000,
-    aiSummary: 'El cliente completó los 3 pasos de reserva automáticamente en menos de 90 segundos. Se programó el recordatorio para 2 horas antes de la cita.'
+    aiSummary:
+      'El cliente completó los 3 pasos de reserva automáticamente en menos de 90 segundos. Se programó el recordatorio para 2 horas antes de la cita.',
   };
 
   @Output() close = new EventEmitter<void>();

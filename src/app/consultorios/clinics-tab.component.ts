@@ -1,234 +1,294 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { OfficeCardDetailsComponent } from './office-card-details.component';
+import { DirectorySkeletonComponent } from '../shared/directory-skeleton.component';
+import { CreationAccessService } from '../planes/creation-access.service';
+import { Component, inject, signal, ViewChild, ElementRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import {
-  LucideAngularModule, Building2, Plus, Trash2, Search,
-  ArrowLeft, Eye, Edit3, MapPin, Users, Stethoscope, Save, Loader2, KeyRound
+  LucideAngularModule,
+  Building2,
+  Plus,
+  Trash2,
+  Search,
+  ArrowLeft,
+  Eye,
+  Edit3,
+  MapPin,
+  Users,
+  Save,
+  Loader2,
+  KeyRound,
+  Phone,
+  Globe,
+  FileText,
+  Accessibility,
+  ShieldCheck,
+  TriangleAlert,
+  X,
+  Clock,
+  ChevronRight,
 } from 'lucide-angular';
+import { PlanUsageComponent } from '../planes/plan-usage.component';
+import { BillingService } from '../planes/billing.service';
+import { PermissionDirective } from '../auth/permission.directive';
+import { PermissionService } from '../auth/permission.service';
+import { ClinicApiService } from '../reporting/clinic-api.service';
 import { AuthService } from '../auth/auth.service';
-import * as CryptoJS from 'crypto-js';
-
-interface Consultorio {
-  id: number | string;
-  idConsultorio?: string;
-  name: string;
-  city: string;
-  address: string;
-  postalCode: string;
-  additionalInfo: string;
-  website: string;
-  phoneMain: string;
-  phoneSecondary: string;
-  codigoConsultorio?: string; // Solo para lectura desde el backend
-  accessibility: {
-    wheelchair: boolean;
-    pregnantOrKids: boolean;
-    visualDisability: boolean;
-    hearingDisability: boolean;
-  };
-  directions: string;
-  paymentMethods: {
-    creditCard: boolean;
-    cash: boolean;
-    paypal: boolean;
-    debitCard: boolean;
-    transfer: boolean;
-  };
-  services: Array<{ name: string; price: number }>;
-  insurancePolicy: string;
-  patientTypes: {
-    adults: boolean;
-    children: boolean;
-  };
-  totalPatients: number;
-  totalDoctors: number;
-}
-
+import { OfficeSyncService } from '../auth/office-sync.service';
+import { API_URLS } from '../config/api-urls';
+import { OfficeHoursEditorComponent } from '../scheduling/office-hours-editor.component';
+import { normalizeOfficeHours } from '../scheduling/office-hours';
 @Component({
   selector: 'app-clinics-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
-  templateUrl: './clinics-tab.component.html'
+  imports: [
+    OfficeCardDetailsComponent,
+    DirectorySkeletonComponent,
+    CommonModule,
+    FormsModule,
+    LucideAngularModule,
+    PlanUsageComponent,
+    PermissionDirective,
+    OfficeHoursEditorComponent,
+  ],
+  templateUrl: './clinics-tab.component.html',
+  styleUrl: './clinics-tab.component.css',
 })
-export class ClinicsComponent implements OnInit {
-  private authService = inject(AuthService);
-
+export class ClinicsComponent implements OnInit, OnDestroy {
+  readonly billing = inject(BillingService);
+  private readonly creationAccess = inject(CreationAccessService);
+  readonly permissions = inject(PermissionService);
+  private readonly api = inject(ClinicApiService);
+  private readonly auth = inject(AuthService);
+  private readonly sync = inject(OfficeSyncService);
+  private readonly subscriptions = new Subscription();
   readonly icons = {
-    Building2, Plus, Trash2, Search, ArrowLeft,
-    Eye, Edit3, MapPin, Users, Stethoscope, Save, Loader2, KeyRound
+    Building2,
+    Plus,
+    Trash2,
+    Search,
+    ArrowLeft,
+    Eye,
+    Edit3,
+    MapPin,
+    Users,
+    Save,
+    Loader2,
+    KeyRound,
+    Phone,
+    Globe,
+    FileText,
+    Accessibility,
+    ShieldCheck,
+    TriangleAlert,
+    X,
+    Clock,
+    ChevronRight,
   };
-
-  private readonly SAVE_URL = 'https://saveorupdateconsultorio-o7vmreizjq-uc.a.run.app';
-  private readonly GET_URL = 'https://getdoctorsoffice-o7vmreizjq-uc.a.run.app';
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
-
+  @ViewChild('disableDialog') private disableDialog?: ElementRef<HTMLDialogElement>;
+  @ViewChild('feedbackDialog') private feedbackDialog?: ElementRef<HTMLDialogElement>;
+  @ViewChild(OfficeHoursEditorComponent) private hoursEditor?: OfficeHoursEditorComponent;
+  consultorios = signal<any[]>([]);
+  selectedConsultorio = signal<any | null>(null);
+  isLoading = signal(true);
+  busy = signal(false);
+  loadError = signal('');
+  operationError = signal('');
+  feedback = signal('');
+  disableTarget = signal<any | null>(null);
   searchQuery = '';
-  selectedConsultorio = signal<Consultorio | null>(null);
   isEditingMode = false;
-  activeIdx = 0;
-  isLoading = signal<boolean>(true);
-
-  consultorios = signal<Consultorio[]>([]);
-
-  filteredConsultorios = computed(() => {
-    const q = this.searchQuery.toLowerCase();
-    return this.consultorios().filter(c => c.name.toLowerCase().includes(q) || c.city.toLowerCase().includes(q));
-  });
-
-  ngOnInit() {
-    this.cargarConsultorios();
+  readonly fields = [
+    {
+      key: 'name',
+      label: 'Nombre del consultorio',
+      icon: Building2,
+      placeholder: 'Ej. Clínica Médica Sur',
+      required: true,
+    },
+    {
+      key: 'establishmentType',
+      label: 'Tipo de establecimiento',
+      icon: Building2,
+      placeholder: 'Consultorio de especialidad',
+    },
+    { key: 'clues', label: 'CLUES del establecimiento', icon: FileText, placeholder: 'Si aplica' },
+    { key: 'address', label: 'Dirección', icon: MapPin, placeholder: 'Calle y número' },
+    { key: 'city', label: 'Ciudad / municipio', icon: MapPin, placeholder: 'Ej. Zapopan, Jalisco' },
+    { key: 'postalCode', label: 'Código postal', icon: MapPin, placeholder: 'Ej. 45030' },
+    {
+      key: 'additionalInfo',
+      label: 'Piso, torre o número interior',
+      icon: Building2,
+      placeholder: 'Información adicional',
+    },
+    {
+      key: 'phoneMain',
+      label: 'Teléfono principal',
+      icon: Phone,
+      placeholder: 'Teléfono de contacto',
+    },
+    { key: 'phoneSecondary', label: 'Teléfono secundario', icon: Phone, placeholder: 'Opcional' },
+    { key: 'website', label: 'Sitio web', icon: Globe, placeholder: 'https://' },
+  ];
+  readonly accessibilityOptions = [
+    { key: 'wheelchair', label: 'Silla de ruedas o muletas' },
+    { key: 'pregnantOrKids', label: 'Personas embarazadas o con niños' },
+    { key: 'visualDisability', label: 'Discapacidad visual' },
+    { key: 'hearingDisability', label: 'Discapacidad auditiva' },
+  ];
+  get canEdit() {
+    return this.isEditingMode && this.permissions.can('consultorios', 'write');
   }
-
+  filteredConsultorios() {
+    const q = this.searchQuery.trim().toLocaleLowerCase();
+    return this.consultorios().filter((c) =>
+      (c.name + ' ' + (c.city || '')).toLocaleLowerCase().includes(q),
+    );
+  }
+  ngOnInit() {
+    this.subscriptions.add(
+      this.sync.updates.subscribe((type) => {
+        if (type === 'offices') void this.cargarConsultorios();
+      }),
+    );
+    void this.cargarConsultorios();
+  }
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+    this.disableDialog?.nativeElement.close();
+    this.feedbackDialog?.nativeElement.close();
+  }
   async cargarConsultorios() {
+    this.isLoading.set(true);
+    this.loadError.set('');
     try {
-      this.isLoading.set(true);
-      const sessionData = this.authService.getSession();
-      const jwtToken = sessionData?.sessionToken;
-
-      if (!jwtToken) return;
-
-      const response = await fetch(this.GET_URL, {
-        method: 'GET',
-        headers: {
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular',
-          'Authorization': `Bearer ${jwtToken}`
-        }
-      });
-
-      const jsonRes = await response.json();
-      if (!response.ok) {
-        throw new Error(jsonRes.error || 'Error al obtener los consultorios.');
-      }
-
-      const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-      if (decryptedData.success && Array.isArray(decryptedData.consultorios)) {
-        const listadoMapeado = decryptedData.consultorios.map((c: any) => ({
+      const data = await this.api.post(API_URLS.GETDOCTORSOFFICE, {});
+      if (!Array.isArray(data.consultorios))
+        throw new Error('No se pudieron consultar los consultorios.');
+      const rows = data.consultorios.filter(
+        (office: any) => office.active !== false && office.status !== 'disabled',
+      );
+      this.consultorios.set(
+        rows.map((c: any) => ({
           ...c,
-          id: c.idConsultorio || c.id || '',
-          codigoConsultorio: c.codigoConsultorio || c.codigoConsultorio || ''
-        }));
-        this.consultorios.set(listadoMapeado);
-      }
-    } catch (err) {
-      console.error('Error al cargar consultorios:', err);
+          id: c.idConsultorio || c.id,
+          accessibility: { ...c.accessibility },
+        })),
+      );
+      this.auth.saveAllBranches(rows);
+    } catch (e: any) {
+      this.loadError.set(e.message);
     } finally {
       this.isLoading.set(false);
     }
   }
-
   addConsultorio() {
-    const nuevo: Consultorio = {
+    if (!this.permissions.can('consultorios', 'write') || !this.creationAccess.allow('offices'))
+      return;
+    this.selectedConsultorio.set({
       id: '',
       name: '',
-      city: '',
-      address: '',
-      postalCode: '',
-      additionalInfo: '',
-      website: '',
-      phoneMain: '',
-      phoneSecondary: '',
-      codigoConsultorio: '',
-      accessibility: { wheelchair: false, pregnantOrKids: false, visualDisability: false, hearingDisability: false },
-      directions: '',
-      paymentMethods: { creditCard: false, cash: true, paypal: false, debitCard: false, transfer: false },
-      services: [{ name: '', price: 0 }],
-      insurancePolicy: 'privateOnly',
-      patientTypes: { adults: true, children: false },
-      totalPatients: 0,
-      totalDoctors: 1
-    };
-    this.selectedConsultorio.set(nuevo);
+      establishmentType: 'Consultorio de especialidad',
+      accessibility: {
+        wheelchair: false,
+        pregnantOrKids: false,
+        visualDisability: false,
+        hearingDisability: false,
+      },
+      paymentMethods: { cash: true },
+      patientTypes: { adults: true },
+    });
     this.isEditingMode = true;
-    this.activeIdx = this.consultorios().length;
   }
-
-  verDetalle(c: Consultorio, index: number) {
-    this.selectedConsultorio.set({ ...c });
-    this.activeIdx = index;
+  verDetalle(c: any, _index?: number) {
+    this.selectedConsultorio.set(structuredClone(c));
     this.isEditingMode = false;
   }
-
-  editarConsultorio(c: Consultorio, index: number) {
-    this.selectedConsultorio.set({ ...c });
-    this.activeIdx = index;
+  editarConsultorio(c: any, _index?: number) {
+    this.selectedConsultorio.set(structuredClone(c));
     this.isEditingMode = true;
   }
-
   regresarAListado() {
-    this.selectedConsultorio.set(null);
-    this.cargarConsultorios();
+    if (!this.busy()) this.selectedConsultorio.set(null);
   }
-
+  private showFeedback(message: string) {
+    this.feedback.set(message);
+    this.feedbackDialog?.nativeElement.showModal();
+  }
+  closeFeedback() {
+    this.feedbackDialog?.nativeElement.close();
+  }
   async guardarConsultorioIndividual() {
+    if (this.busy() || !this.canEdit) return;
+    const office = this.selectedConsultorio();
+    if (!office?.name?.trim()) {
+      this.showFeedback('El nombre del consultorio es obligatorio.');
+      return;
+    }
+    if (this.hoursEditor?.error) {
+      this.showFeedback(this.hoursEditor.error);
+      return;
+    }
+    this.busy.set(true);
     try {
-      const sessionData = this.authService.getSession();
-      const jwtToken = sessionData?.sessionToken;
-
-      if (!jwtToken) {
-        alert('No se encontró una sesión activa. Inicie sesión nuevamente.');
-        return;
-      }
-
-      const consultorioActual = this.selectedConsultorio();
-      if (!consultorioActual || !consultorioActual.name.trim()) {
-        alert('El nombre del consultorio es obligatorio.');
-        return;
-      }
-
-      // Payload sin NIP manual (el backend lo gestiona)
       const payload = {
-        idConsultorio: typeof consultorioActual.id === 'string' && consultorioActual.id !== '' ? consultorioActual.id : null,
-        name: consultorioActual.name,
-        city: consultorioActual.city,
-        address: consultorioActual.address,
-        postalCode: consultorioActual.postalCode,
-        additionalInfo: consultorioActual.additionalInfo,
-        website: consultorioActual.website,
-        phoneMain: consultorioActual.phoneMain,
-        phoneSecondary: consultorioActual.phoneSecondary,
-        accessibility: consultorioActual.accessibility,
-        directions: consultorioActual.directions,
-        paymentMethods: consultorioActual.paymentMethods,
-        services: consultorioActual.services,
-        insurancePolicy: consultorioActual.insurancePolicy,
-        patientTypes: consultorioActual.patientTypes,
-        totalPatients: consultorioActual.totalPatients,
-        totalDoctors: consultorioActual.totalDoctors
+        ...Object.fromEntries(this.fields.map((f) => [f.key, String(office[f.key] || '').trim()])),
+        idConsultorio: office.idConsultorio || office.id || null,
+        officeHours: normalizeOfficeHours(office.officeHours),
+        accessibility: office.accessibility || {},
+        directions: office.directions || '',
+        paymentMethods: office.paymentMethods || {},
+        insurancePolicy: office.insurancePolicy || 'privateOnly',
+        patientTypes: office.patientTypes || {},
       };
-
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-      const response = await fetch(this.SAVE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular',
-          'Authorization': `Bearer ${jwtToken}`
-        },
-        body: JSON.stringify({ encryptedData: ciphertext })
-      });
-
-      const jsonRes = await response.json();
-      if (!response.ok) {
-        throw new Error(jsonRes.error || 'Error al guardar el consultorio.');
-      }
-
-      alert('¡Consultorio guardado/actualizado y sincronizado con éxito!');
+      await this.api.post(API_URLS.SAVEORUPDATECONSULTORIO, payload);
       this.selectedConsultorio.set(null);
-      this.cargarConsultorios();
-
-    } catch (err: any) {
-      console.error('Error al guardar consultorio:', err);
-      alert(err.message || 'Error de conexión con el servidor.');
+      await this.cargarConsultorios();
+      await this.billing.refresh();
+      this.showFeedback('Consultorio guardado correctamente.');
+    } catch (e: any) {
+      this.showFeedback(e.message || 'No se pudo guardar el consultorio.');
+    } finally {
+      this.busy.set(false);
     }
   }
-
-  eliminarConsultorio(id: number | string) {
-    this.consultorios.update(list => list.filter(c => c.id !== id));
+  eliminarConsultorio(id: string | number) {
+    if (this.busy() || !this.permissions.can('consultorios', 'delete')) return;
+    const office = this.consultorios().find((c) => (c.idConsultorio || c.id) === id);
+    if (!office) return;
+    this.disableTarget.set(office);
+    this.operationError.set('');
+    this.disableDialog?.nativeElement.showModal();
+  }
+  closeDisable() {
+    if (!this.busy()) {
+      this.disableDialog?.nativeElement.close();
+      this.disableTarget.set(null);
+    }
+  }
+  async confirmDisable() {
+    const office = this.disableTarget();
+    if (!office || this.busy()) return;
+    this.busy.set(true);
+    this.operationError.set('');
+    try {
+      await this.api.post(API_URLS.DEACTIVATE_OFFICE, {
+        idConsultorio: office.idConsultorio || office.id,
+      });
+      this.consultorios.update((rows) =>
+        rows.filter((c) => (c.idConsultorio || c.id) !== (office.idConsultorio || office.id)),
+      );
+      this.auth.saveAllBranches(this.consultorios());
+      this.disableDialog?.nativeElement.close();
+      this.disableTarget.set(null);
+      await this.cargarConsultorios();
+      await this.billing.refresh();
+    } catch (e: any) {
+      this.operationError.set(e.message || 'No se pudo deshabilitar el consultorio.');
+    } finally {
+      this.busy.set(false);
+    }
   }
 }

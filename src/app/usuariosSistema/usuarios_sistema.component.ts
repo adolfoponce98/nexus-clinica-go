@@ -1,6 +1,20 @@
-import { Component, signal, computed, OnInit, OnDestroy, ChangeDetectorRef, effect } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  effect,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
 import {
   LucideAngularModule,
   UserRoundPen,
@@ -13,7 +27,7 @@ import {
   AlertCircle,
   Shield,
   HeadsetIcon,
-  GraduationCap
+  GraduationCap,
 } from 'lucide-angular';
 import { UsersSystemService, SystemUser } from './usuarios_sistema.service';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -24,7 +38,7 @@ import { Unsubscribe } from 'firebase/firestore';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule, LucideAngularModule],
   providers: [UsersSystemService],
-  templateUrl: 'usuarios_sistem.component.html'
+  templateUrl: 'usuarios_sistem.component.html',
 })
 export class UsersSystemComponent implements OnInit, OnDestroy {
   readonly UserRoundPen = UserRoundPen;
@@ -52,12 +66,20 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
 
   // Catálogo de los 10 colores más contrastantes
   colorOptions = [
-    '#E63946', '#457B9D', '#2A9D8F', '#F4A261', '#9b5de5',
-    '#00F5D4', '#F15BB5', '#FFB703', '#3a86ff', '#6b705c'
+    '#E63946',
+    '#457B9D',
+    '#2A9D8F',
+    '#F4A261',
+    '#9b5de5',
+    '#00F5D4',
+    '#F15BB5',
+    '#FFB703',
+    '#3a86ff',
+    '#6b705c',
   ];
 
   // Formularios
-  userForm: FormGroup;     // Para el modal (Crear)
+  userForm: FormGroup; // Para el modal (Crear)
   editUserForm: FormGroup; // Para el panel lateral (Editar)
 
   photoPreview: string | null = null;
@@ -68,7 +90,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
   constructor(
     private usersSystemService: UsersSystemService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     // Formulario del Modal de Registro
     this.userForm = this.fb.group({
@@ -80,7 +102,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
       birthDate: [''],
       hireDate: [''],
       colorHex: ['#E63946', Validators.required],
-      description: ['']
+      description: [''],
     });
 
     // Formulario del Panel Lateral de Edición
@@ -91,7 +113,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
       password: [''], // Opcional al editar
       typeUser: [1, Validators.required],
       colorHex: ['#E63946', Validators.required],
-      description: ['']
+      description: [''],
     });
 
     // Efecto para precargar los datos en el panel lateral
@@ -104,7 +126,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
           email: user.email || '',
           typeUser: user.typeUser || 1,
           colorHex: user.colorHex || '#E63946',
-          description: user.description || ''
+          description: user.description || '',
         });
       }
     });
@@ -138,7 +160,9 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
   }
 
   selectedUser = computed(() =>
-    this.systemUsers().find(u => u.email === this.selectedUserId() || u.id === this.selectedUserId())
+    this.systemUsers().find(
+      (u) => u.email === this.selectedUserId() || u.id === this.selectedUserId(),
+    ),
   );
 
   selectUser(id?: string) {
@@ -149,19 +173,27 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
 
   getTypeUserLabel(type: number): string {
     switch (type) {
-      case 2: return 'Administración';
-      case 1: return 'Recepción';
-      case 3: return 'Maestro / Coach';
-      default: return 'Usuario';
+      case 2:
+        return 'Administración';
+      case 1:
+        return 'Recepción';
+      case 3:
+        return 'Maestro / Coach';
+      default:
+        return 'Usuario';
     }
   }
 
   getTypeUserBadgeClass(type: number): string {
     switch (type) {
-      case 2: return 'bg-purple-100 text-purple-700';
-      case 1: return 'bg-cyan-100 text-cyan-700';
-      case 3: return 'bg-lime-100 text-lime-700';
-      default: return 'bg-zinc-100 text-zinc-700';
+      case 2:
+        return 'bg-purple-100 text-purple-700';
+      case 1:
+        return 'bg-cyan-100 text-cyan-700';
+      case 3:
+        return 'bg-lime-100 text-lime-700';
+      default:
+        return 'bg-zinc-100 text-zinc-700';
     }
   }
 
@@ -197,7 +229,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
   }
 
   removeSkill(skillToRemove: string) {
-    this.skillsList.set(this.skillsList().filter(s => s !== skillToRemove));
+    this.skillsList.set(this.skillsList().filter((s) => s !== skillToRemove));
   }
 
   // Guardar Nuevo Usuario de Sistema
@@ -228,7 +260,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
         colorHex: formValues.colorHex,
         photoUrl: photoUrl || null,
         description: formValues.description || null,
-        skills: this.skillsList()
+        skills: this.skillsList(),
       };
 
       this.usersSystemService.crearOActualizarUsuario(payload).subscribe({
@@ -248,7 +280,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
           console.error('Error HTTP al crear usuario:', err);
           alert('Ocurrió un error al conectar con el servidor.');
           this.cdr.detectChanges();
-        }
+        },
       });
     } catch (error) {
       this.isSubmitting = false;
@@ -279,7 +311,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
       colorHex: formValues.colorHex,
       photoUrl: userActual.photoUrl || null,
       description: formValues.description || null,
-      skills: userActual.skills || []
+      skills: userActual.skills || [],
     };
 
     this.usersSystemService.crearOActualizarUsuario(payload).subscribe({
@@ -298,7 +330,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
         console.error('Error HTTP al actualizar usuario:', err);
         alert('Ocurrió un error al conectar con el servidor.');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -313,7 +345,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
     this.isDeleting = true;
     const payload = {
       branchId: this.idBranch,
-      email: this.userToDelete.email.trim()
+      email: this.userToDelete.email.trim(),
     };
 
     this.usersSystemService.eliminarUsuario(payload).subscribe({
@@ -334,7 +366,7 @@ export class UsersSystemComponent implements OnInit, OnDestroy {
         console.error('Error al eliminar usuario:', err);
         alert('Ocurrió un error al conectar con el servidor.');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 }

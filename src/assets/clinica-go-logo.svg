@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 180" role="img" aria-label="Clínica Go - Expediente Médico">
+  <defs>
+    <linearGradient id="cgBlueIndigo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3862D1" />
+      <stop offset="100%" stop-color="#3D3FD1" />
+    </linearGradient>
+    <linearGradient id="cgTeal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#43A6A8" />
+      <stop offset="100%" stop-color="#338C8E" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(24, 14)">
+    <polygon points="74,4 77.5,12 86,13.2 79.8,19 81.3,27.5 74,23.4 66.7,27.5 68.2,19 62,13.2 70.5,12" fill="url(#cgTeal)" />
+    <circle cx="46" cy="40" r="11" fill="#3862D1" />
+    <path d="M44 56 C27 64, 25 84, 46 98 C65 110, 68 128, 52 142 C46 147, 46 154, 53 154 C67 154, 79 135, 72 114 C67 100, 52 92, 42 82 C36 76, 38 66, 48 62 Z" fill="url(#cgBlueIndigo)" />
+    <rect x="46" y="114" width="22" height="6" rx="3" fill="url(#cgBlueIndigo)" />
+    <rect x="50" y="127" width="18" height="6" rx="3" fill="url(#cgBlueIndigo)" />
+    <path d="M88 26 C104 34, 105 58, 84 76 C62 95, 34 110, 34 134 C34 146, 42 153, 49 150 C43 144, 44 133, 55 123 C75 105, 114 85, 114 50 C114 35, 103 24, 88 26 Z" fill="url(#cgTeal)" />
+    <rect x="54" y="64" width="24" height="6" rx="3" fill="url(#cgTeal)" />
+    <circle cx="54" cy="67" r="4.5" fill="url(#cgTeal)" />
+    <rect x="52" y="78" width="26" height="6" rx="3" fill="url(#cgTeal)" />
+    <circle cx="52" cy="81" r="4.5" fill="url(#cgTeal)" />
+    <rect x="54" y="92" width="20" height="6" rx="3" fill="url(#cgTeal)" />
+    <circle cx="54" cy="95" r="4.5" fill="url(#cgTeal)" />
+  </g>
+  <g transform="translate(155, 86)">
+    <text x="0" y="0" fill="#1E2E6E" font-family="Montserrat, Poppins, system-ui, -apple-system, sans-serif" font-size="52" font-weight="900" letter-spacing="1.5">CLÍNICA GO</text>
+    <text x="3" y="38" fill="#3B9A9C" font-family="Montserrat, Poppins, system-ui, -apple-system, sans-serif" font-size="18.5" font-weight="600" letter-spacing="6.5">EXPEDIENTE MÉDICO</text>
+  </g>
+</svg>

@@ -1,0 +1,38 @@
+.integrations-section {
+  container: integrations / inline-size;
+}
+.integrations-heading {
+  margin-bottom: 24px;
+}
+.integrations-heading > span {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  color: #458ac8;
+}
+.integrations-heading h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 8px 0;
+}
+.integrations-heading p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+.integrations-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+.integrations-grid > * {
+  display: block;
+  min-width: 0;
+}
+@container integrations (min-width: 820px) {
+  .integrations-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

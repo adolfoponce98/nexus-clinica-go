@@ -1,17 +1,22 @@
-<aside class="w-72 bg-[#030712] border-r border-zinc-900 flex flex-col justify-between p-6 text-zinc-400 shrink-0 select-none h-screen sticky top-0 font-sans">
-
+<aside
+  class="w-72 bg-[#030712] border-r border-zinc-900 flex flex-col justify-between p-6 text-zinc-400 shrink-0 select-none h-screen sticky top-0 font-sans"
+>
   <!-- CONTENIDO SUPERIOR: LOGO Y MENÚ -->
   <div class="space-y-8 overflow-y-auto pr-1">
-
     <!-- Logo y Título -->
     <div class="flex items-center gap-3.5 px-2">
-      <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/20 shrink-0">
+      <div
+        class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/20 shrink-0"
+      >
         <lucide-icon [img]="MessageSquare" class="w-6 h-6"></lucide-icon>
       </div>
       <div>
         <div class="flex items-center gap-2">
           <span class="text-sm font-black text-white tracking-tight">Nexus Business</span>
-          <span class="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[9px] font-black uppercase tracking-widest">LITE</span>
+          <span
+            class="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[9px] font-black uppercase tracking-widest"
+            >LITE</span
+          >
         </div>
         <p class="text-[11px] text-zinc-400 font-medium">Gestión WhatsApp IA</p>
       </div>
@@ -19,74 +24,107 @@
 
     <!-- Navegación Principal -->
     <div class="space-y-4">
-      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 px-3">Menú Principal</p>
+      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 px-3">
+        Menú Principal
+      </p>
 
       <nav class="space-y-1.5">
-
         <!-- Dashboard / Inicio -->
-        <a routerLink="/home"
-           routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/20 font-black"
-           [routerLinkActiveOptions]="{ exact: true }"
-           class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group">
-          <lucide-icon [img]="LayoutDashboard" class="w-5 h-5 group-hover:scale-110 transition-transform"></lucide-icon>
+        <a
+          routerLink="/home"
+          routerLinkActive="bg-brand-gradient text-white shadow-lg shadow-blue-600/20 font-black"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group"
+        >
+          <lucide-icon
+            [img]="LayoutDashboard"
+            class="w-5 h-5 group-hover:scale-110 transition-transform"
+          ></lucide-icon>
           <span class="text-xs uppercase tracking-wider">Dashboard</span>
         </a>
 
         <!-- Agenda con Badge de Conteo -->
-        <a routerLink="/students"
-           routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/20 font-black"
-           class="flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group">
+        <a
+          routerLink="/students"
+          routerLinkActive="bg-brand-gradient text-white shadow-lg shadow-blue-600/20 font-black"
+          class="flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group"
+        >
           <div class="flex items-center gap-3.5">
-            <lucide-icon [img]="Calendar" class="w-5 h-5 group-hover:scale-110 transition-transform"></lucide-icon>
+            <lucide-icon
+              [img]="Calendar"
+              class="w-5 h-5 group-hover:scale-110 transition-transform"
+            ></lucide-icon>
             <span class="text-xs uppercase tracking-wider">Agenda</span>
           </div>
-          <span class="px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-[10px] font-black">Hoy: 8</span>
+          <span
+            class="px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-[10px] font-black"
+            >Hoy: 8</span
+          >
         </a>
 
         <!-- Servicios / Staff -->
-        <a routerLink="/historial"
-           routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/20 font-black"
-           class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group">
-          <lucide-icon [img]="Layers" class="w-5 h-5 group-hover:scale-110 transition-transform"></lucide-icon>
+        <a
+          routerLink="/historial"
+          routerLinkActive="bg-brand-gradient text-white shadow-lg shadow-blue-600/20 font-black"
+          class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group"
+        >
+          <lucide-icon
+            [img]="Layers"
+            class="w-5 h-5 group-hover:scale-110 transition-transform"
+          ></lucide-icon>
           <span class="text-xs uppercase tracking-wider">Historial clinico</span>
         </a>
 
         <!-- Asistente IA con Badge de Chats -->
-        <a routerLink="/planes"
-           routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/20 font-black"
-           class="flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group">
+        <a
+          routerLink="/planes"
+          routerLinkActive="bg-brand-gradient text-white shadow-lg shadow-blue-600/20 font-black"
+          class="flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group"
+        >
           <div class="flex items-center gap-3.5">
-            <lucide-icon [img]="Bot" class="w-5 h-5 group-hover:scale-110 transition-transform"></lucide-icon>
+            <lucide-icon
+              [img]="Bot"
+              class="w-5 h-5 group-hover:scale-110 transition-transform"
+            ></lucide-icon>
             <span class="text-xs uppercase tracking-wider">Asistente IA</span>
           </div>
-          <span class="px-2.5 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full text-[10px] font-black">4 chats</span>
+          <span
+            class="px-2.5 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full text-[10px] font-black"
+            >4 chats</span
+          >
         </a>
 
         <!-- Ajustes -->
-        <a routerLink="/expediente"
-           routerLinkActive="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/20 font-black"
-           class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group">
-          <lucide-icon [img]="Settings" class="w-5 h-5 group-hover:scale-110 transition-transform"></lucide-icon>
+        <a
+          routerLink="/expediente"
+          routerLinkActive="bg-brand-gradient text-white shadow-lg shadow-blue-600/20 font-black"
+          class="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all text-zinc-400 hover:text-white hover:bg-zinc-900/60 group"
+        >
+          <lucide-icon
+            [img]="Settings"
+            class="w-5 h-5 group-hover:scale-110 transition-transform"
+          ></lucide-icon>
           <span class="text-xs uppercase tracking-wider">Expediente</span>
         </a>
-
       </nav>
     </div>
-
   </div>
-
 
   <!-- CONTENIDO INFERIOR: WIDGET DE BOT WHATSAPP Y AYUDA -->
   <div class="space-y-4 pt-4 border-t border-zinc-900">
-
     <!-- Tarjeta del Bot de WhatsApp Conectado -->
-    <div class="bg-zinc-900/80 border border-zinc-800 p-4 rounded-3xl space-y-3 shadow-xl backdrop-blur-md">
+    <div
+      class="bg-zinc-900/80 border border-zinc-800 p-4 rounded-3xl space-y-3 shadow-xl backdrop-blur-md"
+    >
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span class="text-xs font-black text-white">WhatsApp Bot</span>
         </div>
-        <span class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[9px] font-black uppercase tracking-wider">Conectado</span>
+        <span
+          class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[9px] font-black uppercase tracking-wider"
+          >Conectado</span
+        >
       </div>
 
       <div class="flex items-center gap-2 text-zinc-400 text-xs pl-1">
@@ -103,14 +141,20 @@
     </div>
 
     <!-- Centro de Ayuda -->
-    <button class="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-zinc-900/40 hover:bg-zinc-900 text-zinc-400 hover:text-white transition-all border border-zinc-800/60 cursor-pointer group">
+    <button
+      class="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-zinc-900/40 hover:bg-zinc-900 text-zinc-400 hover:text-white transition-all border border-zinc-800/60 cursor-pointer group"
+    >
       <div class="flex items-center gap-3">
-        <lucide-icon [img]="HelpCircle" class="w-4 h-4 text-zinc-400 group-hover:text-blue-400 transition-colors"></lucide-icon>
+        <lucide-icon
+          [img]="HelpCircle"
+          class="w-4 h-4 text-zinc-400 group-hover:text-blue-400 transition-colors"
+        ></lucide-icon>
         <span class="text-xs font-bold">Centro de Ayuda</span>
       </div>
-      <lucide-icon [img]="ChevronRight" class="w-4 h-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform"></lucide-icon>
+      <lucide-icon
+        [img]="ChevronRight"
+        class="w-4 h-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform"
+      ></lucide-icon>
     </button>
-
   </div>
-
 </aside>

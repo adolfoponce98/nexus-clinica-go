@@ -1,0 +1,53 @@
+.field {
+  margin: 0;
+  max-width: 680px;
+}
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  line-height: 1.4;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--text-main, #334155);
+}
+.field-label lucide-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  color: #6399c7;
+}
+input:not([type='checkbox']),
+select,
+textarea {
+  margin-top: 6px;
+  background: var(--bg-primary, #f8fafc);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 400;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+input:not([type='checkbox']),
+select {
+  height: 41px;
+}
+textarea {
+  height: 96px;
+  min-height: 96px;
+  max-height: 96px;
+  resize: none;
+  field-sizing: fixed;
+  overflow-y: auto;
+  line-height: 1.65;
+}
+textarea:disabled {
+  overflow-y: auto;
+}
+.field:focus-within .field-label {
+  color: #458ac8;
+}

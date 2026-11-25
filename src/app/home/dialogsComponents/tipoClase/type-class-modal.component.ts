@@ -1,4 +1,14 @@
-import { Component, EventEmitter, Input, Output, signal, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { PermissionDirective } from '../../../auth/permission.directive';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  signal,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LucideAngularModule, X, Edit2 } from 'lucide-angular';
@@ -9,8 +19,8 @@ import { AuthService } from '../../../auth/auth.service';
 @Component({
   selector: 'app-type-class-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
-  templateUrl: './type-class-modal.component.html'
+  imports: [PermissionDirective, CommonModule, ReactiveFormsModule, LucideAngularModule],
+  templateUrl: './type-class-modal.component.html',
 })
 export class TypeClassModalComponent implements OnChanges {
   readonly icons = { X, Edit2 };
@@ -31,7 +41,7 @@ export class TypeClassModalComponent implements OnChanges {
       name: ['', Validators.required],
       descripcion: ['', Validators.required],
       duracion: ['', Validators.required],
-      dificultad: [1, Validators.required]
+      dificultad: [1, Validators.required],
     });
   }
 
@@ -42,14 +52,14 @@ export class TypeClassModalComponent implements OnChanges {
     }
   }
 
-    ngOnInit(): void {
-        this.userData = this.authService.getSession();
-        this.idBranch =  this.userData?.brancheInUser?.[0] || ""
- }
+  ngOnInit(): void {
+    this.userData = this.authService.getSession();
+    this.idBranch = this.userData?.brancheInUser?.[0] || '';
+  }
 
-cargarClasesDesdeMemoriaLocal() {
+  cargarClasesDesdeMemoriaLocal() {
     const sucursal = this.authService.getSucursal();
-    console.log("DATOSDESUCURSAL", sucursal?.branchInfo?.typeClasses);
+    console.log('DATOSDESUCURSAL', sucursal?.branchInfo?.typeClasses);
 
     // Verificamos si existen clases guardadas localmente en branchInfo
     if (sucursal && sucursal.branchInfo && sucursal.branchInfo.typeClasses) {
@@ -71,11 +81,11 @@ cargarClasesDesdeMemoriaLocal() {
       name: item.name,
       descripcion: item.descripcion,
       duracion: item.duracion,
-      dificultad: item.dificultad
+      dificultad: item.dificultad,
     });
   }
 
- // 2. Guardar o actualizar (Remoto y Local)
+  // 2. Guardar o actualizar (Remoto y Local)
   async onSave() {
     if (this.typeClassForm.valid) {
       const formValues: TypeClassModel = this.typeClassForm.value;
@@ -93,7 +103,7 @@ cargarClasesDesdeMemoriaLocal() {
 
         // 1. Actualizar en Firebase (Remoto)
         await updateDoc(branchRef, {
-          typeClasses: currentList
+          typeClasses: currentList,
         });
 
         // 2. Actualizar en la sesión/memoria local mediante AuthService
@@ -138,7 +148,7 @@ cargarClasesDesdeMemoriaLocal() {
 
       // Actualizar en Firebase (Remoto)
       await updateDoc(branchRef, {
-        typeClasses: currentList
+        typeClasses: currentList,
       });
 
       // Actualizar en memoria local

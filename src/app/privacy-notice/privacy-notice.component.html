@@ -1,0 +1,105 @@
+<main class="privacy-page">
+  <div class="privacy-shell">
+    <header class="brand-header">
+      <img
+        src="assets/clinica-go-logo.svg"
+        alt="Clínica Go - Expediente Médico"
+        width="640"
+        height="180"
+      /><button type="button" (click)="print()">
+        <lucide-icon [img]="icons['Printer']" [size]="17" aria-hidden="true" />Imprimir aviso
+      </button>
+    </header>
+    <section class="privacy-hero">
+      <span class="eyebrow"
+        ><lucide-icon [img]="icons['ShieldCheck']" [size]="16" aria-hidden="true" />TU INFORMACIÓN,
+        CON CLARIDAD</span
+      >
+      <h1>Aviso de privacidad</h1>
+      <p>
+        Conoce cómo se recopila, utiliza y conserva tu información al registrar tus datos y utilizar
+        los servicios de Clínica Go.
+      </p>
+      <div class="identity-grid">
+        <div>
+          <lucide-icon [img]="icons['Building2']" [size]="20" aria-hidden="true" /><span
+            >Operadora de la plataforma<strong>Nexus Ecosystem S.A. S</strong></span
+          >
+        </div>
+        <div>
+          <lucide-icon [img]="icons['MapPin']" [size]="20" aria-hidden="true" /><span
+            >Domicilio<strong>Zapopan, Jalisco, México</strong></span
+          >
+        </div>
+        <div>
+          <lucide-icon [img]="icons['Mail']" [size]="20" aria-hidden="true" /><span
+            >Contacto de privacidad<a href="mailto:admin@nexusecosystem-mx.com"
+              >admin@nexusecosystem-mx.com</a
+            ></span
+          >
+        </div>
+      </div>
+      <small>Actualización: 24 de noviembre de 2026</small>
+    </section>
+    <div class="privacy-layout">
+      <nav class="privacy-index" aria-label="Contenido del aviso">
+        <h2>En este aviso</h2>
+        @for (section of sections; track section.id; let i = $index) {
+          <a [href]="'#' + section.id"
+            ><span>{{ i + 1 }}</span
+            >{{ section.title }}</a
+          >
+        }
+      </nav>
+      <div class="privacy-content">
+        @for (section of sections; track section.id; let i = $index) {
+          <section
+            class="notice-section"
+            [id]="section.id"
+            [attr.aria-labelledby]="section.id + '-title'"
+          >
+            <header>
+              <span class="section-icon"
+                ><lucide-icon [img]="icons[section.icon]" [size]="21" aria-hidden="true"
+              /></span>
+              <div>
+                <small>APARTADO {{ i + 1 }}</small>
+                <h2 [id]="section.id + '-title'">{{ section.title }}</h2>
+              </div>
+            </header>
+            @for (block of section.blocks; track $index) {
+              @if (block.kind === 'list') {
+                <ul>
+                  @for (item of block.items; track $index) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              } @else {
+                <p>{{ block.text }}</p>
+              }
+            }
+          </section>
+        }
+        <aside class="privacy-contact">
+          <lucide-icon [img]="icons['Mail']" [size]="23" aria-hidden="true" />
+          <div>
+            <h2>¿Tienes dudas sobre tus datos?</h2>
+            <p>
+              Escribe a
+              <a href="mailto:admin@nexusecosystem-mx.com">admin@nexusecosystem-mx.com</a>. Para
+              solicitudes sobre tu expediente y atención médica, contacta también a tu médico o
+              clínica.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <footer>
+      Clínica Go · Nexus Ecosystem S.A. S<span>{{ version }}</span>
+      <p>
+        Si abriste esta página desde tu registro, puedes cerrar esta pestaña para continuar con el
+        formulario.
+      </p>
+    </footer>
+  </div>
+</main>

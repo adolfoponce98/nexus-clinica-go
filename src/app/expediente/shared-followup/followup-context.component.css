@@ -1,0 +1,144 @@
+:host {
+  display: block;
+  margin: 20px 0;
+}
+.history-grid {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1.6fr);
+  gap: 16px;
+}
+.history-card {
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 18px;
+  background: var(--bg-card, #fff);
+  padding: 20px;
+  min-width: 0;
+}
+.history-card header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.history-card header lucide-icon {
+  color: #458ac8;
+  background: #3b82f610;
+  padding: 10px;
+  border-radius: 12px;
+  box-sizing: content-box;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.history-card small {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--text-muted, #64748b);
+}
+h2 {
+  font-size: 13px;
+  font-weight: 750;
+  margin: 4px 0;
+  color: var(--text-primary, #1e293b);
+}
+p,
+dd {
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--text-primary, #334155);
+}
+.muted,
+dt {
+  color: var(--text-muted, #64748b);
+}
+.critical {
+  border-color: #f59e0b35;
+  background: #f59e0b08;
+}
+.critical header lucide-icon {
+  color: #d49424;
+  background: #f59e0b12;
+}
+dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px 20px;
+  margin: 18px 0 0;
+}
+dt {
+  font-size: 10px;
+  font-weight: 650;
+}
+dd {
+  margin: 4px 0 0;
+}
+.consultation-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 6px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  background: var(--bg-card, #fff);
+}
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  padding: 13px;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  text-align: left;
+}
+button.active {
+  background: #3b82f610;
+  border-color: #3b82f630;
+  color: #458ac8;
+}
+button:focus-visible {
+  outline: 2px solid #458ac8;
+  outline-offset: 2px;
+}
+button lucide-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+button strong {
+  display: block;
+  font-size: 12px;
+}
+button small {
+  display: block;
+  font-size: 10px;
+  margin-top: 4px;
+}
+@media (max-width: 800px) {
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+  .consultation-tabs {
+    overflow-x: auto;
+  }
+  button {
+    min-width: 145px;
+    padding: 11px;
+  }
+  button small {
+    display: none;
+  }
+}
+@media (max-width: 500px) {
+  dl {
+    grid-template-columns: 1fr;
+  }
+  .history-card {
+    padding: 16px;
+  }
+}

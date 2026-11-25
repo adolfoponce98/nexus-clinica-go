@@ -123,7 +123,6 @@ export interface TypeClassModel {
   duracion: string;
 }
 
-
 export interface TeacherModel {
   idDocumentFirebase?: string;
   branchId?: string;

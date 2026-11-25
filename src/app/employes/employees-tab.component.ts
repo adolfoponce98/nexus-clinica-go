@@ -1,11 +1,57 @@
+import { CreationAccessService } from '../planes/creation-access.service';
+import { DirectorySkeletonComponent } from '../shared/directory-skeleton.component';
+import { PermissionService } from '../auth/permission.service';
+import {
+  EMPLOYEE_PROFILES,
+  EmployeeProfile,
+  defaultEmployeePermissions,
+  CLINICAL_PERMISSION_MODULES,
+} from './employee-permission-presets';
+import { PlanUsageComponent } from '../planes/plan-usage.component';
+import { BillingService } from '../planes/billing.service';
+import { PERMISSION_MODULES, normalizePermissions } from '../auth/permissions';
+import { OfficeSyncService } from '../auth/office-sync.service';
+import { PermissionDirective } from '../auth/permission.directive';
+import { TokenInterceptorService } from '../auth/token-interceptor.service';
+import { SECURITY_CONFIG } from '../config/security.config';
+import { API_URLS } from '../config/api-urls';
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  LucideAngularModule, UserCheck, Plus, Trash2, Search,
-  ArrowLeft, Eye, Edit3, Save, Loader2, Mail, Users,
-  Home, Calendar, Building2, Stethoscope, CreditCard, Settings, Cpu,
-  Wallet, FileText, UserCog, CheckCircle2, AlertCircle
+  LucideAngularModule,
+  UserCheck,
+  Plus,
+  Trash2,
+  Search,
+  ArrowLeft,
+  Eye,
+  Edit3,
+  Save,
+  Loader2,
+  Mail,
+  Users,
+  Home,
+  Calendar,
+  Building2,
+  Stethoscope,
+  CreditCard,
+  Settings,
+  Cpu,
+  Wallet,
+  FileText,
+  UserCog,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  ShieldCheck,
+  FolderHeart,
+  ClipboardList,
+  Pill,
+  HeartPulse,
+  MonitorSmartphone,
+  RotateCcw,
+  LockKeyhole,
 } from 'lucide-angular';
 import { AuthService } from '../auth/auth.service';
 import * as CryptoJS from 'crypto-js';
@@ -21,63 +67,167 @@ interface Empleado {
   name: string;
   email: string;
   phone: string;
-  role: 'RECEPCIONISTA' | 'AYUDANTE';
+  role: EmployeeProfile | 'MEDICO' | 'ENFERMERIA' | '';
+  legacyRole?: string;
   password?: string;
   consultoriosIds: string[];
-  permissions: {
-    home: PermissionAction;
-    calendar: PermissionAction;
-    patients: PermissionAction;
-    consultorios: PermissionAction;
-    services: PermissionAction;
-    plans: PermissionAction;
-    finances: PermissionAction;
-    reports: PermissionAction;
-    employees: PermissionAction;
-    config: PermissionAction;
-    nexusI: PermissionAction;
-  };
+  active?: boolean;
+  permissions: Record<string, PermissionAction>;
 }
 
 @Component({
   selector: 'app-employees-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
-  templateUrl: './employees-tab.component.html'
+  imports: [
+    DirectorySkeletonComponent,
+    PlanUsageComponent,
+    PermissionDirective,
+    CommonModule,
+    FormsModule,
+    LucideAngularModule,
+  ],
+  templateUrl: './employees-tab.component.html',
+  styleUrl: './employees-tab.component.css',
 })
 export class EmployeesComponent implements OnInit {
+  readonly billing = inject(BillingService);
+  private readonly creationAccess = inject(CreationAccessService);
+  private readonly permissions = inject(PermissionService);
+
+  private sessionRequests = inject(TokenInterceptorService);
   private authService = inject(AuthService);
 
   readonly icons = {
-    UserCheck, Plus, Trash2, Search, ArrowLeft,
-    Eye, Edit3, Save, Loader2, Mail, Users, Building2,
-    CheckCircle2, AlertCircle
+    UserCheck,
+    Plus,
+    Trash2,
+    Search,
+    ArrowLeft,
+    Eye,
+    Edit3,
+    Save,
+    Loader2,
+    Mail,
+    Users,
+    Building2,
+    CheckCircle2,
+    AlertCircle,
+    Sparkles,
+    ShieldCheck,
+    RotateCcw,
+    LockKeyhole,
   };
 
-  modulesList = [
-    { key: 'home', label: 'Home', icon: Home },
-    { key: 'calendar', label: 'Calendario', icon: Calendar },
-    { key: 'patients', label: 'Pacientes', icon: Users },
-    { key: 'consultorios', label: 'Consultorios', icon: Building2 },
-    { key: 'services', label: 'Servicios', icon: Stethoscope },
-    { key: 'plans', label: 'Planes', icon: CreditCard },
-    { key: 'finances', label: 'Finanzas', icon: Wallet },
-    { key: 'reports', label: 'Reportes', icon: FileText },
-    { key: 'employees', label: 'Empleados', icon: UserCog },
-    { key: 'config', label: 'Configuración', icon: Settings },
-    { key: 'nexusI', label: 'Nexus I', icon: Cpu },
+  readonly profiles = EMPLOYEE_PROFILES;
+  readonly permissionActions = [
+    { key: 'read' as const, label: 'Ver', description: 'Lectura', icon: Eye },
+    { key: 'write' as const, label: 'Crear / editar', description: 'Escritura', icon: Edit3 },
+    { key: 'delete' as const, label: 'Eliminar', description: 'Eliminación', icon: Trash2 },
   ];
+  private readonly moduleIcons: Record<string, any> = {
+    home: Home,
+    calendar: Calendar,
+    patients: Users,
+    records: FolderHeart,
+    followUps: ClipboardList,
+    prescriptions: Pill,
+    consultorios: Building2,
+    services: Stethoscope,
+    plans: CreditCard,
+    finances: Wallet,
+    reports: FileText,
+    employees: UserCog,
+    config: Settings,
+    devices: MonitorSmartphone,
+    nexusI: Sparkles,
+    usersSystem: UserCog,
+    staff: Users,
+    nursing: HeartPulse,
+  };
+  readonly modulesList = Object.entries(PERMISSION_MODULES).map(([key, label]) => ({
+    key,
+    label: key === 'nexusI' ? 'Nexus IA' : label,
+    icon: this.moduleIcons[key] || FileText,
+  }));
+  readonly mainMenuKeys = [
+    'home',
+    'calendar',
+    'patients',
+    'consultorios',
+    'employees',
+    'services',
+    'plans',
+    'config',
+    'nexusI',
+  ];
+  readonly permissionGroups = [
+    {
+      title: 'Menús del sistema',
+      description: 'Sin permiso de lectura, el menú no aparecerá en la sesión del empleado.',
+      modules: this.modulesList.filter((module) => this.mainMenuKeys.includes(module.key)),
+    },
+    {
+      title: 'Funciones complementarias',
+      description: 'Accesos específicos a herramientas y funciones del sistema.',
+      modules: this.modulesList.filter((module) => !this.mainMenuKeys.includes(module.key)),
+    },
+  ];
+  get activePermissionsCount() {
+    return this.modulesList.filter((module) => this.getPermission(module.key).read).length;
+  }
+  profileLabel(role: string) {
+    return (
+      this.profiles.find((profile) => profile.value === role)?.label ||
+      (
+        {
+          MEDICO: 'Médico (perfil anterior)',
+          ENFERMERIA: 'Enfermería (perfil anterior)',
+        } as Record<string, string>
+      )[role] ||
+      'Selecciona un perfil'
+    );
+  }
+  get profileDescription() {
+    return (
+      this.profiles.find((profile) => profile.value === this.selectedEmpleado()?.role)
+        ?.description || 'Elige un perfil para cargar sus permisos iniciales.'
+    );
+  }
+  permissionLocked(module: string) {
+    return CLINICAL_PERMISSION_MODULES.includes(module);
+  }
+  applyRolePreset(role: string) {
+    const emp = this.selectedEmpleado();
+    if (!emp || !this.profiles.some((profile) => profile.value === role)) return;
+    this.selectedEmpleado.set({
+      ...emp,
+      role: role as EmployeeProfile,
+      permissions: defaultEmployeePermissions(role as EmployeeProfile),
+    });
+  }
+  setPermission(module: string, action: 'read' | 'write' | 'delete', enabled: boolean) {
+    const emp = this.selectedEmpleado();
+    if (!emp || !this.isEditingMode || this.permissionLocked(module)) return;
+    const permissions = normalizePermissions(emp.permissions);
+    permissions[module][action] = enabled;
+    if (enabled && action !== 'read') permissions[module].read = true;
+    if (action === 'read' && !enabled)
+      permissions[module] = { read: false, write: false, delete: false };
+    this.selectedEmpleado.set({ ...emp, permissions });
+  }
 
-  private readonly SAVE_URL = 'https://saveOrUpdateEmployee-o7vmreizjq-uc.a.run.app';
-  private readonly GET_URL = 'https://getEmployees-o7vmreizjq-uc.a.run.app';
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
+  private readonly SAVE_URL = API_URLS.SAVE_OR_UPDATE_EMPLOYEE;
+  private readonly GET_URL = API_URLS.GET_EMPLOYEES;
+  private readonly ENCRYPTION_KEY = SECURITY_CONFIG.ENCRYPTION_KEY;
+  private readonly APP_SECRET_HEADER = SECURITY_CONFIG.APP_SECRET_HEADER;
 
-  searchQuery = '';
+  private readonly sync = inject(OfficeSyncService);
+  searchQuery = signal('');
+  activeCount = computed(() => this.empleados().filter((e) => e.active !== false).length);
   selectedEmpleado = signal<Empleado | null>(null);
   isEditingMode = false;
   activeIdx = 0;
-  isLoading = signal<boolean>(false);
+  isLoading = signal<boolean>(true);
   isSaving = signal<boolean>(false);
 
   // 🌟 Estado del Diálogo Modal Personalizado
@@ -91,18 +241,19 @@ export class EmployeesComponent implements OnInit {
     isOpen: false,
     title: '',
     message: '',
-    type: 'success'
+    type: 'success',
   });
 
   empleados = signal<Empleado[]>([]);
   availableBranches: any[] = [];
 
   filteredEmpleados = computed(() => {
-    const q = this.searchQuery.toLowerCase();
-    return this.empleados().filter(e =>
-      (e.name || '').toLowerCase().includes(q) ||
-      (e.email || '').toLowerCase().includes(q) ||
-      (e.role || '').toLowerCase().includes(q)
+    const q = this.searchQuery().toLowerCase();
+    return this.empleados().filter(
+      (e) =>
+        (e.name || '').toLowerCase().includes(q) ||
+        (e.email || '').toLowerCase().includes(q) ||
+        (e.role || '').toLowerCase().includes(q),
     );
   });
 
@@ -118,7 +269,7 @@ export class EmployeesComponent implements OnInit {
       emp.permissions[modKey as keyof typeof emp.permissions] = {
         read: false,
         write: false,
-        delete: false
+        delete: false,
       };
     }
 
@@ -137,7 +288,7 @@ export class EmployeesComponent implements OnInit {
     this.cargarEmpleados();
   }
 
-  cargarSucursalesDisponibles() {
+  async cargarSucursalesDisponibles() {
     const allBranches = this.authService.getAllBranches();
     if (allBranches && allBranches.length > 0) {
       this.availableBranches = allBranches;
@@ -146,6 +297,12 @@ export class EmployeesComponent implements OnInit {
       if (activeSucursal) {
         this.availableBranches = [activeSucursal];
       }
+    }
+    try {
+      const result = await this.sync.call(API_URLS.GETDOCTORSOFFICE);
+      this.availableBranches = result.consultorios || this.availableBranches;
+    } catch {
+      /* Keep the active-office context when disconnected. */
     }
   }
 
@@ -161,7 +318,7 @@ export class EmployeesComponent implements OnInit {
 
     let currentIds = [...(emp.consultoriosIds || [])];
     if (currentIds.includes(branchId)) {
-      currentIds = currentIds.filter(id => id !== branchId);
+      currentIds = currentIds.filter((id) => id !== branchId);
     } else {
       currentIds.push(branchId);
     }
@@ -171,7 +328,7 @@ export class EmployeesComponent implements OnInit {
   seleccionarTodasSucursales() {
     const emp = this.selectedEmpleado();
     if (!emp) return;
-    const allIds = this.availableBranches.map(b => b.idConsultorio || b.id);
+    const allIds = this.availableBranches.map((b) => b.idConsultorio || b.id);
     this.selectedEmpleado.set({ ...emp, consultoriosIds: allIds });
   }
 
@@ -199,20 +356,23 @@ export class EmployeesComponent implements OnInit {
 
       const payload = {
         idConsultorio: idConsultorio,
-        typeUser: 1
+        typeUser: 1,
       };
 
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+      const ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify(payload),
+        this.ENCRYPTION_KEY,
+      ).toString();
 
-      const response = await fetch(this.GET_URL, {
+      const response = await this.sessionRequests.authenticatedFetch(this.GET_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-app-signature': this.APP_SECRET_HEADER,
           'x-client-source': 'angular',
-          'Authorization': `Bearer ${jwtToken}`
+          Authorization: `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify({ encryptedData: ciphertext })
+        body: JSON.stringify({ encryptedData: ciphertext }),
       });
 
       const jsonRes = await response.json();
@@ -226,7 +386,7 @@ export class EmployeesComponent implements OnInit {
       if (decryptedData.success && Array.isArray(decryptedData.empleados)) {
         const empleadosMapeados = decryptedData.empleados.map((e: any) => ({
           ...e,
-          name: e.fullName || e.name || ''
+          name: e.fullName || e.name || '',
         }));
         this.empleados.set(empleadosMapeados);
       }
@@ -245,22 +405,14 @@ export class EmployeesComponent implements OnInit {
   }
 
   addEmpleado() {
-    const defaultPermissions: Empleado['permissions'] = {
-      home: { read: true, write: false, delete: false },
-      calendar: { read: true, write: true, delete: false },
-      patients: { read: true, write: true, delete: false },
-      consultorios: { read: true, write: false, delete: false },
-      services: { read: true, write: false, delete: false },
-      plans: { read: false, write: false, delete: false },
-      finances: { read: false, write: false, delete: false },
-      reports: { read: false, write: false, delete: false },
-      employees: { read: false, write: false, delete: false },
-      config: { read: false, write: false, delete: false },
-      nexusI: { read: false, write: false, delete: false }
-    };
+    if (!this.permissions.can('employees', 'write') || !this.creationAccess.allow('employees'))
+      return;
+    const defaultPermissions = defaultEmployeePermissions('RECEPCIONISTA');
 
     const activeSucursal = this.authService.getSucursal();
-    const defaultBranchId = activeSucursal ? [activeSucursal.idConsultorio || activeSucursal.id] : [];
+    const defaultBranchId = activeSucursal
+      ? [activeSucursal.idConsultorio || activeSucursal.id]
+      : [];
 
     const nuevo: Empleado = {
       id: '',
@@ -270,7 +422,7 @@ export class EmployeesComponent implements OnInit {
       role: 'RECEPCIONISTA',
       password: '',
       consultoriosIds: defaultBranchId,
-      permissions: defaultPermissions
+      permissions: normalizePermissions(defaultPermissions),
     };
 
     this.selectedEmpleado.set(nuevo);
@@ -279,13 +431,23 @@ export class EmployeesComponent implements OnInit {
   }
 
   verDetalle(e: Empleado, index: number) {
-    this.selectedEmpleado.set({ ...e });
+    this.selectedEmpleado.set({
+      ...e,
+      legacyRole: this.profiles.some((profile) => profile.value === e.role) ? undefined : e.role,
+      role: this.profiles.some((profile) => profile.value === e.role) ? e.role : '',
+      permissions: normalizePermissions(structuredClone(e.permissions)),
+    });
     this.activeIdx = index;
     this.isEditingMode = false;
   }
 
   editarEmpleado(e: Empleado, index: number) {
-    this.selectedEmpleado.set({ ...e });
+    this.selectedEmpleado.set({
+      ...e,
+      legacyRole: this.profiles.some((profile) => profile.value === e.role) ? undefined : e.role,
+      role: this.profiles.some((profile) => profile.value === e.role) ? e.role : '',
+      permissions: normalizePermissions(structuredClone(e.permissions)),
+    });
     this.activeIdx = index;
     this.isEditingMode = true;
   }
@@ -296,27 +458,16 @@ export class EmployeesComponent implements OnInit {
   }
 
   restaurarPassword() {
-    const nuevaPassword = prompt('Ingrese la nueva contraseña temporal para este empleado:');
-    if (nuevaPassword !== null) {
-      if (nuevaPassword.trim() === '') {
-        this.dialogModal.set({
-          isOpen: true,
-          title: 'Aviso',
-          message: 'La contraseña no puede estar vacía.',
-          type: 'error'
-        });
-        return;
-      }
-      const emp = this.selectedEmpleado();
-      if (emp) {
-        this.selectedEmpleado.set({ ...emp, password: nuevaPassword.trim() });
-        this.dialogModal.set({
-          isOpen: true,
-          title: 'Contraseña Actualizada',
-          message: 'La contraseña temporal se ha actualizado en memoria. Haga clic en "Guardar" para aplicarla en el servidor.',
-          type: 'success'
-        });
-      }
+    const emp = this.selectedEmpleado();
+    if (emp) {
+      this.selectedEmpleado.set({ ...emp, password: 'GENERAR_TEMPORAL' });
+      this.dialogModal.set({
+        isOpen: true,
+        title: 'Restablecer acceso',
+        message:
+          'Al guardar se generará una contraseña temporal única. El empleado deberá cambiarla al iniciar sesión.',
+        type: 'success',
+      });
     }
   }
 
@@ -330,7 +481,7 @@ export class EmployeesComponent implements OnInit {
           isOpen: true,
           title: 'Sesión Expirada',
           message: 'No se encontró una sesión activa. Inicie sesión nuevamente.',
-          type: 'error'
+          type: 'error',
         });
         return;
       }
@@ -343,28 +494,19 @@ export class EmployeesComponent implements OnInit {
           isOpen: true,
           title: 'Campos Incompletos',
           message: 'El nombre, el correo electrónico y el rol son obligatorios.',
-          type: 'error'
+          type: 'error',
         });
         return;
       }
 
       const esNuevo = !empActual.id || empActual.id === '';
-      if (esNuevo && (!empActual.password || empActual.password.trim() === '')) {
-        this.dialogModal.set({
-          isOpen: true,
-          title: 'Contraseña Requerida',
-          message: 'La contraseña temporal es obligatoria para nuevos empleados.',
-          type: 'error'
-        });
-        return;
-      }
-
       if (!empActual.consultoriosIds || empActual.consultoriosIds.length === 0) {
         this.dialogModal.set({
           isOpen: true,
           title: 'Sucursal Requerida',
-          message: 'Debes seleccionar al menos un consultorio o sucursal para asignar a este empleado.',
-          type: 'error'
+          message:
+            'Debes seleccionar al menos un consultorio o sucursal para asignar a este empleado.',
+          type: 'error',
         });
         return;
       }
@@ -377,22 +519,25 @@ export class EmployeesComponent implements OnInit {
         email: empActual.email,
         phone: empActual.phone,
         role: empActual.role,
-        password: empActual.password && empActual.password.trim() !== '' ? empActual.password : null,
+        resetPassword: !!empActual.password,
         consultoriosIds: empActual.consultoriosIds,
-        permissions: empActual.permissions
+        permissions: normalizePermissions(empActual.permissions),
       };
 
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+      const ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify(payload),
+        this.ENCRYPTION_KEY,
+      ).toString();
 
-      const response = await fetch(this.SAVE_URL, {
+      const response = await this.sessionRequests.authenticatedFetch(this.SAVE_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-app-signature': this.APP_SECRET_HEADER,
           'x-client-source': 'angular',
-          'Authorization': `Bearer ${jwtToken}`
+          Authorization: `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify({ encryptedData: ciphertext })
+        body: JSON.stringify({ encryptedData: ciphertext }),
       });
 
       const jsonRes = await response.json();
@@ -411,21 +556,22 @@ export class EmployeesComponent implements OnInit {
       this.dialogModal.set({
         isOpen: true,
         title: '¡Guardado Exitoso!',
-        message: '¡El empleado, sus sucursales y permisos se han guardado con éxito!',
+        message: decryptedData.temporaryPassword
+          ? `Contraseña temporal: ${decryptedData.temporaryPassword}\nCompártela de forma privada. Solo se muestra ahora y debe cambiarse en el primer acceso.`
+          : 'El empleado, sus consultorios y permisos se guardaron.',
         type: 'success',
         onClose: () => {
           this.selectedEmpleado.set(null);
           this.cargarEmpleados();
-        }
+        },
       });
-
     } catch (err: any) {
       console.error('Error al guardar empleado:', err);
       this.dialogModal.set({
         isOpen: true,
         title: 'Error de Servidor',
         message: err.message || 'Error de conexión con el servidor.',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       this.isSaving.set(false);
@@ -441,8 +587,34 @@ export class EmployeesComponent implements OnInit {
   }
 
   eliminarEmpleado(id: number | string) {
-    if (confirm('¿Estás seguro de revocar el acceso a este empleado?')) {
-      this.empleados.update(list => list.filter(e => e.id !== id));
+    void this.cambiarEstado(id, 'disable');
+  }
+  async cambiarEstado(id: number | string, action: 'disable' | 'reactivate' | 'permanent') {
+    if (
+      action === 'reactivate' &&
+      (!this.permissions.can('employees', 'write') || !this.creationAccess.allow('employees'))
+    )
+      return;
+    const label =
+      action === 'permanent'
+        ? 'Eliminar definitivamente sus accesos y cerrar sus sesiones'
+        : action === 'reactivate'
+          ? 'Reactivar este empleado'
+          : 'Deshabilitar al empleado y cerrar sus sesiones';
+    if (!confirm(label + '?')) return;
+    this.isSaving.set(true);
+    try {
+      await this.sync.call(API_URLS.DELETEEMPLOYE, { id, action });
+      await this.cargarEmpleados();
+    } catch (e) {
+      this.dialogModal.set({
+        isOpen: true,
+        title: 'No se pudo actualizar el acceso',
+        message: (e as Error).message,
+        type: 'error',
+      });
+    } finally {
+      this.isSaving.set(false);
     }
   }
 }

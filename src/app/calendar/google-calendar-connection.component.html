@@ -1,0 +1,241 @@
+@if (owner) {
+  @if (appearance === 'card') {
+    <article class="integration-card">
+      <div class="integration-card-top">
+        <span class="google-logo-tile"
+          ><img
+            src="assets/integrations/google-calendar.svg"
+            alt="Google Calendar"
+            width="44"
+            height="44"
+        /></span>
+        <span
+          class="integration-status"
+          [class.is-connected]="state()?.connected && !state()?.needsReconnect"
+        >
+          <span></span
+          >{{
+            busy()
+              ? 'Consultando…'
+              : state()?.needsReconnect
+                ? 'Requiere autorización'
+                : state()?.connected
+                  ? 'Conectado'
+                  : state()
+                    ? 'Sin conectar'
+                    : 'Consulta tu conexión'
+          }}
+        </span>
+      </div>
+      <span class="integration-category">AGENDA Y ORGANIZACIÓN</span>
+      <h3>Conexión Google Calendar</h3>
+      <p class="integration-description">
+        Tus citas de Clínica Go, también en tu calendario de Google. Consulta tu agenda desde tus
+        dispositivos y mantén los horarios actualizados automáticamente.
+      </p>
+      <div class="integration-office">
+        <lucide-icon [img]="icons.MapPin" [size]="17" />
+        <div>
+          <small>CONSULTORIO ACTUAL</small><strong>{{ officeName }}</strong>
+        </div>
+      </div>
+      <ul class="integration-features">
+        <li>
+          <lucide-icon [img]="icons.CalendarDays" [size]="18" /><span
+            ><strong>Nuevas citas, sin recapturar</strong>Nombre, motivo y horario de inicio y fin
+            en tu calendario.</span
+          >
+        </li>
+        <li>
+          <lucide-icon [img]="icons.Link2" [size]="18" /><span
+            ><strong>Agenda sincronizada</strong>Los cambios y cancelaciones de Clínica Go se
+            reflejan en Google.</span
+          >
+        </li>
+        <li>
+          <lucide-icon [img]="icons.ShieldCheck" [size]="18" /><span
+            ><strong>Tú controlas la conexión</strong>Autoriza tu cuenta por consultorio y
+            desconéctala cuando quieras.</span
+          >
+        </li>
+      </ul>
+      <div class="integration-card-bottom">
+        <p>Sincronización de Clínica Go hacia Google Calendar.</p>
+        <button
+          type="button"
+          class="calendar-connect integration-manage"
+          (click)="open()"
+          [disabled]="busy()"
+        >
+          <lucide-icon [img]="icons.Link2" [size]="17" />{{
+            state()?.connected ? 'Administrar conexión' : 'Conectar Google Calendar'
+          }}
+        </button>
+      </div>
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+    </article>
+  } @else {
+    <button
+      type="button"
+      class="calendar-connect"
+      (click)="open()"
+      [disabled]="busy()"
+      aria-label="Conectar Google Calendar"
+    >
+      <img src="assets/integrations/google-calendar.svg" alt="" width="21" height="21" />Google
+      Calendar
+      @if (state()?.connected && !state()?.needsReconnect) {
+        <span class="connected-label"><span class="connected-dot"></span>Conectado</span>
+      }
+    </button>
+  }
+  @if (notice()) {
+    <div
+      class="calendar-notice"
+      [class.notice-warning]="noticeTone() === 'warning'"
+      [class.notice-info]="noticeTone() === 'info'"
+      role="status"
+    >
+      <span class="notice-logo"
+        ><img src="assets/integrations/google-calendar.svg" alt="" width="27" height="27"
+      /></span>
+      <div>
+        <strong>{{
+          noticeTone() === 'success'
+            ? 'Google Calendar conectado'
+            : noticeTone() === 'info'
+              ? 'Conexión actualizada'
+              : 'Revisa tu conexión'
+        }}</strong>
+        <p>{{ notice() }}</p>
+      </div>
+      <lucide-icon
+        [img]="noticeTone() === 'success' ? icons.CheckCircle2 : icons.ShieldCheck"
+        [size]="18"
+      />
+    </div>
+  }
+}
+<dialog
+  #connectionDialog
+  class="connection-dialog"
+  (cancel)="busy() ? $event.preventDefault() : null"
+>
+  <header>
+    <span class="connection-emblem google-dialog-logo"
+      ><img
+        src="assets/integrations/google-calendar.svg"
+        alt="Google Calendar"
+        width="34"
+        height="34"
+    /></span>
+    <div>
+      <small>TU AGENDA, CONECTADA</small>
+      <h2>Google Calendar</h2>
+    </div>
+    <button
+      type="button"
+      class="close"
+      aria-label="Cerrar conexión de Google Calendar"
+      [disabled]="busy()"
+      (click)="connectionDialog.close()"
+    >
+      <lucide-icon [img]="icons.X" [size]="20" />
+    </button>
+  </header>
+  <div class="connection-content">
+    <div class="office">
+      <lucide-icon [img]="icons.MapPin" [size]="18" /><span
+        >Consultorio<strong>{{ officeName }}</strong></span
+      >
+    </div>
+    @if (busy()) {
+      <div class="loading" role="status">
+        <lucide-icon [img]="icons.LoaderCircle" class="spin" [size]="24" />Procesando conexión…
+      </div>
+    }
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+    @if (state()?.connected) {
+      <div class="connection-status">
+        <lucide-icon [img]="icons.CheckCircle2" [size]="23" />
+        <div>
+          <strong>{{
+            state().needsReconnect
+              ? 'Vuelve a autorizar tu cuenta'
+              : 'Tu consultorio está conectado'
+          }}</strong>
+          <p>{{ state().calendarName }}</p>
+        </div>
+      </div>
+      @if (state().lastError) {
+        <p class="error">{{ state().lastError }}</p>
+      }
+    }
+    <h3>
+      {{
+        state()?.connected
+          ? 'Mantén tu agenda sincronizada'
+          : '¿Quieres sincronizar tus nuevas citas?'
+      }}
+    </h3>
+    <p>
+      Se creará un calendario de Clínica Go para este consultorio en tu cuenta de Google. Las nuevas
+      citas incluirán nombre del paciente, motivo, fecha y hora de inicio y fin.
+    </p>
+    <div class="sync-details">
+      <lucide-icon [img]="icons.Link2" [size]="19" />
+      <p>
+        Los cambios se envían desde Clínica Go a Google Calendar. Las cancelaciones también se
+        reflejan. Editar en Google no cambia tu expediente ni tu agenda en Clínica Go.
+      </p>
+    </div>
+    <label class="zone"
+      >Zona horaria del consultorio<select [(ngModel)]="timeZone" [disabled]="busy()">
+        @for (zone of zones; track zone[0]) {
+          <option [value]="zone[0]">{{ zone[1] }}</option>
+        }
+      </select></label
+    >
+    <label class="consent"
+      ><input type="checkbox" [(ngModel)]="consent" [disabled]="busy()" /><span
+        >Autorizo enviar estos datos de las citas de este consultorio a mi cuenta de Google
+        Calendar.</span
+      ></label
+    >
+    <div class="privacy">
+      <lucide-icon [img]="icons.ShieldCheck" [size]="17" />La conexión se guarda cifrada en el
+      servidor. No se envían notas clínicas ni archivos del expediente.
+    </div>
+    <button type="button" class="primary" [disabled]="busy() || !consent" (click)="connect()">
+      <lucide-icon [img]="icons.Link2" [size]="18" />{{
+        state()?.connected ? 'Volver a autorizar con Google' : 'Conectar con Google Calendar'
+      }}
+    </button>
+    @if (state()?.connected) {
+      @if (confirmDisconnect) {
+        <div class="disconnect-confirm">
+          <p>
+            Se detendrán los próximos envíos. El calendario y los eventos ya enviados se conservarán
+            en Google.
+          </p>
+          <button type="button" [disabled]="busy()" (click)="disconnect()">
+            Confirmar desconexión
+          </button>
+        </div>
+      } @else {
+        <button
+          type="button"
+          class="disconnect"
+          [disabled]="busy()"
+          (click)="confirmDisconnect = true"
+        >
+          <lucide-icon [img]="icons.Unplug" [size]="16" />Desconectar este consultorio
+        </button>
+      }
+    }
+  </div>
+</dialog>

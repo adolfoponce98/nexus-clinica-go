@@ -1,0 +1,46 @@
+<div class="history-grid">
+  <section class="history-card critical">
+    <header>
+      <lucide-icon [img]="icons.ShieldAlert" />
+      <div>
+        <small>INFORMACIÓN DEL EXPEDIENTE</small>
+        <h2>Alergias y antecedentes críticos</h2>
+      </div>
+    </header>
+    <p>{{ allergies }}</p>
+    <p class="muted">{{ criticalHistory }}</p>
+  </section>
+  <section class="history-card">
+    <header>
+      <lucide-icon [img]="icons.History" />
+      <div>
+        <small>SOLO CONSULTA</small>
+        <h2>Información de historia clínica inicial</h2>
+      </div>
+    </header>
+    <dl>
+      @for (field of fields; track field.key) {
+        <div>
+          <dt>{{ field.label }}</dt>
+          <dd>{{ history[field.key] || 'Sin información registrada' }}</dd>
+        </div>
+      }
+    </dl>
+  </section>
+</div>
+<nav class="consultation-tabs" aria-label="Secciones de la consulta">
+  @for (tab of tabs; track tab.id) {
+    <button
+      type="button"
+      [attr.aria-current]="active === tab.id ? 'page' : null"
+      [attr.aria-controls]="'followup-' + tab.id"
+      [class.active]="active === tab.id"
+      (click)="activeChange.emit(tab.id)"
+    >
+      <lucide-icon [img]="tab.icon" /><span
+        ><strong>{{ tab.label }}</strong
+        ><small>{{ tab.hint }}</small></span
+      >
+    </button>
+  }
+</nav>

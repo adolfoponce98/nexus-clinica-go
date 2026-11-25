@@ -1,0 +1,38 @@
+> Building...
+√ Building...
+Initial chunk files                                           | Names                                                      |  Raw size
+spec-app-calendar-calendar.component.js                       | spec-app-calendar-calendar.component                       | 265.55 kB | 
+styles.css                                                    | styles                                                     | 163.78 kB | 
+chunk-XOMYHM2A.js                                             | -                                                          | 131.78 kB | 
+chunk-JBWBLPNK.js                                             | -                                                          |   5.19 kB | 
+spec-app-calendar-onboarding-calendar-onboarding.component.js | spec-app-calendar-onboarding-calendar-onboarding.component |   3.43 kB | 
+init-testbed.js                                               | init-testbed                                               |   1.21 kB | 
+vitest-mock-patch.js                                          | vitest-mock-patch                                          | 969 bytes | 
+
+                                                              | Initial total                                              | 571.91 kB
+
+Application bundle generation complete. [7.342 seconds] - 2026-11-23T05:29:34.868Z
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:102:167:
+      102 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:44:57:
+      44 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+ RUN  v4.1.2 D:/GitHub/nexus-admin-nexo-salud
+
+
+ Test Files  2 passed (2)
+      Tests  20 passed (20)
+   Start at  23:29:35
+   Duration  2.15s (transform 339ms, setup 651ms, import 609ms, tests 710ms, environment 1.91s)
+

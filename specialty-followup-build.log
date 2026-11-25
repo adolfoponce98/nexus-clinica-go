@@ -1,0 +1,61 @@
+> Building...
+√ Building...
+Initial chunk files | Names                         |  Raw size
+main.js             | main                          |   4.55 MB | 
+chunk-S7TPJDCP.js   | -                             |   1.76 MB | 
+styles.css          | styles                        | 162.93 kB | 
+chunk-VL5VAURS.js   | -                             |   3.01 kB | 
+
+                    | Initial total                 |   6.47 MB
+
+Lazy chunk files    | Names                         |  Raw size
+chunk-476PJWJ5.js   | model-viewer                  |   2.29 MB | 
+chunk-FTI6GQYR.js   | jspdf-es-min                  | 644.82 kB | 
+chunk-WLMCMWGZ.js   | html2canvas                   | 399.43 kB | 
+chunk-SVJ7YBZZ.js   | index-es                      | 368.83 kB | 
+chunk-E37QX6S7.js   | public-registration-component |  67.93 kB | 
+chunk-O2DSMAQL.js   | purify-es                     |  67.42 kB | 
+chunk-WA5XZVOT.js   | browser                       |  63.18 kB | 
+chunk-DSQ3CQMT.js   | -                             |  61.93 kB | 
+chunk-KKEJ5DEO.js   | browser                       |   1.39 kB | 
+chunk-7YWLATDR.js   | -                             | 459 bytes | 
+
+Application bundle generation complete. [10.396 seconds] - 2026-11-21T03:09:36.287Z
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:36:4:
+      36 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:101:167:
+      101 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:42:38:
+      42 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:14:80:
+      14 │ ...ule, FormsModule, LucideAngularModule, Advanced3DViewerComponent],
+         ╵                                           ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterOutlet is not used within the template of LayoutComponent [plugin angular-compiler]
+
+    src/app/sidemenu/layout.component.ts:23:12:
+      23 │   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngu...
+         ╵             ~~~~~~~~~~~~
+
+
+Output location: D:\GitHub\nexus-admin-nexo-salud\dist\beast-admin-angular
+

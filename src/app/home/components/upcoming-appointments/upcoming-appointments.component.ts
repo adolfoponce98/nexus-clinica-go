@@ -1,4 +1,8 @@
-import { Component, input, computed, signal, inject } from '@angular/core';
+import { versionedFetch } from '../../../auth/sync-cache';
+import { normalizeAppointment } from '../../../appointment-history/appointment-history.utils';
+import { SECURITY_CONFIG } from '../../../config/security.config';
+import { API_URLS } from '../../../config/api-urls';
+import { Component, input, computed, signal, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ChevronRight, CheckCircle2, XCircle, Loader2 } from 'lucide-angular';
 import CryptoJS from 'crypto-js';
@@ -9,7 +13,7 @@ import { TokenInterceptorService } from '../../../auth/token-interceptor.service
   selector: 'app-upcoming-appointments',
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
-  templateUrl: 'upcoming-appointments.component.html'
+  templateUrl: 'upcoming-appointments.component.html',
 })
 export class UpcomingAppointmentsComponent {
   private authService = inject(AuthService);
@@ -21,6 +25,10 @@ export class UpcomingAppointmentsComponent {
   readonly Loader2 = Loader2;
 
   appointments = input.required<Array<any>>();
+  viewAllClicked = output<void>();
+  onViewAll(): void {
+    this.viewAllClicked.emit();
+  }
   selectedCitaForAction = signal<any | null>(null);
 
   // 🔄 Estados de carga y diálogos de éxito
@@ -29,12 +37,15 @@ export class UpcomingAppointmentsComponent {
 
   objectKeys = Object.keys;
 
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
-  private readonly MODIFY_APPOINTMENT_URL = 'https://modifyOrDeleteAppointment-o7vmreizjq-uc.a.run.app';
+  private readonly ENCRYPTION_KEY = SECURITY_CONFIG.ENCRYPTION_KEY;
+  private readonly APP_SECRET_HEADER = SECURITY_CONFIG.APP_SECRET_HEADER;
+  private readonly MODIFY_APPOINTMENT_URL = API_URLS.MODIFY_OR_DELETE_APPOINTMENT;
 
   groupedAppointments = computed(() => {
-    const rawList = this.appointments();
+    const rawList = this.appointments().flatMap((item) => {
+      const appointment = normalizeAppointment(item);
+      return appointment ? [appointment] : [];
+    });
     if (!rawList || rawList.length === 0) return {};
 
     const now = new Date();
@@ -42,7 +53,7 @@ export class UpcomingAppointmentsComponent {
     const futureAppointments = rawList.filter((item) => {
       if (!item.date || !item.time) return false;
       const appointmentDateTime = new Date(`${item.date}T${item.time}:00`);
-      return appointmentDateTime > now;
+      return appointmentDateTime > now && [0, 1].includes(Number(item.status ?? 0));
     });
 
     if (futureAppointments.length === 0) return {};
@@ -61,7 +72,7 @@ export class UpcomingAppointmentsComponent {
         formattedDate = dateObj.toLocaleDateString('es-ES', {
           day: 'numeric',
           month: 'long',
-          year: 'numeric'
+          year: 'numeric',
         });
       }
 
@@ -81,7 +92,7 @@ export class UpcomingAppointmentsComponent {
         ...item,
         statusText,
         statusClass,
-        dateFormatted: formattedDate
+        dateFormatted: formattedDate,
       };
     });
 
@@ -102,7 +113,7 @@ export class UpcomingAppointmentsComponent {
       this.selectedCitaForAction.set(cita);
     }
   }
-async handleAppointmentAction(cita: any, actionType: number, event: Event) {
+  async handleAppointmentAction(cita: any, actionType: number, event: Event) {
     event.stopPropagation();
     this.isLoading.set(true);
     this.selectedCitaForAction.set(null);
@@ -111,7 +122,7 @@ async handleAppointmentAction(cita: any, actionType: number, event: Event) {
       const activeSucursal = this.authService.getSucursal();
       const idConsultorio = activeSucursal?.idConsultorio || 'default_consultorio';
 
-      const newStatus = actionType === 1 ? 1 : (actionType === 2 ? 2 : Number(cita.status));
+      const newStatus = actionType === 1 ? 1 : actionType === 2 ? 2 : Number(cita.status);
 
       const appointmentDataPayload = {
         colorClass: cita.colorClass || '',
@@ -126,27 +137,30 @@ async handleAppointmentAction(cita: any, actionType: number, event: Event) {
         syncId: cita.syncId || '',
         time: cita.time || '',
         status: newStatus,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       const payload = {
         idConsultorio: idConsultorio,
         actionType: actionType, // 1 = Confirmar, 2 = Cancelar, 3 = Eliminar
-        appointmentData: appointmentDataPayload
+        appointmentData: appointmentDataPayload,
       };
 
       const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
-        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+        const ciphertext = CryptoJS.AES.encrypt(
+          JSON.stringify(payload),
+          this.ENCRYPTION_KEY,
+        ).toString();
 
-        return await fetch(this.MODIFY_APPOINTMENT_URL, {
+        return await versionedFetch(this.MODIFY_APPOINTMENT_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-app-signature': this.APP_SECRET_HEADER,
             'x-client-source': 'angular',
-            'Authorization': `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ encryptedData: ciphertext })
+          body: JSON.stringify({ encryptedData: ciphertext }),
         });
       });
 
@@ -171,7 +185,7 @@ async handleAppointmentAction(cita: any, actionType: number, event: Event) {
               return {
                 ...item,
                 status: newStatus,
-                updatedAt: appointmentDataPayload.updatedAt
+                updatedAt: appointmentDataPayload.updatedAt,
               };
             }
             return item;
@@ -205,10 +219,12 @@ async handleAppointmentAction(cita: any, actionType: number, event: Event) {
     if (item.syncId && target.syncId) {
       return item.syncId === target.syncId;
     }
-    return item.date === target.date &&
-           item.time === target.time &&
-           (item.patientName === target.patientName || item.name === target.name || item.patientName === target.name);
+    return (
+      item.date === target.date &&
+      item.time === target.time &&
+      (item.patientName === target.patientName ||
+        item.name === target.name ||
+        item.patientName === target.name)
+    );
   }
-
-
 }

@@ -1,6 +1,13 @@
+import { PermissionDirective } from '../auth/permission.directive';
 import { Component, signal, computed, OnInit, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
 import {
   LucideAngularModule,
   UserRoundPen,
@@ -10,18 +17,32 @@ import {
   UserPlus,
   X,
   Trash2,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-angular';
 import { MaestrasService } from './maestras.service';
-import { TeacherResponse, TabuladorResponse, RangoPago, HorarioNomina, CoachNomina, TabuladorInfo, NominaResponse } from './maestra.model';
+import {
+  TeacherResponse,
+  TabuladorResponse,
+  RangoPago,
+  HorarioNomina,
+  CoachNomina,
+  TabuladorInfo,
+  NominaResponse,
+} from './maestra.model';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 @Component({
   selector: 'app-staff',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, LucideAngularModule],
+  imports: [
+    PermissionDirective,
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    LucideAngularModule,
+  ],
   providers: [MaestrasService],
-  templateUrl: './maestras.component.html'
+  templateUrl: './maestras.component.html',
 })
 export class StaffComponent implements OnInit {
   readonly UserRoundPen = UserRoundPen;
@@ -57,7 +78,7 @@ export class StaffComponent implements OnInit {
     '#F15BB5', // Rosa neón / magenta
     '#FFB703', // Amarillo oro
     '#3a86ff', // Azul rey intenso
-    '#6b705c'  // Gris oliva oscuro neutro
+    '#6b705c', // Gris oliva oscuro neutro
   ];
 
   // Pestañas de navegación (Incluye 'pagos')
@@ -70,7 +91,7 @@ export class StaffComponent implements OnInit {
   rangosList = signal<{ min: number; max: number; monto: number }[]>([
     { min: 0, max: 7, monto: 100 },
     { min: 8, max: 14, monto: 120 },
-    { min: 15, max: 25, monto: 200 }
+    { min: 15, max: 25, monto: 200 },
   ]);
 
   // Estados para la pestaña de Pagos / Nómina
@@ -82,8 +103,8 @@ export class StaffComponent implements OnInit {
   currentMes = String(new Date().getMonth() + 1).padStart(2, '0');
 
   // Formularios
-  teacherForm: FormGroup;       // Para el modal (Crear)
-  editStaffForm: FormGroup;     // Para el panel lateral (Editar)
+  teacherForm: FormGroup; // Para el modal (Crear)
+  editStaffForm: FormGroup; // Para el panel lateral (Editar)
 
   photoPreview: string | null = null;
   photoFile: File | null = null;
@@ -93,7 +114,7 @@ export class StaffComponent implements OnInit {
   constructor(
     private maestrasService: MaestrasService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     // Formulario del Modal de Registro
     this.teacherForm = this.fb.group({
@@ -104,7 +125,7 @@ export class StaffComponent implements OnInit {
       hireDate: [''],
       tabulador: [''],
       colorHex: ['#f43f5e', Validators.required],
-      description: ['']
+      description: [''],
     });
 
     // Formulario del Panel Lateral de Edición
@@ -114,7 +135,7 @@ export class StaffComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       tabulador: [''],
       colorHex: ['#f43f5e', Validators.required],
-      description: ['']
+      description: [''],
     });
 
     // Efecto para precargar los datos en el panel lateral cuando cambia la maestra seleccionada
@@ -127,7 +148,7 @@ export class StaffComponent implements OnInit {
           email: staff.email || '',
           tabulador: staff.tabulador || '',
           colorHex: staff.colorHex || '#f43f5e',
-          description: staff.description || ''
+          description: staff.description || '',
         });
       }
     });
@@ -137,7 +158,7 @@ export class StaffComponent implements OnInit {
     this.obtenerMaestras();
     this.obtenerTabuladoresData();
   }
-calcularTotalClases(coach: CoachNomina): number {
+  calcularTotalClases(coach: CoachNomina): number {
     if (!coach || !coach.desgloseDias) return 0;
     let total = 0;
     for (const dia of coach.desgloseDias) {
@@ -160,25 +181,28 @@ calcularTotalClases(coach: CoachNomina): number {
   }
 
   // ================= MÉTODOS DE NÓMINA Y PAGOS =================
-cargarNomina() {
+  cargarNomina() {
     this.isLoadingNomina = true;
-    this.maestrasService.obtenerNominaMes(this.idBranch, this.currentAnio, this.currentMes).subscribe({
-      next: (res: NominaResponse) => { // <-- Añade ": NominaResponse" aquí
-        this.isLoadingNomina = false;
-        if (res && res.success) {
-          this.nominaData.set(res);
-          if (res.coaches && res.coaches.length > 0 && !this.selectedCoachNomina()) {
-            this.selectedCoachNomina.set(res.coaches[0]);
+    this.maestrasService
+      .obtenerNominaMes(this.idBranch, this.currentAnio, this.currentMes)
+      .subscribe({
+        next: (res: NominaResponse) => {
+          // <-- Añade ": NominaResponse" aquí
+          this.isLoadingNomina = false;
+          if (res && res.success) {
+            this.nominaData.set(res);
+            if (res.coaches && res.coaches.length > 0 && !this.selectedCoachNomina()) {
+              this.selectedCoachNomina.set(res.coaches[0]);
+            }
           }
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isLoadingNomina = false;
-        console.error('Error al obtener nómina:', err);
-        this.cdr.detectChanges();
-      }
-    });
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.isLoadingNomina = false;
+          console.error('Error al obtener nómina:', err);
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   selectCoachNomina(coach: CoachNomina) {
@@ -187,7 +211,9 @@ cargarNomina() {
 
   calcularMontoHora(agendadas: number, tabuladorInfo?: TabuladorInfo): number {
     if (!tabuladorInfo || !tabuladorInfo.rangos) return 0;
-    const rango = tabuladorInfo.rangos.find(r => agendadas >= r.minAlumnas && agendadas <= r.maxAlumnas);
+    const rango = tabuladorInfo.rangos.find(
+      (r) => agendadas >= r.minAlumnas && agendadas <= r.maxAlumnas,
+    );
     return rango ? rango.montoPorHora : 0;
   }
 
@@ -227,13 +253,11 @@ cargarNomina() {
         console.error('Error al obtener las maestras:', err);
         this.isLoading = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
-  selectedStaff = computed(() =>
-    this.instructors().find(i => i.id === this.selectedStaffId())
-  );
+  selectedStaff = computed(() => this.instructors().find((i) => i.id === this.selectedStaffId()));
 
   selectStaff(id?: string) {
     if (id) {
@@ -270,7 +294,7 @@ cargarNomina() {
           this.tabuladores.set(res.tabuladores);
         }
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -293,11 +317,11 @@ cargarNomina() {
     const payload: TabuladorResponse = {
       branchId: this.idBranch,
       nombre: this.nombreTabuladorInput.trim(),
-      rangos: this.rangosList().map(r => ({
+      rangos: this.rangosList().map((r) => ({
         minAlumnas: Number(r.min),
         maxAlumnas: Number(r.max),
-        montoPorHora: Number(r.monto)
-      }))
+        montoPorHora: Number(r.monto),
+      })),
     };
 
     this.isSubmitting = true;
@@ -319,13 +343,13 @@ cargarNomina() {
         this.isSubmitting = false;
         alert('Error de conexión.');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   obtenerColorRango(monto: number, rangos: RangoPago[]): string {
     if (!rangos || rangos.length === 0) return 'bg-zinc-100 text-zinc-700';
-    const montos = rangos.map(r => r.montoPorHora).sort((a, b) => a - b);
+    const montos = rangos.map((r) => r.montoPorHora).sort((a, b) => a - b);
     const min = montos[0];
     const max = montos[montos.length - 1];
 
@@ -333,7 +357,9 @@ cargarNomina() {
     if (monto === max) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
 
     const index = montos.indexOf(monto);
-    return index <= montos.length / 2 ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-cyan-100 text-cyan-700 border-cyan-200';
+    return index <= montos.length / 2
+      ? 'bg-orange-100 text-orange-700 border-orange-200'
+      : 'bg-cyan-100 text-cyan-700 border-cyan-200';
   }
 
   addSkill() {
@@ -347,7 +373,7 @@ cargarNomina() {
   }
 
   removeSkill(skillToRemove: string) {
-    this.skillsList.set(this.skillsList().filter(s => s !== skillToRemove));
+    this.skillsList.set(this.skillsList().filter((s) => s !== skillToRemove));
   }
 
   async saveTeacher() {
@@ -376,7 +402,7 @@ cargarNomina() {
         colorHex: formValues.colorHex,
         photoUrl: photoUrl || null,
         description: formValues.description || null,
-        skills: this.skillsList()
+        skills: this.skillsList(),
       };
 
       this.maestrasService.crearMaestro(payload).subscribe({
@@ -397,7 +423,7 @@ cargarNomina() {
           console.error('Error HTTP al crear maestro:', err);
           alert('Ocurrió un error al conectar con el servidor.');
           this.cdr.detectChanges();
-        }
+        },
       });
     } catch (error) {
       this.isSubmitting = false;
@@ -426,7 +452,7 @@ cargarNomina() {
       colorHex: formValues.colorHex,
       photoUrl: staffActual.photoUrl || null,
       description: formValues.description || null,
-      skills: staffActual.skills || []
+      skills: staffActual.skills || [],
     };
 
     this.maestrasService.crearMaestro(payload).subscribe({
@@ -446,7 +472,7 @@ cargarNomina() {
         console.error('Error HTTP al actualizar maestro:', err);
         alert('Ocurrió un error al conectar con el servidor.');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -461,7 +487,7 @@ cargarNomina() {
     this.isDeleting = true;
     const payload = {
       branchId: this.idBranch,
-      idDocumentFirebase: this.teacherToDelete.email.trim()
+      idDocumentFirebase: this.teacherToDelete.email.trim(),
     };
 
     this.maestrasService.eliminarMaestro(payload).subscribe({
@@ -469,7 +495,8 @@ cargarNomina() {
         this.isDeleting = false;
         this.showDeleteModal = false;
         if (response && response.success !== false) {
-          this.successMessage = 'Maestro eliminado correctamente. Recuerda actualizar manualmente las clases agendadas.';
+          this.successMessage =
+            'Maestro eliminado correctamente. Recuerda actualizar manualmente las clases agendadas.';
           this.showSuccessModal = true;
           this.obtenerMaestras();
         } else {
@@ -483,7 +510,7 @@ cargarNomina() {
         console.error('Error al eliminar maestro:', err);
         alert('Ocurrió un error al conectar con el servidor.');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 }

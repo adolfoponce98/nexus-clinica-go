@@ -1,0 +1,44 @@
+> Building...
+√ Building...
+Initial chunk files                                                                   | Names                                                                              |  Raw size
+spec-app-expediente-shared-followup-followup-workspace.component.js                   | spec-app-expediente-shared-followup-followup-workspace.component                   | 780.12 kB | 
+styles.css                                                                            | styles                                                                             | 163.59 kB | 
+chunk-ETWI6C2R.js                                                                     | -                                                                                  | 125.15 kB | 
+spec-app-expediente-baseFormPersonaldentification-patient-identification.component.js | spec-app-expediente-baseFormPersonaldentification-patient-identification.component |  94.00 kB | 
+spec-app-expediente-oftamologic-medical-record-oftamologic-form.component.js          | spec-app-expediente-oftamologic-medical-record-oftamologic-form.component          |  77.05 kB | 
+chunk-HWU7T4BF.js                                                                     | -                                                                                  |  50.38 kB | 
+chunk-L4QNIP3O.js                                                                     | -                                                                                  |  49.91 kB | 
+spec-app-expediente-shared-followup-followup-utils.js                                 | spec-app-expediente-shared-followup-followup-utils                                 |   5.57 kB | 
+chunk-JBWBLPNK.js                                                                     | -                                                                                  |   5.19 kB | 
+chunk-B2URW2AW.js                                                                     | -                                                                                  |   2.85 kB | 
+init-testbed.js                                                                       | init-testbed                                                                       |   1.21 kB | 
+vitest-mock-patch.js                                                                  | vitest-mock-patch                                                                  | 969 bytes | 
+chunk-HBAXCVFD.js                                                                     | -                                                                                  | 280 bytes | 
+
+                                                                                      | Initial total                                                                      |   1.36 MB
+
+Application bundle generation complete. [8.769 seconds] - 2026-11-22T05:59:52.232Z
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:102:167:
+      102 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:44:57:
+      44 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+ RUN  v4.1.2 D:/GitHub/nexus-admin-nexo-salud
+
+
+ Test Files  4 passed (4)
+      Tests  30 passed (30)
+   Start at  23:59:52
+   Duration  3.46s (transform 1.54s, setup 1.88s, import 2.36s, tests 1.50s, environment 5.24s)
+

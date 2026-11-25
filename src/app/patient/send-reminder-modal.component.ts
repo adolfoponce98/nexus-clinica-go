@@ -1,26 +1,39 @@
+import { PermissionDirective } from '../auth/permission.directive';
+import { TokenInterceptorService } from '../auth/token-interceptor.service';
+import { SECURITY_CONFIG } from '../config/security.config';
+import { API_URLS } from '../config/api-urls';
 import { Component, Inject, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
-import { LucideAngularModule, MessageSquare, Mail, Bell, CheckCircle2, Loader2, AlertCircle } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  MessageSquare,
+  Mail,
+  Bell,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+} from 'lucide-angular';
 import * as CryptoJS from 'crypto-js';
 import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-send-reminder-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, LucideAngularModule],
-  templateUrl: 'send-reminder-modal.component.html'
+  imports: [PermissionDirective, CommonModule, FormsModule, MatDialogModule, LucideAngularModule],
+  templateUrl: 'send-reminder-modal.component.html',
 })
 export class SendReminderModalComponent {
+  private sessionRequests = inject(TokenInterceptorService);
   private authService = inject(AuthService);
 
   // Íconos necesarios
   readonly icons = { MessageSquare, Mail, Bell, CheckCircle2, Loader2, AlertCircle };
 
-  private readonly NOTIFICATIONS_URL = 'https://centernotifications-o7vmreizjq-uc.a.run.app';
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
+  private readonly NOTIFICATIONS_URL = API_URLS.CENTERNOTIFICATIONS;
+  private readonly ENCRYPTION_KEY = SECURITY_CONFIG.ENCRYPTION_KEY;
+  private readonly APP_SECRET_HEADER = SECURITY_CONFIG.APP_SECRET_HEADER;
 
   isLoading = signal<boolean>(false);
 
@@ -31,7 +44,7 @@ export class SendReminderModalComponent {
   channels = {
     whatsapp: false,
     email: false,
-    app: false
+    app: false,
   };
 
   get allSelected(): boolean {
@@ -40,7 +53,7 @@ export class SendReminderModalComponent {
 
   constructor(
     public dialogRef: MatDialogRef<SendReminderModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
   ) {}
 
   toggleSelectAll(event: any) {
@@ -73,22 +86,25 @@ export class SendReminderModalComponent {
         date: 'Próxima cita',
         hour: 'Horario programado',
         address: this.data?.address || 'Consultorio',
-        timeBefore: '15 min'
+        timeBefore: '15 min',
       };
 
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+      const ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify(payload),
+        this.ENCRYPTION_KEY,
+      ).toString();
       const sessionData = this.authService.getSession();
       const jwtToken = sessionData?.sessionToken || '';
 
-      const response = await fetch(this.NOTIFICATIONS_URL, {
+      const response = await this.sessionRequests.authenticatedFetch(this.NOTIFICATIONS_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-app-signature': this.APP_SECRET_HEADER,
           'x-client-source': 'angular',
-          ...(jwtToken ? { 'Authorization': `Bearer ${jwtToken}` } : {})
+          ...(jwtToken ? { Authorization: `Bearer ${jwtToken}` } : {}),
         },
-        body: JSON.stringify({ encryptedData: ciphertext })
+        body: JSON.stringify({ encryptedData: ciphertext }),
       });
 
       const jsonRes = await response.json();
@@ -106,10 +122,11 @@ export class SendReminderModalComponent {
       } else {
         throw new Error(decryptedResponse.error || 'El servidor no pudo procesar el envío.');
       }
-
     } catch (error: any) {
-      console.error("❌ Error crítico al enviar recordatorios:", error);
-      this.errorMessage.set(error.message || 'Ocurrió un error inesperado al enviar las notificaciones.');
+      console.error('❌ Error crítico al enviar recordatorios:', error);
+      this.errorMessage.set(
+        error.message || 'Ocurrió un error inesperado al enviar las notificaciones.',
+      );
       this.showErrorModal.set(true); // Muestra el modal de error estilizado
     } finally {
       this.isLoading.set(false);

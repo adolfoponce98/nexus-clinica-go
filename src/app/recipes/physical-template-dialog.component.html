@@ -1,0 +1,139 @@
+<section class="physical-dialog" [attr.aria-busy]="busy">
+  <header>
+    <span class="tool-icon"><lucide-icon [img]="icons.FileImage" /></span>
+    <div>
+      <small>NEXUS IA · TU RECETARIO</small>
+      <h2>Digitalizar recetario físico</h2>
+      <p>Conserva su estilo y conviértelo en una plantilla para tus recetas.</p>
+    </div>
+    <button
+      class="close"
+      type="button"
+      (click)="close()"
+      [disabled]="busy"
+      aria-label="Cerrar diálogo"
+    >
+      <lucide-icon [img]="icons.X" />
+    </button>
+  </header>
+  <div class="dialog-body">
+    @if (error()) {
+      <p role="alert" class="message error">{{ error() }}</p>
+    }
+    @if (notice()) {
+      <p role="status" class="message success">{{ notice() }}</p>
+    }
+    @if (loading()) {
+      <app-clinical-content-skeleton
+        kind="logo"
+        label="Cargando tu plantilla y datos del consultorio…"
+      />
+    } @else {
+      <div class="digitizer-layout">
+        <aside>
+          <div class="step">
+            <span>01</span>
+            <div>
+              <h3>Sube tu recetario</h3>
+              <p>
+                Una fotografía clara o un PDF. Si tiene varias páginas se utiliza el diseño de la
+                primera.
+              </p>
+            </div>
+          </div>
+          <label class="upload-zone" [class.disabled]="busy || !canEdit"
+            ><lucide-icon [img]="icons.Upload" /><strong>{{
+              reading() ? 'Leyendo archivo…' : fileName || 'Seleccionar fotografía o PDF'
+            }}</strong
+            ><span>JPG, PNG, WebP o PDF · máximo 5 MB</span
+            ><input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              (change)="upload($event)"
+              [disabled]="busy || !canEdit"
+          /></label>
+          @if (imagePreview) {
+            <img class="source-image" [src]="imagePreview" alt="Recetario original seleccionado" />
+          } @else if (fileName) {
+            <p class="pdf-label"><lucide-icon [img]="icons.FileText" />PDF listo para analizar</p>
+          }
+          <div class="info">
+            <lucide-icon [img]="icons.Sparkles" />
+            <p>
+              Se conservan los textos impresos, membrete, contacto, cédulas, colores y posiciones
+              del recetario. En fotografías se recortan sus logos originales. Revisa los datos
+              impresos antes de aceptar. Se excluyen los datos del paciente y tratamientos previos;
+              la firma y el QR corresponden a cada emisión.
+            </p>
+          </div>
+          <button
+            class="primary"
+            type="button"
+            (click)="generate()"
+            [disabled]="busy || !source || !canEdit"
+          >
+            @if (generating()) {
+              <span class="spinner"></span>Digitalizando diseño…
+            } @else {
+              <lucide-icon [img]="icons.Sparkles" />Digitalizar con IA
+            }
+          </button>
+          <p class="cost">
+            {{
+              billing.active()
+                ? 'Incluido con tu suscripción.'
+                : 'Se utiliza 1 crédito IA si la digitalización se completa.'
+            }}
+            Revisa siempre el resultado.
+          </p>
+        </aside>
+        <main>
+          <div class="step">
+            <span>02</span>
+            <div>
+              <h3>Revisa y autoriza el diseño</h3>
+              <p>
+                {{
+                  proposal()
+                    ? 'Propuesta pendiente de tu autorización.'
+                    : 'Tu plantilla guardada o la nueva propuesta aparecerán aquí.'
+                }}
+              </p>
+            </div>
+          </div>
+          @if (generating()) {
+            <app-clinical-content-skeleton
+              kind="signature"
+              label="Interpretando la estructura del recetario…"
+            />
+          } @else if (preview) {
+            <div class="template-preview">
+              <app-prescription-document [prescription]="preview" />
+            </div>
+          } @else {
+            <div class="empty-preview">
+              <lucide-icon [img]="icons.FileImage" />
+              <h3>Tu formato, ahora digital</h3>
+              <p>Sube el recetario y genera una copia digital de su formato impreso.</p>
+            </div>
+          }
+          <button
+            class="primary accept"
+            type="button"
+            (click)="accept()"
+            [disabled]="busy || !proposal() || !canEdit"
+          >
+            @if (saving()) {
+              <span class="spinner"></span>Guardando plantilla…
+            } @else {
+              <lucide-icon [img]="icons.Check" />Aceptar diseño y usar como predeterminado
+            }
+          </button>
+          <p class="cost">
+            Se guarda en tu perfil. Las recetas ya emitidas conservan su diseño original.
+          </p>
+        </main>
+      </div>
+    }
+  </div>
+</section>

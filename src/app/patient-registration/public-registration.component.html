@@ -1,0 +1,377 @@
+<main class="self-registration">
+  <div class="registration-shell">
+    <header class="registration-brand">
+      <img
+        class="platform-logo"
+        src="assets/clinica-go-logo.svg"
+        width="640"
+        height="180"
+        alt="Clínica Go - Expediente Médico"
+      />
+      <span>Registro de paciente</span>
+    </header>
+    @if (state() === 'loading') {
+      <section class="status-card" role="status">
+        <span class="spinner"></span>
+        <h1>Preparando tu registro</h1>
+        <p>Estamos verificando tu enlace.</p>
+      </section>
+    }
+    @if (state() === 'expired' || state() === 'used' || state() === 'invalid') {
+      <section class="status-card">
+        <span class="status-icon" aria-hidden="true">{{ state() === 'used' ? '✓' : '⌛' }}</span>
+        <h1>
+          {{
+            state() === 'expired'
+              ? 'Este enlace ya ha expirado'
+              : state() === 'used'
+                ? 'Este enlace ya fue utilizado'
+                : 'No pudimos abrir este enlace'
+          }}
+        </h1>
+        <p>
+          {{
+            state() === 'expired'
+              ? 'Solicita otro enlace a tu doctor o clínica para completar tu registro.'
+              : state() === 'used'
+                ? 'Si ya enviaste tus datos, tu registro fue recibido. Para realizar un registro diferente, solicita otro enlace a tu doctor o clínica.'
+                : error() || 'Comprueba el enlace o solicita uno nuevo a tu clínica.'
+          }}
+        </p>
+      </section>
+    }
+    @if (state() === 'success') {
+      <section class="status-card success" role="status">
+        <span class="status-icon" aria-hidden="true">✓</span>
+        <h1>Tu registro fue enviado</h1>
+        <p>
+          Tu información está disponible para {{ info()?.doctorName }}. Gracias por ayudarnos a
+          preparar tu atención.
+        </p>
+        <small
+          >El enlace quedó cerrado y no puede volver a utilizarse. Ya puedes cerrar esta
+          página.</small
+        >
+      </section>
+    }
+    @if (state() === 'ready') {
+      <section class="doctor-intro">
+        @if (info()?.doctorLogoUrl && !doctorLogoFailed()) {
+          <img
+            [src]="info().doctorLogoUrl"
+            (error)="doctorLogoFailed.set(true)"
+            [alt]="'Logo de ' + info().doctorName"
+            referrerpolicy="no-referrer"
+          />
+        } @else {
+          <div class="doctor-symbol" aria-hidden="true">✚</div>
+        }
+        <div>
+          <span class="eyebrow">TU MÉDICO</span>
+          <h1>{{ info()?.doctorName }}</h1>
+          <p class="office-name">
+            <lucide-icon [img]="icons.Building2" [size]="15" aria-hidden="true" /><span
+              ><strong>Consultorio:</strong> {{ info()?.officeName }}</span
+            >
+          </p>
+        </div>
+      </section>
+      <div class="welcome-copy">
+        <h2>Preparemos tu próxima visita.</h2>
+        <p>
+          Completa tus datos y antecedentes. Tu doctor revisará esta información para integrar tu
+          expediente.
+        </p>
+        <div class="session-note">
+          <lucide-icon [img]="icons.Clock" [size]="17" aria-hidden="true" /> Enlace de un solo uso ·
+          Tiempo disponible:
+          <strong>{{ clock }}</strong>
+        </div>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <section class="form-card">
+          <div class="section-title">
+            <span><lucide-icon [img]="icons.User" [size]="19" aria-hidden="true" /></span>
+            <div>
+              <h2>Datos personales</h2>
+              <p>Los campos con * son obligatorios.</p>
+            </div>
+          </div>
+          <div class="fields-grid">
+            @for (f of personalFields; track f.key) {
+              <label [class.full]="f.type === 'textarea'" [for]="f.key"
+                ><span class="field-label"
+                  ><lucide-icon [img]="fieldIcon(f.key)" [size]="15" aria-hidden="true" />{{
+                    f.label
+                  }}{{ f.required ? ' *' : '' }}</span
+                >
+                @if (f.type === 'select') {
+                  <select [id]="f.key" [formControlName]="f.key">
+                    <option value="">Selecciona una opción</option>
+                    @for (option of f.options; track option) {
+                      <option [value]="option">{{ option }}</option>
+                    }
+                  </select>
+                } @else if (f.type === 'textarea') {
+                  <textarea
+                    [id]="f.key"
+                    [formControlName]="f.key"
+                    rows="2"
+                    maxlength="2000"
+                  ></textarea>
+                } @else {
+                  <input
+                    [id]="f.key"
+                    [type]="f.type || 'text'"
+                    [formControlName]="f.key"
+                    [attr.maxlength]="f.maxLength || 2000"
+                    [attr.max]="f.type === 'date' ? today : null"
+                    [attr.autocomplete]="
+                      f.key === 'firstName'
+                        ? 'given-name'
+                        : f.key === 'email'
+                          ? 'email'
+                          : f.type === 'tel'
+                            ? 'tel'
+                            : null
+                    "
+                  />
+                }
+                @if (form.get(f.key)?.invalid && form.get(f.key)?.touched) {
+                  <small class="field-error">{{
+                    f.required && !form.get(f.key)?.value
+                      ? 'Este campo es obligatorio.'
+                      : 'Revisa el formato de este dato.'
+                  }}</small>
+                }
+                @if (f.key === 'birthDate' && age !== '') {
+                  <small>{{ age }} años</small>
+                }
+              </label>
+            }
+          </div>
+        </section>
+        <section class="form-card">
+          <div class="section-title">
+            <span><lucide-icon [img]="icons.MapPin" [size]="19" aria-hidden="true" /></span>
+            <div>
+              <h2>Domicilio</h2>
+              <p>Indica tu dirección de contacto.</p>
+            </div>
+          </div>
+          <div class="fields-grid">
+            @for (f of addressFields; track f.key) {
+              <label [for]="f.key"
+                ><span class="field-label"
+                  ><lucide-icon [img]="fieldIcon(f.key)" [size]="15" aria-hidden="true" />{{
+                    f.label
+                  }}{{ f.required ? ' *' : '' }}</span
+                ><input [id]="f.key" [formControlName]="f.key" maxlength="2000" />
+                @if (form.get(f.key)?.invalid && form.get(f.key)?.touched) {
+                  <small class="field-error">Este campo es obligatorio.</small>
+                }
+              </label>
+            }
+          </div>
+        </section>
+        @for (g of groups; track g.key; let i = $index) {
+          <section class="form-card">
+            <div class="section-title">
+              <span><lucide-icon [img]="fieldIcon(g.key)" [size]="19" aria-hidden="true" /></span>
+              <div>
+                <h2>{{ g.title }}</h2>
+                <p>{{ g.description }}</p>
+              </div>
+            </div>
+            <div class="choice-grid" [formGroupName]="g.key">
+              @for (option of g.options; track option.key) {
+                <label class="choice"
+                  ><input type="checkbox" [formControlName]="option.key" /><lucide-icon
+                    class="choice-icon"
+                    [img]="fieldIcon(option.key)"
+                    [size]="15"
+                    aria-hidden="true"
+                  /><span>{{ option.label }}</span></label
+                >
+              }
+            </div>
+            <label [for]="g.other"
+              ><span class="field-label"
+                ><lucide-icon [img]="fieldIcon(g.other)" [size]="15" aria-hidden="true" />{{
+                  g.otherLabel
+                }}</span
+              ><textarea
+                [id]="g.other"
+                [formControlName]="g.other"
+                rows="2"
+                maxlength="2000"
+              ></textarea>
+            </label>
+            @if (g.key === 'familyBackground') {
+              <label for="familyBackgroundDetails"
+                ><span class="field-label"
+                  ><lucide-icon
+                    [img]="fieldIcon('familyBackgroundDetails')"
+                    [size]="15"
+                    aria-hidden="true"
+                  />Parentesco y detalles de los antecedentes familiares</span
+                ><textarea
+                  id="familyBackgroundDetails"
+                  formControlName="familyBackgroundDetails"
+                  rows="2"
+                  maxlength="2000"
+                  placeholder="Por ejemplo, qué familiar presenta el antecedente."
+                ></textarea>
+              </label>
+            }
+            @if (g.key === 'pathologicalBackground') {
+              @if (form.get('pathologicalBackground.allergy')?.value) {
+                <label for="allergyDetails"
+                  ><span class="field-label"
+                    ><lucide-icon
+                      [img]="fieldIcon('allergyDetails')"
+                      [size]="15"
+                      aria-hidden="true"
+                    />Sustancia y reacción alérgica</span
+                  ><textarea
+                    id="allergyDetails"
+                    formControlName="allergyDetails"
+                    rows="2"
+                    maxlength="2000"
+                  ></textarea>
+                </label>
+              }
+              <label for="priorTreatments"
+                ><span class="field-label"
+                  ><lucide-icon
+                    [img]="fieldIcon('priorTreatments')"
+                    [size]="15"
+                    aria-hidden="true"
+                  />Tratamientos que has recibido</span
+                ><textarea
+                  id="priorTreatments"
+                  formControlName="priorTreatments"
+                  rows="2"
+                  maxlength="2000"
+                ></textarea>
+              </label>
+            }
+            @if (g.key === 'nonPathologicalBackground') {
+              <div class="fields-grid">
+                @for (
+                  f of [
+                    { key: 'housing', label: 'Vivienda' },
+                    { key: 'hygiene', label: 'Higiene' },
+                    { key: 'nutrition', label: 'Alimentación' },
+                    { key: 'physicalActivity', label: 'Actividad física' },
+                  ];
+                  track f.key
+                ) {
+                  <label [for]="f.key"
+                    ><span class="field-label"
+                      ><lucide-icon [img]="fieldIcon(f.key)" [size]="15" aria-hidden="true" />{{
+                        f.label
+                      }}</span
+                    ><textarea
+                      [id]="f.key"
+                      [formControlName]="f.key"
+                      rows="2"
+                      maxlength="2000"
+                    ></textarea>
+                  </label>
+                }
+              </div>
+            }
+          </section>
+        }
+        <section class="form-card privacy-card">
+          <div class="section-title">
+            <span><lucide-icon [img]="icons.ShieldCheck" [size]="19" aria-hidden="true" /></span>
+            <div>
+              <h2>Privacidad y firma</h2>
+              <p>Revisa tus datos antes de enviarlos.</p>
+            </div>
+          </div>
+          <p>
+            <strong
+              >Favor de leer nuestro aviso de privacidad
+              <a [href]="privacyNoticePath" target="_blank" rel="noopener noreferrer">aquí</a
+              >.</strong
+            >
+          </p>
+          <label class="consent"
+            ><input type="checkbox" formControlName="privacyAccepted" /><span
+              >Acepto que he leído y estoy de acuerdo con el
+              <a [href]="privacyNoticePath" target="_blank" rel="noopener noreferrer"
+                ><strong>aviso de privacidad</strong></a
+              >. *</span
+            ></label
+          ><label class="consent"
+            ><input type="checkbox" formControlName="secondaryPurposesDeclined" /><span
+              >No deseo que se utilicen mis datos para los fines secundarios.</span
+            ></label
+          >
+          <div class="signature-summary">
+            @if (signature()) {
+              <img [src]="signature()" alt="Firma del paciente registrada" /><small
+                >Firma capturada</small
+              >
+            }
+            <button
+              type="button"
+              class="secondary-button"
+              (click)="openSignature()"
+              [disabled]="sending()"
+            >
+              {{ signature() ? 'Volver a firmar' : 'Firmar' }}
+              <lucide-icon [img]="icons.PenLine" [size]="16" aria-hidden="true" /></button
+            ><small>Tu firma es obligatoria para enviar el registro.</small>
+          </div>
+        </section>
+        @if (error()) {
+          <p role="alert" class="submission-error">{{ error() }}</p>
+        }
+        <button type="submit" class="send-button" [disabled]="!canSubmit">
+          {{ sending() ? 'Enviando tu registro…' : 'Enviar mi registro' }}
+          <lucide-icon [img]="icons.Send" [size]="17" aria-hidden="true" />
+        </button>
+        <p class="form-note">
+          Se requieren los datos obligatorios, la aceptación del aviso y tu firma. Este enlace se
+          cerrará al enviar el registro.
+        </p>
+      </form>
+    }
+    <footer class="public-footer">Clínica Go · Información para tu atención médica</footer>
+  </div>
+</main>
+@if (signing()) {
+  <div class="signature-overlay">
+    <section
+      class="signature-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Firma del paciente"
+    >
+      <div class="dialog-heading">
+        <div>
+          <span class="eyebrow">CONFIRMA TU REGISTRO</span>
+          <h2>Firma del paciente</h2>
+        </div>
+        <button type="button" aria-label="Cerrar firma" (click)="signing.set(false)">✕</button>
+      </div>
+      <p>{{ form.get('firstName')?.value }} {{ form.get('paternalSurname')?.value }}</p>
+      <app-signature-pad
+        label="Firma del paciente"
+        [value]="signatureDraft"
+        (valueChange)="signatureDraft = $event"
+      /><button
+        type="button"
+        class="send-button"
+        [disabled]="!signatureDraft"
+        (click)="acceptSignature()"
+      >
+        <lucide-icon [img]="icons.PenLine" [size]="17" aria-hidden="true" />Usar esta firma
+      </button>
+    </section>
+  </div>
+}

@@ -1,0 +1,102 @@
+@if (section === 'consultation') {
+  <section class="clinical-section">
+    <div class="section-title">
+      <span class="letter"
+        ><lucide-icon [img]="icons.MessageSquare" [size]="18" aria-hidden="true"
+      /></span>
+      <div>
+        <h3>Subjetivo</h3>
+        <p>Motivo, síntomas y evolución del paciente.</p>
+      </div>
+    </div>
+    <div class="fields-grid">
+      @for (f of common; track f.key) {
+        <app-followup-input
+          [field]="f"
+          [value]="data[f.key]"
+          (valueChange)="data[f.key] = $event; changed.emit()"
+          [disabled]="disabled"
+        />
+      }
+    </div>
+  </section>
+}
+@if (section === 'vitals') {
+  <section class="clinical-section">
+    <div>
+      <div class="section-title">
+        <span class="letter teal"
+          ><lucide-icon [img]="icons.HeartPulse" [size]="18" aria-hidden="true"
+        /></span>
+        Objetivo · somatometría y signos vitales
+        <small>{{ 'Registro opcional' }}</small>
+      </div>
+      @if (optionalVitals) {
+        <label class="choice"
+          ><input
+            type="checkbox"
+            [(ngModel)]="data.vitalsNotRequired"
+            (ngModelChange)="changed.emit()"
+            [ngModelOptions]="{ standalone: true }"
+            [disabled]="disabled"
+          />No se requieren signos vitales en esta atención</label
+        >
+        @if (data.vitalsNotRequired) {
+          <app-followup-input
+            [field]="{ type: 'textarea', label: 'Justificación clínica de la omisión' }"
+            [value]="data.vitalsOmissionReason"
+            (valueChange)="data.vitalsOmissionReason = $event; changed.emit()"
+            [disabled]="disabled"
+          />
+        }
+      }
+      @if (!data.vitalsNotRequired) {
+        <div class="fields-grid vitals-grid">
+          @for (f of vitals; track f.key) {
+            <app-followup-input
+              [field]="f"
+              [value]="data.vitals[f.key]"
+              (valueChange)="data.vitals[f.key] = $event; changed.emit()"
+              [disabled]="disabled"
+            />
+          }
+        </div>
+        <div class="calculated">
+          <span>IMC calculado</span
+          ><strong
+            >{{ bmi(data.vitals.weight, data.vitals.heightCm) ?? '—' }} <small>kg/m²</small></strong
+          >
+        </div>
+      }
+    </div>
+  </section>
+}
+@if (section === 'consultation') {
+  <section class="clinical-section">
+    <div class="section-title">
+      <span class="letter amber"
+        ><lucide-icon [img]="icons.Pill" [size]="18" aria-hidden="true"
+      /></span>
+      <div>
+        <h3>Plan y pronóstico</h3>
+        <p>Indicaciones, estudios solicitados y seguimiento.</p>
+      </div>
+    </div>
+    <app-followup-input
+      [field]="{ type: 'textarea', label: 'Tratamiento e indicaciones generales' }"
+      [value]="data.treatment"
+      (valueChange)="data.treatment = $event; changed.emit()"
+      [disabled]="disabled"
+    />
+    <div class="fields-grid">
+      @for (f of prognosis; track f.key) {
+        <app-followup-input
+          [field]="f"
+          [value]="data[f.key]"
+          (valueChange)="data[f.key] = $event; changed.emit()"
+          [disabled]="disabled"
+        />
+      }
+    </div>
+  </section>
+}

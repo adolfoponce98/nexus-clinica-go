@@ -1,7 +1,27 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef,inject } from '@angular/core';
+import { PermissionDirective } from '../auth/permission.directive';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { LucideAngularModule, Search, Bell, HelpCircle, Filter, Trash2, CreditCard, Banknote, Landmark, Plus, TrendingUp, ArrowLeftRight, ChevronDown, Printer, FileText, Send, X, RefreshCw } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  Search,
+  Bell,
+  HelpCircle,
+  Filter,
+  Trash2,
+  CreditCard,
+  Banknote,
+  Landmark,
+  Plus,
+  TrendingUp,
+  ArrowLeftRight,
+  ChevronDown,
+  Printer,
+  FileText,
+  Send,
+  X,
+  RefreshCw,
+} from 'lucide-angular';
 import { Payment } from './pagos.model';
 import { PagosService, RegistrarPagoRequest } from './pagos.service';
 import { collection, onSnapshot, Unsubscribe, getFirestore, query } from 'firebase/firestore';
@@ -17,7 +37,19 @@ interface StudentSuggestion {
 // permisos.model.ts
 export const PERMISSION_STRUCTURE = {
   calendario: ['solo_lectura', 'escritura'],
-  home: ['alumno', 'planes', 'maestros', 'usuarios', 'horarios', 'tipos_clases', 'bicis', 'checkin', 'informacion_financiera', 'estadisticas', 'resumen_sucursal'],
+  home: [
+    'alumno',
+    'planes',
+    'maestros',
+    'usuarios',
+    'horarios',
+    'tipos_clases',
+    'bicis',
+    'checkin',
+    'informacion_financiera',
+    'estadisticas',
+    'resumen_sucursal',
+  ],
   alumnas: ['lectura', 'escritura'],
   maestras: ['lectura', 'escritura'],
   planes: ['lectura', 'escritura'],
@@ -25,18 +57,36 @@ export const PERMISSION_STRUCTURE = {
   gastos: ['lectura', 'escritura'],
   sucursal: ['lectura', 'escritura'],
   configuracion: ['lectura', 'escritura'],
-  permisos: ['lectura', 'escritura']
+  permisos: ['lectura', 'escritura'],
 };
 
 @Component({
   selector: 'app-pagos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [PermissionDirective, CommonModule, ReactiveFormsModule, LucideAngularModule],
   providers: [PagosService],
-  templateUrl: './pagos.component.html'
+  templateUrl: './pagos.component.html',
 })
 export class PagosComponent implements OnInit, OnDestroy {
-  readonly icons = { Search, Bell, HelpCircle, Filter, Trash2, CreditCard, Banknote, Landmark, Plus, TrendingUp, ArrowLeftRight, ChevronDown, Printer, FileText, Send, X, RefreshCw };
+  readonly icons = {
+    Search,
+    Bell,
+    HelpCircle,
+    Filter,
+    Trash2,
+    CreditCard,
+    Banknote,
+    Landmark,
+    Plus,
+    TrendingUp,
+    ArrowLeftRight,
+    ChevronDown,
+    Printer,
+    FileText,
+    Send,
+    X,
+    RefreshCw,
+  };
   private authService = inject(AuthService);
   paymentForm: FormGroup;
   allPayments: Payment[] = [];
@@ -67,14 +117,14 @@ export class PagosComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private pagosService: PagosService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.paymentForm = this.fb.group({
       alumna: ['', Validators.required],
       monto: [0, [Validators.required, Validators.min(1)]],
       numeroClases: [0, [, Validators.min(1)]],
       metodo: ['Efectivo', Validators.required],
-      plan: ['Mensualidad (Ilimitada)', Validators.required]
+      plan: ['Mensualidad (Ilimitada)', Validators.required],
     });
   }
 
@@ -83,51 +133,53 @@ export class PagosComponent implements OnInit, OnDestroy {
     this.loadStudentsForSearch();
     this.loadCurrentMonthPayments();
     this.loadAvailablePlans(); // Nueva función para llenar el combo
-    this.paymentForm.get('alumna')?.valueChanges.subscribe(value => {
+    this.paymentForm.get('alumna')?.valueChanges.subscribe((value) => {
       this.filterStudents(value);
     });
-    this.paymentForm.get('plan')?.valueChanges.subscribe(planName => {
-    this.handlePlanChange(planName);
-  });
+    this.paymentForm.get('plan')?.valueChanges.subscribe((planName) => {
+      this.handlePlanChange(planName);
+    });
   }
 
   handlePlanChange(planName: string) {
-  const selectedPlan = this.availablePlans.find(p => p.name === planName);
+    const selectedPlan = this.availablePlans.find((p) => p.name === planName);
 
-  if (selectedPlan) {
-    // Es un plan del catálogo: Precargamos precio y bloqueamos edición (opcional)
-    this.paymentForm.patchValue({ monto: selectedPlan.precioRegular }, { emitEvent: false });
-    this.isManualConcept = false;
-  } else if (['Pago extraordinario', 'PREPAGO', 'ABONO', 'OTRO','CLASES ADICIONALES'].includes(planName)) {
-    this.paymentForm.patchValue({ monto: 0 }, { emitEvent: false });
-    this.isManualConcept = true;
-     if (['CLASES ADICIONALES'].includes(planName)){
-        this.isClasesExtra =true
-     }else{
-        this.isClasesExtra =false
-     }
+    if (selectedPlan) {
+      // Es un plan del catálogo: Precargamos precio y bloqueamos edición (opcional)
+      this.paymentForm.patchValue({ monto: selectedPlan.precioRegular }, { emitEvent: false });
+      this.isManualConcept = false;
+    } else if (
+      ['Pago extraordinario', 'PREPAGO', 'ABONO', 'OTRO', 'CLASES ADICIONALES'].includes(planName)
+    ) {
+      this.paymentForm.patchValue({ monto: 0 }, { emitEvent: false });
+      this.isManualConcept = true;
+      if (['CLASES ADICIONALES'].includes(planName)) {
+        this.isClasesExtra = true;
+      } else {
+        this.isClasesExtra = false;
+      }
+    }
   }
-}
 
-// Calcula el total general del mes
-get totalGeneralMes(): number {
-  return this.allPayments.reduce((sum, p) => sum + (Number(p.monto) || 0), 0);
-}
+  // Calcula el total general del mes
+  get totalGeneralMes(): number {
+    return this.allPayments.reduce((sum, p) => sum + (Number(p.monto) || 0), 0);
+  }
 
-// Calcula los totales agrupados por concepto (plan)
-get desglosadoPorConcepto(): { nombre: string, total: number }[] {
-  const agrupado: { [key: string]: number } = {};
+  // Calcula los totales agrupados por concepto (plan)
+  get desglosadoPorConcepto(): { nombre: string; total: number }[] {
+    const agrupado: { [key: string]: number } = {};
 
-  this.allPayments.forEach(p => {
-    const concepto = p.plan || 'Otros';
-    agrupado[concepto] = (agrupado[concepto] || 0) + Number(p.monto);
-  });
+    this.allPayments.forEach((p) => {
+      const concepto = p.plan || 'Otros';
+      agrupado[concepto] = (agrupado[concepto] || 0) + Number(p.monto);
+    });
 
-  return Object.keys(agrupado).map(key => ({
-    nombre: key,
-    total: agrupado[key]
-  }));
-}
+    return Object.keys(agrupado).map((key) => ({
+      nombre: key,
+      total: agrupado[key],
+    }));
+  }
 
   ngOnDestroy() {
     if (this.unsubPayments) this.unsubPayments();
@@ -135,36 +187,40 @@ get desglosadoPorConcepto(): { nombre: string, total: number }[] {
   }
 
   // 1. Cargar paquetes de la sucursal
-loadAvailablePlans() {
-  const db = getFirestore();
-  const plansRef = collection(db, `membresias/${this.idBranch}/membrecias`);
+  loadAvailablePlans() {
+    const db = getFirestore();
+    const plansRef = collection(db, `membresias/${this.idBranch}/membrecias`);
 
-  onSnapshot(plansRef, (snapshot) => {
-    this.availablePlans = snapshot.docs.map(doc => ({
-      ...doc.data() as PaqueteMemberShipModel,
-      idPaquete: doc.id
-    }));
-    this.cdr.detectChanges();
-  });
-}
+    onSnapshot(plansRef, (snapshot) => {
+      this.availablePlans = snapshot.docs.map((doc) => ({
+        ...(doc.data() as PaqueteMemberShipModel),
+        idPaquete: doc.id,
+      }));
+      this.cdr.detectChanges();
+    });
+  }
 
   loadStudentsForSearch() {
     const db = getFirestore();
     const studentsRef = collection(db, `suscriptionsBranches/${this.idBranch}/suscriptions`);
 
-    this.unsubStudents = onSnapshot(studentsRef, (snapshot) => {
-      this.allStudents = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          fullName: data['fullName'] || '',
-          email: data['email'] || '',
-          phone: data['phone'] || ''
-        };
-      });
-      this.cdr.detectChanges();
-    }, error => {
-      console.error('Error al cargar alumnas:', error);
-    });
+    this.unsubStudents = onSnapshot(
+      studentsRef,
+      (snapshot) => {
+        this.allStudents = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            fullName: data['fullName'] || '',
+            email: data['email'] || '',
+            phone: data['phone'] || '',
+          };
+        });
+        this.cdr.detectChanges();
+      },
+      (error) => {
+        console.error('Error al cargar alumnas:', error);
+      },
+    );
   }
 
   filterStudents(search: string) {
@@ -174,8 +230,8 @@ loadAvailablePlans() {
       return;
     }
     const filter = search.toLowerCase();
-    this.filteredStudents = this.allStudents.filter(s =>
-      s.fullName.toLowerCase().includes(filter) || s.phone.includes(filter)
+    this.filteredStudents = this.allStudents.filter(
+      (s) => s.fullName.toLowerCase().includes(filter) || s.phone.includes(filter),
     );
     this.showSuggestions = this.filteredStudents.length > 0;
   }
@@ -201,38 +257,42 @@ loadAvailablePlans() {
       yearStr,
       'meses',
       monthKey,
-      'pagos'
+      'pagos',
     );
 
     const q = query(paymentsRef);
 
-    this.unsubPayments = onSnapshot(q, (snapshot) => {
-      this.allPayments = snapshot.docs.map((doc, index) => {
-        const data = doc.data();
-        const fechaDate = data['fechaRegistro'] ? new Date(data['fechaRegistro']) : new Date();
+    this.unsubPayments = onSnapshot(
+      q,
+      (snapshot) => {
+        this.allPayments = snapshot.docs.map((doc, index) => {
+          const data = doc.data();
+          const fechaDate = data['fechaRegistro'] ? new Date(data['fechaRegistro']) : new Date();
 
-        return {
-          id: index + 1,
-          alumna: this.getNameByEmail(data['emailAlumno']),
-          email: data['emailAlumno'] || 'N/A',
-          monto: data['monto'] || 0,
-          plan: data['concepto'] || 'N/A',
-          metodo: data['metodoPago'] || 'N/A',
-          receptor: data['emailRecepcion'] || 'N/A',
-          fecha: fechaDate
-        };
-      });
+          return {
+            id: index + 1,
+            alumna: this.getNameByEmail(data['emailAlumno']),
+            email: data['emailAlumno'] || 'N/A',
+            monto: data['monto'] || 0,
+            plan: data['concepto'] || 'N/A',
+            metodo: data['metodoPago'] || 'N/A',
+            receptor: data['emailRecepcion'] || 'N/A',
+            fecha: fechaDate,
+          };
+        });
 
-      this.allPayments.sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
-      this.updatePagination();
-      this.cdr.detectChanges();
-    }, error => {
-      console.error('Error al consultar pagos del mes:', error);
-    });
+        this.allPayments.sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+        this.updatePagination();
+        this.cdr.detectChanges();
+      },
+      (error) => {
+        console.error('Error al consultar pagos del mes:', error);
+      },
+    );
   }
 
   getNameByEmail(email: string): string {
-    const student = this.allStudents.find(s => s.email === email);
+    const student = this.allStudents.find((s) => s.email === email);
     return student ? student.fullName : email;
   }
 
@@ -270,23 +330,23 @@ loadAvailablePlans() {
     window.open(url, '_blank');
   }
 
-imprimirTicket() {
-  if (!this.selectedTicket) return;
+  imprimirTicket() {
+    if (!this.selectedTicket) return;
 
-  try {
-    this.isPrinting = true;
-    this.cdr.detectChanges();
+    try {
+      this.isPrinting = true;
+      this.cdr.detectChanges();
 
-    // 1. Crear una ventana o pestaña invisible temporal
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
-    if (!printWindow) {
-      alert('Por favor, permite las ventanas emergentes (pop-ups) para poder imprimir.');
-      this.isPrinting = false;
-      return;
-    }
+      // 1. Crear una ventana o pestaña invisible temporal
+      const printWindow = window.open('', '_blank', 'width=400,height=600');
+      if (!printWindow) {
+        alert('Por favor, permite las ventanas emergentes (pop-ups) para poder imprimir.');
+        this.isPrinting = false;
+        return;
+      }
 
-    // 2. Construir el HTML con la tipografía estándar de fábrica (Monospace a 13px, sin negritas)
-    const ticketHtml = `
+      // 2. Construir el HTML con la tipografía estándar de fábrica (Monospace a 13px, sin negritas)
+      const ticketHtml = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -351,18 +411,18 @@ imprimirTicket() {
       </html>
     `;
 
-    printWindow.document.write(ticketHtml);
-    printWindow.document.close();
+      printWindow.document.write(ticketHtml);
+      printWindow.document.close();
 
-    this.isPrinting = false;
-    this.cdr.detectChanges();
-  } catch (error) {
-    console.error('Error al imprimir:', error);
-    this.isPrinting = false;
-    this.cdr.detectChanges();
-    alert('No se pudo completar la impresión.');
+      this.isPrinting = false;
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Error al imprimir:', error);
+      this.isPrinting = false;
+      this.cdr.detectChanges();
+      alert('No se pudo completar la impresión.');
+    }
   }
-}
   savePayment() {
     if (this.paymentForm.valid) {
       const formVal = this.paymentForm.value;
@@ -377,12 +437,12 @@ imprimirTicket() {
       const payload: RegistrarPagoRequest = {
         branchId: this.idBranch,
         monto: montoVal,
-        clasesAdicionales:clasesAdicionales,
+        clasesAdicionales: clasesAdicionales,
         emailAlumno: this.selectedStudentEmail || 'cliente@email.com',
         emailRecepcion: receptorConcatenado, // <--- Aquí se envía la concatenación
         metodoPago: metodoVal,
         concepto: planVal,
-        conceptoPagoId: 'PLAN-' + Date.now()
+        conceptoPagoId: 'PLAN-' + Date.now(),
       };
 
       this.pagosService.registrarPago(payload).subscribe({
@@ -397,7 +457,7 @@ imprimirTicket() {
               plan: planVal,
               metodo: metodoVal,
               receptor: formVal.receptor,
-              fecha: new Date()
+              fecha: new Date(),
             };
             this.showTicketModal = true; // Mostramos el diálogo del ticket
 
@@ -405,7 +465,7 @@ imprimirTicket() {
               metodo: 'Efectivo',
               receptor: 'Recepcionista (Turno Mañana)',
               plan: 'Mensualidad (Ilimitada)',
-              monto: 0
+              monto: 0,
             });
             this.selectedStudentEmail = '';
           } else {
@@ -415,7 +475,7 @@ imprimirTicket() {
         error: (err) => {
           console.error('Error HTTP al registrar pago', err);
           alert('Error al conectar con el servidor de pagos.');
-        }
+        },
       });
     }
   }

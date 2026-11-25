@@ -1,14 +1,21 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Search, Calendar, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  Search,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+} from 'lucide-angular';
 import { AuthService } from '../../../../auth/auth.service';
 
 @Component({
   selector: 'app-all-past-patients',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
-  templateUrl: './all-recent-patients.component.html'
+  templateUrl: './all-recent-patients.component.html',
 })
 export class AllPastPatientsComponent implements OnInit {
   private authService = inject(AuthService);
@@ -21,7 +28,7 @@ export class AllPastPatientsComponent implements OnInit {
   // Estados de los filtros
   searchTerm = signal<string>('');
   selectedMonth = signal<string>(''); // Formato "YYYY-MM"
-  selectedDate = signal<string>('');  // Formato "YYYY-MM-DD"
+  selectedDate = signal<string>(''); // Formato "YYYY-MM-DD"
 
   // Paginación
   currentPage = signal<number>(1);
@@ -44,7 +51,10 @@ export class AllPastPatientsComponent implements OnInit {
 
       // 2. Ordenar de la más reciente a la más antigua
       const sorted = past.sort((a: any, b: any) => {
-        return new Date(`${b.date}T${b.time || '00:00'}`).getTime() - new Date(`${a.date}T${a.time || '00:00'}`).getTime();
+        return (
+          new Date(`${b.date}T${b.time || '00:00'}`).getTime() -
+          new Date(`${a.date}T${a.time || '00:00'}`).getTime()
+        );
       });
 
       // 3. Mapear y formatear fechas
@@ -53,7 +63,11 @@ export class AllPastPatientsComponent implements OnInit {
         if (item.date) {
           const [y, m, d] = item.date.split('-');
           const dateObj = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
-          formattedDate = dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+          formattedDate = dateObj.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          });
         }
 
         return {
@@ -63,7 +77,7 @@ export class AllPastPatientsComponent implements OnInit {
           monthKey: item.date ? item.date.substring(0, 7) : '', // YYYY-MM para filtrar por mes
           formattedDate: `${formattedDate}, ${item.time || '00:00'}`,
           status: item.status || 'Completada',
-          avatar: item.avatar || ''
+          avatar: item.avatar || '',
         };
       });
 
@@ -78,8 +92,9 @@ export class AllPastPatientsComponent implements OnInit {
     const month = this.selectedMonth();
     const date = this.selectedDate();
 
-    return list.filter(item => {
-      const matchesSearch = !term || item.name.toLowerCase().includes(term) || item.reason.toLowerCase().includes(term);
+    return list.filter((item) => {
+      const matchesSearch =
+        !term || item.name.toLowerCase().includes(term) || item.reason.toLowerCase().includes(term);
       const matchesMonth = !month || item.monthKey === month;
       const matchesDate = !date || item.date === date;
       return matchesSearch && matchesMonth && matchesDate;

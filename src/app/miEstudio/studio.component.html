@@ -1,113 +1,235 @@
 <div class="space-y-8 animate-in fade-in duration-500 text-white font-sans pb-12">
-
   <!-- ================================================================= -->
   <!-- VISTA 1: LISTADO Y FORMULARIO DE ALTA DE MATRICES                 -->
   <!-- ================================================================= -->
   @if (!selectedStudio()) {
-
-    <div class="flex justify-between items-center bg-zinc-900/60 p-6 rounded-3xl border border-zinc-800 backdrop-blur-md">
+    <div
+      class="flex justify-between items-center bg-zinc-900/60 p-6 rounded-3xl border border-zinc-800 backdrop-blur-md"
+    >
       <div>
-        <span class="text-[10px] font-black uppercase tracking-[0.25em] text-blue-400">Nexus Ecosystem / Enterprise</span>
-        <h2 class="text-2xl font-black uppercase tracking-tight text-white mt-1">Gestión Global de Franquicias y Matrices</h2>
+        <span class="text-[10px] font-black uppercase tracking-[0.25em] text-blue-400"
+          >Nexus Ecosystem / Enterprise</span
+        >
+        <h2 class="text-2xl font-black uppercase tracking-tight text-white mt-1">
+          Gestión Global de Franquicias y Matrices
+        </h2>
       </div>
       <div class="flex items-center gap-3">
-        <div class="bg-blue-600/10 text-blue-400 border border-blue-500/20 px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-2">
-          <lucide-icon [img]="icons.Store" class="w-4 h-4"></lucide-icon> Total Registradas: {{ studiosList().length }}
+        <div
+          class="bg-blue-600/10 text-blue-400 border border-blue-500/20 px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-2"
+        >
+          <lucide-icon [img]="icons.Store" class="w-4 h-4"></lucide-icon> Total Registradas:
+          {{ studiosList().length }}
         </div>
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
       <!-- Formulario de Alta -->
-      <div class="lg:col-span-5 bg-zinc-900/90 border border-zinc-800 p-8 rounded-3xl shadow-2xl space-y-6">
+      <div
+        class="lg:col-span-5 bg-zinc-900/90 border border-zinc-800 p-8 rounded-3xl shadow-2xl space-y-6"
+      >
         <div class="border-b border-zinc-800 pb-4">
-          <h3 class="text-lg font-black uppercase tracking-tight text-zinc-100 flex items-center gap-2">
-            <lucide-icon [img]="icons.PlusCircle" class="w-5 h-5 text-blue-400"></lucide-icon> Nueva Sucursal Matriz
+          <h3
+            class="text-lg font-black uppercase tracking-tight text-zinc-100 flex items-center gap-2"
+          >
+            <lucide-icon [img]="icons.PlusCircle" class="w-5 h-5 text-blue-400"></lucide-icon> Nueva
+            Sucursal Matriz
           </h3>
-          <p class="text-xs text-zinc-400 mt-1">Registra la entidad principal y sus parámetros fiscales/operativos.</p>
+          <p class="text-xs text-zinc-400 mt-1">
+            Registra la entidad principal y sus parámetros fiscales/operativos.
+          </p>
         </div>
 
         <form [formGroup]="matrixForm" (ngSubmit)="onSubmitMatrix()" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="space-y-1">
-              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Marca del Studio</label>
-              <input type="text" formControlName="brand" placeholder="Ej. Beast Studio" class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-blue-500">
+              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Marca del Studio</label
+              >
+              <input
+                type="text"
+                formControlName="brand"
+                placeholder="Ej. Beast Studio"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-blue-500"
+                appPermission="consultorios:write"
+              />
             </div>
             <div class="space-y-1">
-              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Nombre Sucursal</label>
-              <input type="text" formControlName="name" placeholder="Ej. Central Tesistán" class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-blue-500">
+              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Nombre Sucursal</label
+              >
+              <input
+                type="text"
+                formControlName="name"
+                placeholder="Ej. Central Tesistán"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-blue-500"
+                appPermission="consultorios:write"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="space-y-1">
-              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Categoría / Giro</label>
-              <select formControlName="category" class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Categoría / Giro</label
+              >
+              <select
+                formControlName="category"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              >
                 <option value="" disabled>Seleccione Giro</option>
-                @for (cat of categories; track cat) { <option [value]="cat">{{ cat }}</option> }
+                @for (cat of categories; track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
               </select>
             </div>
             <div class="space-y-1">
-              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Tipo de Membresía</label>
-              <select formControlName="membershipType" class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Tipo de Membresía</label
+              >
+              <select
+                formControlName="membershipType"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              >
                 <option value="" disabled>Seleccione Costos</option>
-                @for (m of membershipTypes; track m) { <option [value]="m">{{ m }}</option> }
+                @for (m of membershipTypes; track m) {
+                  <option [value]="m">{{ m }}</option>
+                }
               </select>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="space-y-1">
-              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Teléfono Admin</label>
-              <input type="text" formControlName="phone" placeholder="+52 33..." class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Teléfono Admin</label
+              >
+              <input
+                type="text"
+                formControlName="phone"
+                placeholder="+52 33..."
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              />
             </div>
             <div class="space-y-1">
-              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Correo Electrónico</label>
-              <input type="email" formControlName="email" placeholder="admin@studio.com" class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Correo Electrónico</label
+              >
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="admin@studio.com"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              />
             </div>
           </div>
 
           <div class="space-y-1">
-            <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">URL del Logo o Imagen</label>
-            <input type="text" formControlName="logo" placeholder="https://..." class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none">
+            <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+              >URL del Logo o Imagen</label
+            >
+            <input
+              type="text"
+              formControlName="logo"
+              placeholder="https://..."
+              class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none"
+              appPermission="consultorios:write"
+            />
           </div>
 
-          <hr class="border-zinc-800">
-          <p class="text-[10px] font-black uppercase tracking-widest text-blue-400">Domicilio Fiscal y Operativo</p>
+          <hr class="border-zinc-800" />
+          <p class="text-[10px] font-black uppercase tracking-widest text-blue-400">
+            Domicilio Fiscal y Operativo
+          </p>
 
           <div class="grid grid-cols-3 gap-3">
             <div class="col-span-2 space-y-1">
-              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Calle</label>
-              <input type="text" formControlName="street" placeholder="Av. Principal" class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Calle</label
+              >
+              <input
+                type="text"
+                formControlName="street"
+                placeholder="Av. Principal"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              />
             </div>
             <div class="space-y-1">
-              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">No. Ext</label>
-              <input type="text" formControlName="extNumber" placeholder="123" class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest"
+                >No. Ext</label
+              >
+              <input
+                type="text"
+                formControlName="extNumber"
+                placeholder="123"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-3 gap-3">
             <div class="space-y-1">
-              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">No. Int / Edificio</label>
-              <input type="text" formControlName="intNumber" placeholder="Local 4" class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest"
+                >No. Int / Edificio</label
+              >
+              <input
+                type="text"
+                formControlName="intNumber"
+                placeholder="Local 4"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              />
             </div>
             <div class="space-y-1">
-              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Colonia</label>
-              <input type="text" formControlName="neighborhood" placeholder="Centro" class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Colonia</label
+              >
+              <input
+                type="text"
+                formControlName="neighborhood"
+                placeholder="Centro"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              />
             </div>
             <div class="space-y-1">
-              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">C.P.</label>
-              <input type="text" formControlName="zipCode" placeholder="45200" class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[8px] font-bold text-zinc-400 uppercase tracking-widest"
+                >C.P.</label
+              >
+              <input
+                type="text"
+                formControlName="zipCode"
+                placeholder="45200"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-2.5 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              />
             </div>
           </div>
 
           <div class="space-y-1">
-            <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Estado</label>
-            <input type="text" formControlName="state" placeholder="Jalisco..." class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none">
+            <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+              >Estado</label
+            >
+            <input
+              type="text"
+              formControlName="state"
+              placeholder="Jalisco..."
+              class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none"
+              appPermission="consultorios:write"
+            />
           </div>
 
-          <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-xs shadow-lg shadow-blue-600/20 transition-all cursor-pointer flex items-center justify-center gap-2 mt-4">
+          <button
+            type="submit"
+            class="w-full bg-brand-gradient hover:bg-brand-gradient-hover text-white font-black py-4 rounded-2xl uppercase tracking-widest text-xs shadow-lg shadow-blue-600/20 transition-all cursor-pointer flex items-center justify-center gap-2 mt-4"
+          >
             <lucide-icon [img]="icons.Save" class="w-4 h-4"></lucide-icon> Registrar Sucursal Matriz
           </button>
         </form>
@@ -118,24 +240,43 @@
         <div class="bg-zinc-900/90 border border-zinc-800 p-5 rounded-3xl space-y-4 shadow-xl">
           <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
             <div class="relative">
-              <lucide-icon [img]="icons.Search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></lucide-icon>
-              <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por nombre..." class="w-full bg-[#0a0f1d] border border-zinc-800 py-2.5 pl-10 pr-4 rounded-xl text-xs font-bold text-white outline-none">
+              <lucide-icon
+                [img]="icons.Search"
+                class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+              ></lucide-icon>
+              <input
+                type="text"
+                [(ngModel)]="searchTerm"
+                placeholder="Buscar por nombre..."
+                class="w-full bg-[#0a0f1d] border border-zinc-800 py-2.5 pl-10 pr-4 rounded-xl text-xs font-bold text-white outline-none"
+              />
             </div>
             <div>
-              <select [(ngModel)]="selectedStateFilter" class="w-full bg-[#0a0f1d] border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold text-white outline-none">
+              <select
+                [(ngModel)]="selectedStateFilter"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold text-white outline-none"
+              >
                 <option value="">Todos los Estados</option>
                 <option value="Jalisco">Jalisco</option>
                 <option value="CDMX">CDMX</option>
               </select>
             </div>
             <div>
-              <select [(ngModel)]="selectedCategoryFilter" class="w-full bg-[#0a0f1d] border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold text-white outline-none">
+              <select
+                [(ngModel)]="selectedCategoryFilter"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold text-white outline-none"
+              >
                 <option value="">Todos los Giros</option>
-                @for (cat of categories; track cat) { <option [value]="cat">{{ cat }}</option> }
+                @for (cat of categories; track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
               </select>
             </div>
             <div>
-              <select [(ngModel)]="sortBy" class="w-full bg-[#0a0f1d] border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold text-white outline-none">
+              <select
+                [(ngModel)]="sortBy"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold text-white outline-none"
+              >
                 <option value="revenueDesc">Mayor Ganancia</option>
                 <option value="revenueAsc">Menor Ganancia</option>
                 <option value="name">Por Nombre</option>
@@ -146,79 +287,144 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           @for (studio of paginatedStudios(); track studio.id) {
-            <div (click)="selectStudio(studio)" class="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between space-y-4 hover:border-blue-500 transition-all cursor-pointer group">
+            <div
+              (click)="selectStudio(studio)"
+              class="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between space-y-4 hover:border-blue-500 transition-all cursor-pointer group"
+            >
               <div class="flex items-start justify-between">
                 <div class="flex items-center gap-3">
-                  <img [src]="studio.logo" class="w-12 h-12 rounded-2xl object-cover border border-zinc-700 shadow" alt="Logo">
+                  <img
+                    [src]="studio.logo"
+                    class="w-12 h-12 rounded-2xl object-cover border border-zinc-700 shadow"
+                    alt="Logo"
+                  />
                   <div>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-blue-400">{{ studio.brand }}</span>
-                    <h4 class="text-sm font-black text-white tracking-tight group-hover:text-blue-300 transition-colors">{{ studio.name }}</h4>
-                    <span class="inline-block mt-1 px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded text-[9px] font-bold uppercase">{{ studio.category }}</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-blue-400">{{
+                      studio.brand
+                    }}</span>
+                    <h4
+                      class="text-sm font-black text-white tracking-tight group-hover:text-blue-300 transition-colors"
+                    >
+                      {{ studio.name }}
+                    </h4>
+                    <span
+                      class="inline-block mt-1 px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded text-[9px] font-bold uppercase"
+                      >{{ studio.category }}</span
+                    >
                   </div>
                 </div>
-                <span [class]="studio.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'" class="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border">
+                <span
+                  [class]="
+                    studio.isActive
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                      : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                  "
+                  class="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border"
+                >
                   {{ studio.isActive ? 'Activo' : 'Inactivo' }}
                 </span>
               </div>
 
-              <div class="text-xs text-zinc-400 space-y-1 bg-[#0a0f1d] p-3.5 rounded-2xl border border-zinc-800">
-                <p class="flex items-center gap-2"><lucide-icon [img]="icons.MapPin" class="w-3.5 h-3.5 text-blue-400 shrink-0"></lucide-icon> {{ studio.address.street }}, {{ studio.address.state }}</p>
-                <p class="flex items-center gap-2"><lucide-icon [img]="icons.Phone" class="w-3.5 h-3.5 text-blue-400 shrink-0"></lucide-icon> {{ studio.phone }}</p>
+              <div
+                class="text-xs text-zinc-400 space-y-1 bg-[#0a0f1d] p-3.5 rounded-2xl border border-zinc-800"
+              >
+                <p class="flex items-center gap-2">
+                  <lucide-icon
+                    [img]="icons.MapPin"
+                    class="w-3.5 h-3.5 text-blue-400 shrink-0"
+                  ></lucide-icon>
+                  {{ studio.address.street }}, {{ studio.address.state }}
+                </p>
+                <p class="flex items-center gap-2">
+                  <lucide-icon
+                    [img]="icons.Phone"
+                    class="w-3.5 h-3.5 text-blue-400 shrink-0"
+                  ></lucide-icon>
+                  {{ studio.phone }}
+                </p>
               </div>
 
-              <div class="grid grid-cols-3 gap-2 text-center bg-zinc-950 p-3 rounded-2xl border border-zinc-800">
+              <div
+                class="grid grid-cols-3 gap-2 text-center bg-zinc-950 p-3 rounded-2xl border border-zinc-800"
+              >
                 <div>
                   <p class="text-[8px] font-bold text-zinc-500 uppercase">Socios</p>
                   <p class="text-xs font-black text-white mt-0.5">{{ studio.activeMembers }}</p>
                 </div>
                 <div>
                   <p class="text-[8px] font-bold text-zinc-500 uppercase">Costo</p>
-                  <p class="text-xs font-black text-rose-400 mt-0.5">${{ studio.monthlyCost | number }}</p>
+                  <p class="text-xs font-black text-rose-400 mt-0.5">
+                    ${{ studio.monthlyCost | number }}
+                  </p>
                 </div>
                 <div>
                   <p class="text-[8px] font-bold text-zinc-500 uppercase">Ganancia</p>
-                  <p class="text-xs font-black text-emerald-400 mt-0.5">${{ studio.monthlyRevenue | number }}</p>
+                  <p class="text-xs font-black text-emerald-400 mt-0.5">
+                    ${{ studio.monthlyRevenue | number }}
+                  </p>
                 </div>
               </div>
             </div>
           }
         </div>
       </div>
-
     </div>
   }
-
 
   <!-- ================================================================= -->
   <!-- VISTA 2: DETALLE DE MATRIZ + ADMINS + HIJAS + FLOOR PLAN EDITOR   -->
   <!-- ================================================================= -->
   @if (selectedStudio(); as studio) {
     <div class="space-y-8 animate-in slide-in-from-right duration-300">
-
       <!-- HEADER CON INFORMACIÓN DE LA MATRIZ Y BOTÓN BACK -->
-      <div class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl flex flex-wrap items-center justify-between gap-6 shadow-2xl">
+      <div
+        class="bg-zinc-900/90 border border-zinc-800 p-6 rounded-3xl flex flex-wrap items-center justify-between gap-6 shadow-2xl"
+      >
         <div class="flex items-center gap-4">
-          <button (click)="goBackToList()" class="w-12 h-12 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-zinc-700 shadow-md">
+          <button
+            (click)="goBackToList()"
+            class="w-12 h-12 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl flex items-center justify-center transition-all cursor-pointer border border-zinc-700 shadow-md"
+          >
             <lucide-icon [img]="icons.ArrowLeft" class="w-6 h-6 text-blue-400"></lucide-icon>
           </button>
-          <img [src]="studio.logo" class="w-16 h-16 rounded-2xl object-cover border border-zinc-700 shadow-lg" alt="Logo">
+          <img
+            [src]="studio.logo"
+            class="w-16 h-16 rounded-2xl object-cover border border-zinc-700 shadow-lg"
+            alt="Logo"
+          />
           <div>
             <div class="flex items-center gap-2">
-              <span class="text-[10px] font-black uppercase tracking-widest text-blue-400">{{ studio.brand }}</span>
-              <span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[9px] font-bold uppercase">{{ studio.category }}</span>
+              <span class="text-[10px] font-black uppercase tracking-widest text-blue-400">{{
+                studio.brand
+              }}</span>
+              <span
+                class="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[9px] font-bold uppercase"
+                >{{ studio.category }}</span
+              >
             </div>
-            <h2 class="text-2xl font-black text-white uppercase tracking-tight mt-0.5">{{ studio.name }}</h2>
-            <p class="text-xs text-zinc-400 mt-0.5">{{ studio.address.street }} #{{ studio.address.extNumber }}, {{ studio.address.state }} — Tel: {{ studio.phone }}</p>
+            <h2 class="text-2xl font-black text-white uppercase tracking-tight mt-0.5">
+              {{ studio.name }}
+            </h2>
+            <p class="text-xs text-zinc-400 mt-0.5">
+              {{ studio.address.street }} #{{ studio.address.extNumber }},
+              {{ studio.address.state }} — Tel: {{ studio.phone }}
+            </p>
           </div>
         </div>
 
         <div class="flex gap-4">
           <div class="bg-zinc-950 px-5 py-3 rounded-2xl border border-zinc-800 text-center">
-            <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Ingresos Totales</span>
-            <p class="text-base font-black text-emerald-400">${{ studio.monthlyRevenue | number }}</p>
+            <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest"
+              >Ingresos Totales</span
+            >
+            <p class="text-base font-black text-emerald-400">
+              ${{ studio.monthlyRevenue | number }}
+            </p>
           </div>
           <div class="bg-zinc-950 px-5 py-3 rounded-2xl border border-zinc-800 text-center">
-            <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Socios Activos</span>
+            <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest"
+              >Socios Activos</span
+            >
             <p class="text-base font-black text-blue-400">{{ studio.activeMembers }}</p>
           </div>
         </div>
@@ -226,53 +432,103 @@
 
       <!-- GRID PRINCIPAL DE DETALLE: ADMINS + HIJAS -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
         <!-- COLUMNA IZQUIERDA: GESTIÓN DE USUARIOS ADMINISTRADORES -->
-        <div class="lg:col-span-5 bg-zinc-900/90 border border-zinc-800 p-8 rounded-3xl shadow-xl space-y-6">
+        <div
+          class="lg:col-span-5 bg-zinc-900/90 border border-zinc-800 p-8 rounded-3xl shadow-xl space-y-6"
+        >
           <div class="border-b border-zinc-800 pb-4">
-            <h3 class="text-base font-black uppercase tracking-tight text-white flex items-center gap-2">
-              <lucide-icon [img]="icons.UserPlus" class="w-5 h-5 text-blue-400"></lucide-icon> Administradores del Sistema
+            <h3
+              class="text-base font-black uppercase tracking-tight text-white flex items-center gap-2"
+            >
+              <lucide-icon [img]="icons.UserPlus" class="w-5 h-5 text-blue-400"></lucide-icon>
+              Administradores del Sistema
             </h3>
-            <p class="text-xs text-zinc-400 mt-1">Alta de accesos administrativos para esta sucursal matriz.</p>
+            <p class="text-xs text-zinc-400 mt-1">
+              Alta de accesos administrativos para esta sucursal matriz.
+            </p>
           </div>
 
           <form [formGroup]="adminForm" (ngSubmit)="onAddAdminUser()" class="space-y-4">
             <div class="space-y-1">
-              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Nombre Completo</label>
-              <input type="text" formControlName="fullName" placeholder="Ej. María González" class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Nombre Completo</label
+              >
+              <input
+                type="text"
+                formControlName="fullName"
+                placeholder="Ej. María González"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              />
             </div>
             <div class="space-y-1">
-              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Correo Electrónico</label>
-              <input type="email" formControlName="email" placeholder="admin@omnistudio.com" class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none">
+              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Correo Electrónico</label
+              >
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="admin@omnistudio.com"
+                class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 rounded-xl text-xs font-bold text-white outline-none"
+                appPermission="consultorios:write"
+              />
             </div>
             <div class="space-y-1">
-              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Contraseña Temporal</label>
+              <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest"
+                >Contraseña Temporal</label
+              >
               <div class="relative">
-                <input [type]="showPassword() ? 'text' : 'password'" formControlName="password" placeholder="••••••••" class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 pl-4 pr-12 rounded-xl text-xs font-bold text-white outline-none">
-                <button type="button" (click)="togglePasswordVisibility()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer">
-                  <lucide-icon [img]="showPassword() ? icons.EyeOff : icons.Eye" class="w-4 h-4"></lucide-icon>
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="••••••••"
+                  class="w-full bg-[#0a0f1d] border border-zinc-800 p-3 pl-4 pr-12 rounded-xl text-xs font-bold text-white outline-none"
+                  appPermission="consultorios:write"
+                />
+                <button
+                  type="button"
+                  (click)="togglePasswordVisibility()"
+                  class="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white cursor-pointer"
+                >
+                  <lucide-icon
+                    [img]="showPassword() ? icons.EyeOff : icons.Eye"
+                    class="w-4 h-4"
+                  ></lucide-icon>
                 </button>
               </div>
             </div>
 
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20">
+            <button
+              type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/20"
+            >
               Registrar Administrador
             </button>
           </form>
 
           <div class="space-y-3 pt-4 border-t border-zinc-800">
-            <h4 class="text-xs font-black uppercase tracking-wider text-zinc-300">Accesos Autorizados ({{ studio.adminUsers.length }})</h4>
+            <h4 class="text-xs font-black uppercase tracking-wider text-zinc-300">
+              Accesos Autorizados ({{ studio.adminUsers.length }})
+            </h4>
             <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
               @if (studio.adminUsers.length === 0) {
-                <p class="text-xs text-zinc-500 text-center py-4">No hay administradores registrados.</p>
+                <p class="text-xs text-zinc-500 text-center py-4">
+                  No hay administradores registrados.
+                </p>
               }
               @for (admin of studio.adminUsers; track admin.id) {
-                <div class="flex items-center justify-between bg-zinc-950 p-3 rounded-2xl border border-zinc-800">
+                <div
+                  class="flex items-center justify-between bg-zinc-950 p-3 rounded-2xl border border-zinc-800"
+                >
                   <div>
                     <p class="text-xs font-bold text-white">{{ admin.fullName }}</p>
                     <p class="text-[10px] text-zinc-400">{{ admin.email }}</p>
                   </div>
-                  <button (click)="removeAdminUser(admin.id)" class="text-rose-400 hover:text-rose-300 p-1.5 bg-rose-500/10 rounded-xl border border-rose-500/20 cursor-pointer">
+                  <button
+                    (click)="removeAdminUser(admin.id)"
+                    class="text-rose-400 hover:text-rose-300 p-1.5 bg-rose-500/10 rounded-xl border border-rose-500/20 cursor-pointer"
+                    appPermission="consultorios:delete"
+                  >
                     <lucide-icon [img]="icons.Trash2" class="w-3.5 h-3.5"></lucide-icon>
                   </button>
                 </div>
@@ -286,50 +542,98 @@
           <div class="bg-zinc-900/90 border border-zinc-800 p-8 rounded-3xl shadow-xl space-y-6">
             <div class="border-b border-zinc-800 pb-4 flex justify-between items-center">
               <div>
-                <h3 class="text-base font-black uppercase tracking-tight text-white flex items-center gap-2">
-                  <lucide-icon [img]="icons.Layers" class="w-5 h-5 text-indigo-400"></lucide-icon> Sucursales Hijas Dependientes
+                <h3
+                  class="text-base font-black uppercase tracking-tight text-white flex items-center gap-2"
+                >
+                  <lucide-icon [img]="icons.Layers" class="w-5 h-5 text-indigo-400"></lucide-icon>
+                  Sucursales Hijas Dependientes
                 </h3>
-                <p class="text-xs text-zinc-400 mt-1">Desglose de rendimiento operativo por cada sucursal secundaria.</p>
+                <p class="text-xs text-zinc-400 mt-1">
+                  Desglose de rendimiento operativo por cada sucursal secundaria.
+                </p>
               </div>
-              <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-black">
+              <span
+                class="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-xs font-black"
+              >
                 {{ studio.subBranches.length }} Sucursales
               </span>
             </div>
 
             <div class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
               @if (studio.subBranches.length === 0) {
-                <p class="text-center text-xs text-zinc-500 py-12">Esta sucursal matriz no cuenta con sucursales hijas registradas.</p>
+                <p class="text-center text-xs text-zinc-500 py-12">
+                  Esta sucursal matriz no cuenta con sucursales hijas registradas.
+                </p>
               }
 
               @for (sub of studio.subBranches; track sub.id) {
-                <div class="bg-zinc-950 border border-zinc-800 rounded-3xl p-5 space-y-4 hover:border-indigo-500/50 transition-all">
+                <div
+                  class="bg-zinc-950 border border-zinc-800 rounded-3xl p-5 space-y-4 hover:border-indigo-500/50 transition-all"
+                >
                   <div class="flex items-center justify-between">
                     <div>
                       <h4 class="text-sm font-black text-white tracking-tight">{{ sub.name }}</h4>
-                      <span class="text-[9px] font-bold uppercase tracking-widest text-indigo-400 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 rounded-md inline-block mt-1">{{ sub.category }}</span>
+                      <span
+                        class="text-[9px] font-bold uppercase tracking-widest text-indigo-400 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 rounded-md inline-block mt-1"
+                        >{{ sub.category }}</span
+                      >
                     </div>
                     <div class="text-right">
-                      <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block">Generación Mensual</span>
-                      <span class="text-sm font-black text-emerald-400">${{ sub.monthlyRevenue | number }}</span>
+                      <span
+                        class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block"
+                        >Generación Mensual</span
+                      >
+                      <span class="text-sm font-black text-emerald-400"
+                        >${{ sub.monthlyRevenue | number }}</span
+                      >
                     </div>
                   </div>
 
-                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center bg-zinc-900/60 p-3 rounded-2xl border border-zinc-800/80">
+                  <div
+                    class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center bg-zinc-900/60 p-3 rounded-2xl border border-zinc-800/80"
+                  >
                     <div>
-                      <span class="text-[8px] font-bold text-zinc-500 uppercase block">Alumnos Activos</span>
-                      <span class="text-xs font-black text-white flex items-center justify-center gap-1 mt-0.5"><lucide-icon [img]="icons.Users" class="w-3 h-3 text-blue-400"></lucide-icon> {{ sub.activeStudents }}</span>
+                      <span class="text-[8px] font-bold text-zinc-500 uppercase block"
+                        >Alumnos Activos</span
+                      >
+                      <span
+                        class="text-xs font-black text-white flex items-center justify-center gap-1 mt-0.5"
+                        ><lucide-icon
+                          [img]="icons.Users"
+                          class="w-3 h-3 text-blue-400"
+                        ></lucide-icon>
+                        {{ sub.activeStudents }}</span
+                      >
                     </div>
                     <div>
-                      <span class="text-[8px] font-bold text-zinc-500 uppercase block">Reservas App</span>
-                      <span class="text-xs font-black text-cyan-400 flex items-center justify-center gap-1 mt-0.5"><lucide-icon [img]="icons.Smartphone" class="w-3 h-3"></lucide-icon> {{ sub.appBookings }}</span>
+                      <span class="text-[8px] font-bold text-zinc-500 uppercase block"
+                        >Reservas App</span
+                      >
+                      <span
+                        class="text-xs font-black text-cyan-400 flex items-center justify-center gap-1 mt-0.5"
+                        ><lucide-icon [img]="icons.Smartphone" class="w-3 h-3"></lucide-icon>
+                        {{ sub.appBookings }}</span
+                      >
                     </div>
                     <div>
-                      <span class="text-[8px] font-bold text-zinc-500 uppercase block">Reservas Web</span>
-                      <span class="text-xs font-black text-purple-400 flex items-center justify-center gap-1 mt-0.5"><lucide-icon [img]="icons.Globe" class="w-3 h-3"></lucide-icon> {{ sub.webBookings }}</span>
+                      <span class="text-[8px] font-bold text-zinc-500 uppercase block"
+                        >Reservas Web</span
+                      >
+                      <span
+                        class="text-xs font-black text-purple-400 flex items-center justify-center gap-1 mt-0.5"
+                        ><lucide-icon [img]="icons.Globe" class="w-3 h-3"></lucide-icon>
+                        {{ sub.webBookings }}</span
+                      >
                     </div>
                     <div>
-                      <span class="text-[8px] font-bold text-zinc-500 uppercase block">Coaches / Staff</span>
-                      <span class="text-xs font-black text-amber-400 flex items-center justify-center gap-1 mt-0.5"><lucide-icon [img]="icons.Briefcase" class="w-3 h-3"></lucide-icon> {{ sub.coachesCount }}</span>
+                      <span class="text-[8px] font-bold text-zinc-500 uppercase block"
+                        >Coaches / Staff</span
+                      >
+                      <span
+                        class="text-xs font-black text-amber-400 flex items-center justify-center gap-1 mt-0.5"
+                        ><lucide-icon [img]="icons.Briefcase" class="w-3 h-3"></lucide-icon>
+                        {{ sub.coachesCount }}</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -337,25 +641,46 @@
             </div>
           </div>
         </div>
-
       </div>
-
     </div>
   }
-
 </div>
 
 <!-- Modal para estatus de bici en el floor plan -->
 @if (selectedBikeForModal()) {
-  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-zinc-800 rounded-[32px] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl text-white">
+  <div
+    class="app-dialog-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="bg-zinc-900 border border-zinc-800 rounded-[32px] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl text-white"
+    >
       <h3 class="text-xl font-black uppercase">Bicicleta {{ selectedBikeForModal()?.label }}</h3>
       <div class="grid grid-cols-1 gap-2.5">
-        <button (click)="updateBikeStatusFromModal('active')" class="w-full bg-lime-400/10 text-lime-400 border border-lime-400/30 font-black py-3 rounded-2xl text-xs uppercase cursor-pointer">🟢 Activa</button>
-        <button (click)="updateBikeStatusFromModal('maintenance')" class="w-full bg-rose-500/10 text-rose-400 border border-rose-500/30 font-black py-3 rounded-2xl text-xs uppercase cursor-pointer">🔧 Mantenimiento</button>
-        <button (click)="updateBikeStatusFromModal('inactive')" class="w-full bg-zinc-800 text-zinc-300 font-black py-3 rounded-2xl text-xs uppercase cursor-pointer">🔴 Inactiva</button>
+        <button
+          (click)="updateBikeStatusFromModal('active')"
+          class="w-full bg-lime-400/10 text-lime-400 border border-lime-400/30 font-black py-3 rounded-2xl text-xs uppercase cursor-pointer"
+        >
+          🟢 Activa
+        </button>
+        <button
+          (click)="updateBikeStatusFromModal('maintenance')"
+          class="w-full bg-rose-500/10 text-rose-400 border border-rose-500/30 font-black py-3 rounded-2xl text-xs uppercase cursor-pointer"
+        >
+          🔧 Mantenimiento
+        </button>
+        <button
+          (click)="updateBikeStatusFromModal('inactive')"
+          class="w-full bg-zinc-800 text-zinc-300 font-black py-3 rounded-2xl text-xs uppercase cursor-pointer"
+        >
+          🔴 Inactiva
+        </button>
       </div>
-      <button (click)="selectedBikeForModal.set(null)" class="w-full bg-zinc-800 text-zinc-400 py-2.5 rounded-xl text-xs font-black uppercase cursor-pointer">Cancelar</button>
+      <button
+        (click)="selectedBikeForModal.set(null)"
+        class="w-full bg-zinc-800 text-zinc-400 py-2.5 rounded-xl text-xs font-black uppercase cursor-pointer"
+      >
+        Cancelar
+      </button>
     </div>
   </div>
 }

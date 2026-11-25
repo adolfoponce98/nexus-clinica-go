@@ -13,14 +13,12 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  console.log('[firebase-messaging-sw.js] Mensaje en segundo plano recibido:', payload);
-  
-  const notificationTitle = payload.notification?.title || 'Actualización de Cita - Nexus Cliniq';
-  const notificationOptions = {
-    body: payload.notification?.body || 'Un paciente ha respondido a su cita.',
-    icon: '/assets/logo_nexus.png' // Asegúrate de tener un ícono válido
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
+messaging.onBackgroundMessage(async payload => {
+  const data=payload.data||{};
+  const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  windows.forEach(client=>client.postMessage({type:'CLINIQ_PUSH',data}));
+  await self.registration.showNotification(data.title||payload.notification?.title||'Clínica Go', {
+    body:data.body||payload.notification?.body||'Hay nueva información disponible.',
+    icon:'/assets/logo_nexus.png',tag:data.eventId||data.type,data
+  });
 });

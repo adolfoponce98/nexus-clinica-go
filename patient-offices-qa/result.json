@@ -1,0 +1,273 @@
+{
+  "results": [
+    "Patient: 3 required fields, styled validation with focus, 32 states and optional vitals saved across 5 tabs",
+    "Clinic: one schedule with lunch applied to weekdays and weekends closed",
+    "Clinic: warning before disabling, cancel has no side effects, server confirmation and no reappearance after reload"
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "url": "https://clinica-go.com/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://registernewpatient-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idDoctor",
+        "idConsultorio",
+        "requestId",
+        "clinicalCore",
+        "especialidad",
+        "generalIdentificationData",
+        "hereditaryFamilyBackground",
+        "pathologicalBackground",
+        "nonPathologicalBackground"
+      ]
+    },
+    {
+      "url": "https://clinica-go.com/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://saveorupdateconsultorio-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "name",
+        "establishmentType",
+        "clues",
+        "address",
+        "city",
+        "postalCode",
+        "additionalInfo",
+        "phoneMain",
+        "phoneSecondary",
+        "website",
+        "idConsultorio",
+        "officeHours",
+        "accessibility",
+        "directions",
+        "paymentMethods",
+        "insurancePolicy",
+        "patientTypes"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://deactivateoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://clinica-go.com/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    }
+  ]
+}

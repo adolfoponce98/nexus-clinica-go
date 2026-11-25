@@ -1,0 +1,478 @@
+<main class="followup-page">
+  @if (!loading()) {
+    <header class="followup-header">
+      <button type="button" class="back-button" (click)="back()">
+        <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4" />Volver al expediente
+      </button>
+      <div class="heading-row">
+        <span class="heading-icon"><lucide-icon [img]="icons.FileText" /></span>
+        <div>
+          <span class="kicker"
+            >{{ schema.name }} ·
+            {{ readOnly ? 'DETALLE DE CONSULTA' : 'SEGUIMIENTO CLÍNICO' }}</span
+          >
+          <h1>{{ readOnly ? 'Consulta de seguimiento' : 'Nueva consulta' }}</h1>
+          <p>Información común y valoración específica de la especialidad.</p>
+        </div>
+        @if (note) {
+          <span class="state-pill" [class.locked]="note.state === 'LOCKED'">{{
+            note.state === 'LOCKED'
+              ? 'Firmada y cerrada'
+              : note.state === 'DRAFT'
+                ? 'Borrador'
+                : 'Registro histórico'
+          }}</span>
+        }
+      </div>
+      <div class="context-strip">
+        <span
+          ><lucide-icon [img]="icons.User" class="w-4 h-4" /><strong>{{ patientName }}</strong
+          ><small>{{ recordNumber }}</small></span
+        ><span><lucide-icon [img]="icons.Building2" class="w-4 h-4" />{{ officeName }}</span>
+      </div>
+    </header>
+  }
+  @if (error()) {
+    <div class="feedback error" role="alert">
+      {{ error() }}
+      @if (!patient.idPaciente && !loading()) {
+        <button type="button" class="link-button" (click)="load()">Reintentar</button>
+      }
+    </div>
+  }
+  @if (notice()) {
+    <div class="feedback success" role="status">
+      <lucide-icon [img]="icons.Check" class="w-4 h-4" />{{ notice() }}
+    </div>
+  }
+  @if (loading()) {
+    <app-clinical-page-skeleton
+      kind="consultation"
+      label="Cargando expediente y formulario de seguimiento…"
+    />
+  } @else if (patient.idPaciente) {
+    <app-followup-context
+      [allergies]="allergies"
+      [criticalHistory]="criticalHistory"
+      [history]="initialHistory"
+      [(active)]="activeTab"
+    />
+    @if (note?.specialtySchemaVersion && note.specialtySchemaVersion !== 1) {
+      <div class="feedback error">
+        Este registro usa una versión de formulario no disponible. Se conserva en modo de lectura.
+      </div>
+      <pre class="future-data">{{ note.specialtyData | json }}</pre>
+    }
+    <div
+      class="followup-layout"
+      [style.grid-template-columns]="activeTab === 'consultation' ? null : 'minmax(0,1fr)'"
+    >
+      <section class="clinical-form">
+        <div id="followup-clinical" [hidden]="activeTab !== 'clinical'">
+          <app-followup-soap
+            section="vitals"
+            [data]="core"
+            [disabled]="disabled"
+            [optionalVitals]="true"
+            (changed)="changed()"
+          />
+        </div>
+        <div id="followup-specialty" [hidden]="activeTab !== 'specialty'">
+          <div class="block-label">
+            <span>02</span>
+            <div>
+              <h2>Valoración de {{ schema.name }}</h2>
+              <p>Campos opcionales y herramientas de la especialidad.</p>
+            </div>
+          </div>
+          @if (extensionTemplate) {
+            <ng-container
+              [ngTemplateOutlet]="extensionTemplate"
+              [ngTemplateOutletContext]="{
+                code: code,
+                data: specialtyData,
+                core: core,
+                patient: patient,
+                disabled: disabled,
+                workspace: this,
+              }"
+            />
+          } @else {
+            <app-specialty-fields
+              mode="fields"
+              [code]="code"
+              [value]="specialtyData"
+              [core]="core"
+              [patient]="patient"
+              [attachments]="pastPhotos.concat(attachments())"
+              [disabled]="disabled"
+              [at]="note?.createdAt || ''"
+              [privateNotes]="privateNotes"
+              [canSeePrivate]="canSeePrivate"
+              [privateNotesAvailable]="privateNotesLoaded"
+              [privateNotesBusy]="privateBusy()"
+              (retryPrivateNotes)="loadPrivateNotes()"
+              (privateNotesChange)="privateNotes = $event; changed()"
+              (changed)="changed()"
+            />
+          }
+        </div>
+        <div id="followup-consultation" [hidden]="activeTab !== 'consultation'">
+          <app-followup-soap
+            section="consultation"
+            [data]="core"
+            [disabled]="disabled"
+            (changed)="changed()"
+          />
+          <section class="summary-section">
+            <div class="section-header">
+              <span class="section-icon violet"><lucide-icon [img]="icons.FileText" /></span>
+              <div>
+                <h3>Resumen médico</h3>
+                <p>Revisa el contenido clínico que se conservará con la consulta.</p>
+              </div>
+            </div>
+            <textarea
+              [(ngModel)]="medicalSummary"
+              (ngModelChange)="changed()"
+              [ngModelOptions]="{ standalone: true }"
+              [disabled]="disabled"
+              rows="6"
+              maxlength="20000"
+              placeholder="Escribe el resumen o aplícalo desde el dictado revisado."
+            ></textarea>
+          </section>
+          <section class="attachments-section">
+            <div class="section-header">
+              <span class="section-icon"><lucide-icon [img]="icons.Paperclip" /></span>
+              <div>
+                <h3>Archivos adjuntos</h3>
+                <p>Imágenes, documentos y recetas de esta consulta.</p>
+              </div>
+            </div>
+            <input
+              #files
+              type="file"
+              multiple
+              (change)="filesSelected($event)"
+              [disabled]="disabled"
+              hidden
+            />
+            @if (!readOnly) {
+              <div class="attachment-actions">
+                <button
+                  type="button"
+                  class="secondary"
+                  (click)="files.click()"
+                  [disabled]="disabled"
+                >
+                  <lucide-icon [img]="icons.Upload" class="w-4 h-4" />Adjuntar archivos</button
+                ><button
+                  type="button"
+                  class="secondary"
+                  (click)="openPrescription()"
+                  [disabled]="disabled || !permissions.can('prescriptions', 'write')"
+                >
+                  <lucide-icon [img]="icons.FileText" class="w-4 h-4" />Expedir receta
+                </button>
+              </div>
+            }
+            <div class="attachment-grid">
+              @for (file of attachments(); track file.id) {
+                <article class="attachment-card">
+                  @if (file.type === 'image' && file.url && !file.previewUnavailable) {
+                    <img
+                      [src]="file.previewOriginal ? file.url : file.smallUrl || file.url"
+                      [alt]="file.name"
+                      (error)="attachmentPreviewFailed(file.id)"
+                    />
+                  } @else {
+                    <span class="attachment-icon"
+                      ><lucide-icon [img]="file.type === 'image' ? icons.Image : icons.FileText"
+                    /></span>
+                  }
+                  <div>
+                    <strong>{{ file.name }}</strong
+                    ><small>{{
+                      file.uploading
+                        ? 'Subiendo · ' + file.progress + ' %'
+                        : file.error
+                          ? 'No se pudo cargar'
+                          : 'Archivo adjunto'
+                    }}</small>
+                    @if (file.uploading) {
+                      <progress [value]="file.progress" max="100"></progress>
+                    }
+                  </div>
+                  @if (file.url && !file.uploading) {
+                    <a
+                      [href]="file.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="icon-button"
+                      [attr.aria-label]="'Abrir ' + file.name"
+                      ><lucide-icon [img]="icons.Download" class="w-4 h-4"
+                    /></a>
+                  }
+                  @if (!disabled && !file.uploading) {
+                    <button
+                      type="button"
+                      class="icon-button remove"
+                      (click)="removeFile(file.id)"
+                      [attr.aria-label]="'Retirar ' + file.name"
+                    >
+                      <lucide-icon [img]="icons.X" class="w-4 h-4" />
+                    </button>
+                  }
+                </article>
+              } @empty {
+                <div class="empty-attachments">
+                  Aún no se han adjuntado archivos a esta consulta.
+                </div>
+              }
+            </div>
+          </section>
+
+          <app-specialty-fields
+            mode="map"
+            [code]="code"
+            [value]="specialtyData"
+            [core]="core"
+            [patient]="patient"
+            [disabled]="disabled"
+            (changed)="changed()"
+          />
+        </div>
+        @if (!note?.specialtySchemaVersion && note) {
+          <details class="legacy-section">
+            <summary>Secciones del registro anterior</summary>
+            @for (section of legacySections; track section.key) {
+              <h4>{{ section.label }}</h4>
+              @for (item of section.items; track item.key) {
+                <p>
+                  <strong>{{ legacyLabel(item.key) }}:</strong> {{ item.value || 'Sin registrar' }}
+                </p>
+              }
+            }
+          </details>
+        }
+        <section class="save-section">
+          @if (!readOnly) {
+            <div class="attachment-actions">
+              <button
+                type="button"
+                class="primary"
+                (click)="saveAndReview(workflow)"
+                [disabled]="disabled || aiBusy() || recording() || reviewing()"
+              >
+                @if (saving() || reviewing()) {
+                  <span class="spinner light"></span>
+                } @else {
+                  <lucide-icon [img]="icons.Save" class="w-4 h-4" />
+                }
+                {{
+                  saving()
+                    ? 'Guardando consulta…'
+                    : reviewing()
+                      ? 'Abriendo revisión…'
+                      : 'Guardar consulta'
+                }}
+              </button>
+            </div>
+          } @else if (
+            note?.state === 'DRAFT' &&
+            note?.registeredBy === auth.getSession()?.email &&
+            permissions.can('followUps', 'write')
+          ) {
+            <button type="button" class="primary" (click)="editDraft()">Editar borrador</button>
+          }
+        </section>
+        <app-clinical-note-workflow
+          #workflow
+          [showActions]="readOnly"
+          [noteState]="note?.state || ''"
+          [patientId]="idPatient"
+          [expedienteId]="expedienteId"
+          [followUpId]="savedFollowUpId()"
+          (locked)="locked()"
+        />
+      </section>
+      <aside class="followup-tools" [style.display]="activeTab === 'consultation' ? null : 'none'">
+        <section class="model-card">
+          <div class="section-header">
+            <span class="section-icon"><lucide-icon [img]="icons.Box" /></span>
+            <div>
+              <h3>Infografía 3D</h3>
+              <p>Apoyo visual durante la consulta.</p>
+            </div>
+          </div>
+          <div class="model-preview">
+            <img [src]="activeModel.thumbnail" alt="Modelo anatómico de apoyo" />
+          </div>
+          <select
+            [ngModel]="selectedModel()"
+            (ngModelChange)="selectedModel.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+            aria-label="Modelo anatómico"
+          >
+            @for (m of models; track m.id) {
+              <option [value]="m.id">{{ m.name }}</option>
+            }</select
+          ><button type="button" class="secondary full-width" (click)="open3D()">
+            <lucide-icon [img]="icons.Box" class="w-4 h-4" />Explorar modelo 3D
+          </button>
+        </section>
+        @if (!readOnly) {
+          <section class="dictation-card">
+            <div class="section-header">
+              <span class="section-icon violet"><lucide-icon [img]="icons.Mic" /></span>
+              <div>
+                <h3>Dictado por voz</h3>
+                <p>Completa la nota y los campos de {{ schema.name }}.</p>
+              </div>
+            </div>
+            <p class="dictation-hint">
+              Dicta solo información de la nota clínica oficial. Los apuntes privados no deben
+              incluirse en esta transcripción.
+            </p>
+            <textarea
+              [(ngModel)]="transcript"
+              [ngModelOptions]="{ standalone: true }"
+              [disabled]="disabled || recording() || aiBusy()"
+              rows="8"
+              maxlength="40000"
+              placeholder="Dicta, escribe o pega la transcripción. Incluye los valores, unidades y lateralidad."
+            ></textarea>
+            <div class="voice-controls">
+              @if (!recording()) {
+                <button
+                  type="button"
+                  class="primary"
+                  (click)="startSpeech()"
+                  [disabled]="disabled || aiBusy()"
+                >
+                  <lucide-icon [img]="icons.Mic" class="w-4 h-4" />Dictar nota
+                </button>
+              } @else {
+                <span class="recording-time"><i></i>{{ speechTime }}</span
+                ><button
+                  type="button"
+                  class="icon-button"
+                  (click)="paused() ? resumeSpeech() : pauseSpeech()"
+                  [attr.aria-label]="paused() ? 'Continuar dictado' : 'Pausar dictado'"
+                >
+                  <lucide-icon
+                    [img]="paused() ? icons.Play : icons.Pause"
+                    class="w-4 h-4"
+                  /></button
+                ><button
+                  type="button"
+                  class="icon-button remove"
+                  (click)="stopSpeech()"
+                  aria-label="Detener dictado"
+                >
+                  <lucide-icon [img]="icons.Square" class="w-4 h-4" />
+                </button>
+              }
+            </div>
+            <button
+              type="button"
+              class="ai-button full-width"
+              (click)="extract()"
+              [disabled]="
+                disabled ||
+                aiBusy() ||
+                !transcript.trim() ||
+                !permissions.can('nexusI', 'write') ||
+                !billing.allows('ai')
+              "
+            >
+              @if (aiBusy()) {
+                <span class="spinner"></span>
+              } @else {
+                <lucide-icon [img]="icons.Sparkles" class="w-4 h-4" />
+              }
+              {{ aiBusy() ? 'Interpretando resumen clínico…' : 'Interpretar resumen clínico' }}
+            </button>
+          </section>
+          @if (proposal(); as p) {
+            <section class="proposal-card">
+              <span class="kicker">REVISIÓN DEL DICTADO</span>
+              <h3>Información detectada</h3>
+              <p>{{ p.summaryText || 'Revisa los campos extraídos antes de aplicarlos.' }}</p>
+              <dl class="proposal-fields">
+                @for (item of proposalItems; track $index) {
+                  <div>
+                    <dt>{{ item.label }}</dt>
+                    <dd>{{ item.value }}</dd>
+                  </div>
+                }
+              </dl>
+              <label class="overwrite-choice"
+                ><input
+                  type="checkbox"
+                  [(ngModel)]="replaceWithAi"
+                  [ngModelOptions]="{ standalone: true }"
+                />Reemplazar también los campos que ya tienen información</label
+              >
+              <p class="dictation-hint">
+                Por defecto solo se completan los campos vacíos. La IA no firma ni guarda la nota.
+              </p>
+              <button
+                type="button"
+                class="primary full-width"
+                (click)="applyProposal()"
+                [disabled]="disabled"
+              >
+                Aplicar información revisada</button
+              ><button type="button" class="link-button full-width" (click)="proposal.set(null)">
+                Descartar propuesta
+              </button>
+            </section>
+          }
+        }
+      </aside>
+    </div>
+    @if (!readOnly) {
+      <div class="followup-floating">
+        <button
+          type="button"
+          class="floating-rx"
+          (click)="openPrescription()"
+          [disabled]="disabled || !permissions.can('prescriptions', 'write')"
+        >
+          <lucide-icon [img]="icons.FileText" class="w-4 h-4" />Expedir receta
+        </button>
+        @if (!recording()) {
+          <button
+            type="button"
+            class="floating-voice"
+            (click)="startSpeech()"
+            [disabled]="disabled || aiBusy()"
+          >
+            <lucide-icon [img]="icons.Mic" class="w-4 h-4" />Dictar nota
+          </button>
+        } @else {
+          <button type="button" class="floating-voice" (click)="stopSpeech()">
+            <lucide-icon [img]="icons.Square" class="w-4 h-4" />Detener · {{ speechTime }}
+          </button>
+        }
+      </div>
+    }
+    @if (expanded()) {
+      <app-advanced-3d-viewer
+        [models]="models"
+        [selectedModelId]="selectedModel()"
+        [isExpanded]="true"
+        [doctorName]="auth.getSession()?.fullName || 'Médico'"
+        [officeName]="officeName"
+        [canAttach]="!disabled"
+        [attachmentBusy]="attaching3D()"
+        [attachmentError]="error()"
+        (captureAttached)="attach3DCapture($event)"
+        (close)="expanded.set(false)"
+        (modelChanged)="selectedModel.set($event)"
+      />
+    }
+  }
+</main>

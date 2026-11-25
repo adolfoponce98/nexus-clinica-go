@@ -1,0 +1,865 @@
+{
+  "results": [
+    "Plans: visible loader, no consumption cards, subscription/credit catalog and modal top layer",
+    "FREE patient cap disables create",
+    "FREE Home preserves all 3 chart layouts and reports under 4 inert translucent overlays",
+    "FREE Nexus IA preserves upload design under an inert overlay",
+    "Paid Home retains charts and reports with no overlays",
+    "verified result: success",
+    "verified result: canceled",
+    "verified result: failed",
+    "verified result: processing",
+    "verified result: error"
+  ],
+  "errors": [],
+  "overflow": false,
+  "requests": [
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate"
+      ]
+    },
+    {
+      "url": "https://getsubscriptions-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getofficemetrics-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idDoctor",
+        "idConsultorio",
+        "year"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getsubscriptions-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getstripecheckoutresult-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "requestId",
+        "sessionId",
+        "outcome"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getstripecheckoutresult-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "requestId",
+        "sessionId",
+        "outcome"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getstripecheckoutresult-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "requestId",
+        "sessionId",
+        "outcome"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getstripecheckoutresult-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "requestId",
+        "sessionId",
+        "outcome"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4301/api/auth/refresh",
+      "keys": [
+        "deviceId"
+      ]
+    },
+    {
+      "url": "https://getaccountentitlements-o7vmreizjq-uc.a.run.app/",
+      "keys": []
+    },
+    {
+      "url": "https://registeruseractivity-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "timeoutMinutes"
+      ]
+    },
+    {
+      "url": "https://checkdevicesession-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getdoctorsoffice-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "year",
+        "month",
+        "startDate",
+        "endDate",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getstripecheckoutresult-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "requestId",
+        "sessionId",
+        "outcome"
+      ]
+    },
+    {
+      "url": "https://getpatients-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://syncfollowingappointments-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    },
+    {
+      "url": "https://getnotifications-o7vmreizjq-uc.a.run.app/",
+      "keys": [
+        "idConsultorio",
+        "clientLastUpdate"
+      ]
+    }
+  ]
+}

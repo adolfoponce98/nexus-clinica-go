@@ -1,0 +1,83 @@
+<section class="limit-dialog">
+  <header>
+    <span class="dialog-kicker">{{
+      unavailable ? 'INFORMACIÓN DE TU CUENTA' : 'ACOMPAÑAMOS EL CRECIMIENTO DE TU CLÍNICA'
+    }}</span
+    ><button
+      type="button"
+      class="dialog-close"
+      (click)="close()"
+      aria-label="Cerrar aviso de límite"
+    >
+      <lucide-icon [img]="icons.X" [size]="18" />
+    </button>
+  </header>
+  <div class="limit-body">
+    <div class="limit-illustration">
+      <span class="halo"></span
+      ><span class="module-icon"
+        ><lucide-icon [img]="unavailable ? icons.RefreshCw : config.icon" [size]="34" /></span
+      ><span class="lock-badge"><lucide-icon [img]="icons.LockKeyhole" [size]="15" /></span>
+    </div>
+    @if (unavailable) {
+      <span class="plan-badge">VERIFICACIÓN PENDIENTE</span>
+      <h2>No pudimos verificar tu plan</h2>
+      <p class="description">
+        Necesitamos confirmar el consumo de tu cuenta antes de agregar {{ config.singular }}.
+        Inténtalo de nuevo en un momento.
+      </p>
+    } @else {
+      <span class="plan-badge"
+        ><lucide-icon [img]="icons.Crown" [size]="13" />{{
+          free ? 'PLAN GRATUITO' : billing.state()?.planName
+        }}</span
+      >
+      <h2>
+        {{ free ? 'Llegaste al límite de tu capa gratuita' : 'Has alcanzado el límite de tu plan' }}
+      </h2>
+      <p class="description">{{ description }}</p>
+      <div class="usage-card">
+        <div>
+          <span><lucide-icon [img]="config.icon" [size]="17" />{{ config.title }}</span
+          ><strong
+            >{{ used }} <small>/ {{ limit ?? 'Sin límite' }}</small></strong
+          >
+        </div>
+        <div
+          class="usage-track"
+          role="progressbar"
+          [attr.aria-valuenow]="used"
+          aria-valuemin="0"
+          [attr.aria-valuemax]="limit"
+          [attr.aria-label]="'Consumo de ' + label"
+        >
+          <span [style.width.%]="percentage"></span>
+        </div>
+        <small
+          >{{ free ? 'Incluidos en tu cuenta gratuita' : 'Uso actual de tu cuenta' }} · límite
+          alcanzado</small
+        >
+      </div>
+      <p class="upgrade-message">
+        <lucide-icon [img]="icons.ShieldCheck" [size]="16" />Tus registros actuales se conservan.
+        Elige el plan que mejor acompañe tu práctica.
+      </p>
+    }
+  </div>
+  <footer>
+    <button type="button" class="secondary" (click)="close()">Ahora no</button>
+    @if (unavailable) {
+      <button type="button" class="primary" (click)="retry()" [disabled]="retrying()">
+        <lucide-icon
+          [img]="retrying() ? icons.LoaderCircle : icons.RefreshCw"
+          [size]="16"
+          [class.spin]="retrying()"
+        />{{ retrying() ? 'Verificando…' : 'Volver a verificar' }}
+      </button>
+    } @else {
+      <button type="button" class="primary" (click)="viewPlans()">
+        Ver planes<lucide-icon [img]="icons.ArrowRight" [size]="17" />
+      </button>
+    }
+  </footer>
+</section>

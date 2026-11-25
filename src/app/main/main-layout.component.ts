@@ -1,7 +1,32 @@
-import { Component, OnInit, inject,signal ,ChangeDetectorRef,computed} from '@angular/core';
+import { BillingService } from '../planes/billing.service';
+import { SessionIdleService } from '../auth/session-idle.service';
+import { BookingDatePickerComponent } from '../scheduling/booking-date-picker.component';
+import {
+  officePeriods,
+  officeBookingSlots,
+  isOfficeBookingAllowed,
+  timeMinutes,
+  clockTime,
+} from '../scheduling/office-hours';
+import { appointmentPatientLink, patientId } from '../appointments/appointment-patient';
+import { patientSummary } from '../patient/patient-summary';
+import { PermissionDirective } from '../auth/permission.directive';
+import { PermissionService } from '../auth/permission.service';
+import { OfficeSyncService } from '../auth/office-sync.service';
+import { versionedFetch } from '../auth/sync-cache';
+import { CheckInRemindersComponent } from '../reporting/check-in-reminders.component';
+import { AppointmentBillingComponent } from '../reporting/appointment-billing.component';
+import {
+  LocalNotificationsService,
+  InfoNotification,
+  NotificationContext,
+} from '../auth/local-notifications.service';
+import { SECURITY_CONFIG } from '../config/security.config';
+import { API_URLS } from '../config/api-urls';
+import { Component, OnInit, inject, signal, ChangeDetectorRef, computed } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule,HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { ThemeService } from '../theme.service';
 import * as CryptoJS from 'crypto-js';
@@ -52,7 +77,6 @@ import {
   UserCheck,
   Bone,
   Smile,
-
 } from 'lucide-angular';
 
 declare global {
@@ -61,25 +85,13 @@ declare global {
   }
 }
 
-export interface InfoNotification {
-id: string;
-  idAppointment?: string;
-  telefono?: string;
-  estadoRespuesta?: string; // "confirmada" o "cancelada"
-  mensajeOriginal?: string;
-  fechaCita?: string;
-  horaCita?: string;
-  updatedAt?: string;
-}
-
-export interface NotificationsResponse {
-  error: string;
-  count: number;
-  notifications: InfoNotification[];
-}
 export interface Paciente {
   id: string;
   idPaciente?: string;
+  expedienteId?: string;
+  numeroDeExpediente?: string;
+  isExistingPatient?: boolean;
+  isNewPatient?: boolean;
   nombre: string;
   telefono: string;
   correo: string;
@@ -92,29 +104,48 @@ export interface Paciente {
   sexo: string;
 }
 
-
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LucideAngularModule, HttpClientModule,FormsModule,FloatingChatComponent
-    ,NotificationToastComponent
+  imports: [
+    BookingDatePickerComponent,
+    PermissionDirective,
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    LucideAngularModule,
+    HttpClientModule,
+    FormsModule,
+    FloatingChatComponent,
+    NotificationToastComponent,
+    AppointmentBillingComponent,
+    CheckInRemindersComponent,
   ],
-  templateUrl: './main-layout.component.html'
+  templateUrl: './main-layout.component.html',
+  styleUrl: './main-layout.component.css',
 })
 export class MainLayoutComponent implements OnInit {
-    private tokenInterceptor = inject(TokenInterceptorService);
-    private fcmService = inject(FcmService);
-   private cdr = inject(ChangeDetectorRef);
-   readonly icons = { X };
-   isSwitchingBranch = signal<boolean>(false);
+  readonly billing = inject(BillingService);
+
+  readonly permissions = inject(PermissionService);
+  private tokenInterceptor = inject(TokenInterceptorService);
+  private officeSync = inject(OfficeSyncService);
+  private liveSyncSub?: Subscription;
+  private patientSyncSub?: Subscription;
+  private fcmService = inject(FcmService);
+  private cdr = inject(ChangeDetectorRef);
+  private readonly idleSession = inject(SessionIdleService);
+  readonly icons = { X };
+  isSwitchingBranch = signal<boolean>(false);
   isAppointmentDetailModalOpen = signal<boolean>(false);
-selectedAppointment = signal<any | null>(null);
-  private readonly GET_FOLLOWING_APPOINTMENTS_URL = 'https://syncfollowingappointments-o7vmreizjq-uc.a.run.app';
-    private readonly SAVE_APPOINTMENT_URL = 'https://saveappointment-o7vmreizjq-uc.a.run.app';
-    private readonly GET_PATIENTS_URL = 'https://getpatients-o7vmreizjq-uc.a.run.app';
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
-private readonly GET_DOCTORS_OFFICE_URL = 'https://getdoctorsoffice-o7vmreizjq-uc.a.run.app';
+  selectedAppointment = signal<any | null>(null);
+  private readonly GET_FOLLOWING_APPOINTMENTS_URL = API_URLS.SYNCFOLLOWINGAPPOINTMENTS;
+  private readonly SAVE_APPOINTMENT_URL = API_URLS.SAVEAPPOINTMENT;
+  private readonly GET_PATIENTS_URL = API_URLS.GETPATIENTS;
+  private readonly ENCRYPTION_KEY = SECURITY_CONFIG.ENCRYPTION_KEY;
+  private readonly APP_SECRET_HEADER = SECURITY_CONFIG.APP_SECRET_HEADER;
+  private readonly GET_DOCTORS_OFFICE_URL = API_URLS.GETDOCTORSOFFICE;
   private authService = inject(AuthService);
   router = inject(Router);
   private http = inject(HttpClient);
@@ -122,6 +153,7 @@ private readonly GET_DOCTORS_OFFICE_URL = 'https://getdoctorsoffice-o7vmreizjq-u
   pacientes = signal<Paciente[]>([]);
   showUserMenu = false;
   showLogoutConfirm = false;
+  readonly isLoggingOut = signal(false);
   showNoConsultoriosModal = signal<boolean>(false);
   userData: any = null;
   isSidebarCollapsed = false;
@@ -134,54 +166,79 @@ private readonly GET_DOCTORS_OFFICE_URL = 'https://getdoctorsoffice-o7vmreizjq-u
   tempSelectedBranch: any = null;
   availableBranches: any[] = [];
   isLoadingBranches = false;
-showSuccessModal = false;
+  showSuccessModal = false;
   patientSearchQuery = '';
-filteredPatients: any[] = [];
-showPatientDropdown = false;
+  filteredPatients: any[] = [];
+  showPatientDropdown = false;
+  selectedPatientId = '';
+  selectedServiceId = '';
+  reasonUnknown = false;
+  private previousReason = '';
+  private previousServiceId = '';
+  toggleUnknownReason(checked: boolean): void {
+    if (checked) {
+      this.previousReason = this.patientForm.reason;
+      this.previousServiceId = this.selectedServiceId;
+      this.patientForm.reason = 'Sin definir';
+      this.selectedServiceId = '';
+    } else {
+      this.patientForm.reason = this.previousReason;
+      this.selectedServiceId = this.previousServiceId;
+    }
+    this.reasonUnknown = checked;
+    this.showServiceDropdown = false;
+  }
   patientForm = {
     name: '',
     phone: '',
     email: '',
-    reason: ''
+    reason: '',
   };
   private appointmentsSub?: Subscription;
+  private branchNotificationsSub?: Subscription;
+  private notificationsRequest?: Subscription;
+  private sidebarViewport = window.matchMedia('(max-width: 1439px)');
+  private onSidebarViewportChange = (event: MediaQueryListEvent) => {
+    this.isSidebarCollapsed = event.matches;
+    this.cdr.markForCheck();
+  };
   specialtyIcons = {
-  general: Stethoscope,
-  pediatria: Baby,
-  cardiologia: HeartPulse,
-  dermatologia: Sparkles,
-  ginecologia: UserCheck,
-  traumatologia: Bone,
-  dentista: Smile,
-  default: Layers
-};
-isSaving = false;
-selectedModalDate: string = new Date().toISOString().split('T')[0]; // Por defecto hoy (YYYY-MM-DD)
-selectedModalHour: string = ''; // Hora elegida mediante chips
-availableTimeSlots: { time: string; label: string; available: boolean }[] = [];
+    general: Stethoscope,
+    pediatria: Baby,
+    cardiologia: HeartPulse,
+    dermatologia: Sparkles,
+    ginecologia: UserCheck,
+    traumatologia: Bone,
+    dentista: Smile,
+    default: Layers,
+  };
+  isSaving = false;
+  selectedModalDate: string = new Date().toISOString().split('T')[0]; // Por defecto hoy (YYYY-MM-DD)
+  selectedModalHour: string = ''; // Hora elegida mediante chips
+  availableTimeSlots: { time: string; label: string; available: boolean }[] = [];
   searchQuery = signal<string>('');
-appointmentSearchQuery = signal<string>('');
-upcomingAppointments = signal<any[]>([]);
+  appointmentSearchQuery = signal<string>('');
+  upcomingAppointments = signal<any[]>([]);
 
-filteredAppointments = computed(() => {
+  filteredAppointments = computed(() => {
     const query = this.appointmentSearchQuery().toLowerCase().trim();
     if (!query) return [];
 
-    return this.upcomingAppointments().filter(app =>
-      (app.patientName && app.patientName.toLowerCase().includes(query)) ||
-      (app.phone && app.phone.toLowerCase().includes(query)) ||
-      (app.reason && app.reason.toLowerCase().includes(query)) ||
-      (app.date && app.date.toLowerCase().includes(query))
+    return this.upcomingAppointments().filter(
+      (app) =>
+        (app.patientName && app.patientName.toLowerCase().includes(query)) ||
+        (app.phone && app.phone.toLowerCase().includes(query)) ||
+        (app.reason && app.reason.toLowerCase().includes(query)) ||
+        (app.date && app.date.toLowerCase().includes(query)),
     );
   });
 
+  getSpecialtyLabel(code: string | undefined): string {
+    if (!code) return 'Elegir especialidad';
+    return SPECIALTY_MAP[code] || code; // Si encuentra el código del catálogo pone el name, sino muestra el texto original o un fallback
+  }
 
-getSpecialtyLabel(code: string | undefined): string {
-  if (!code) return 'Elegir especialidad';
-  return SPECIALTY_MAP[code] || code; // Si encuentra el código del catálogo pone el name, sino muestra el texto original o un fallback
-}
-
-async confirmBranchChange() {
+  async confirmBranchChange() {
     if (!this.tempSelectedBranch) return;
 
     const nuevaSucursal = this.tempSelectedBranch;
@@ -203,12 +260,12 @@ async confirmBranchChange() {
         this.selectedBranch = nuevaSucursal.name;
 
         // 3️⃣ Redirigir inmediatamente al Home independientemente de la pestaña actual
-        await this.router.navigate(['/home']);
+        await this.router.navigate([this.permissions.firstRoute()]);
 
         // 4️⃣ Sincronizar en paralelo la información del nuevo consultorio
         await Promise.all([
           this.cargarFollowingAppointments(nuevoConsultorioId),
-          this.cargarPacientes(nuevoConsultorioId)
+          this.cargarPacientes(nuevoConsultorioId),
         ]);
 
         console.log('✨ Sincronización de nueva sucursal completada con éxito.');
@@ -223,152 +280,186 @@ async confirmBranchChange() {
     }
   }
 
-generateTimeSlots() {
-  const cachedApps = this.authService.getCachedAppointments();
-  // Filtrar citas que correspondan estrictamente a la fecha seleccionada en el modal
-  const appsForDay = cachedApps.filter(app => app.date === this.selectedModalDate);
+  get bookingOffice() {
+    return this.authService.getSucursal();
+  }
+  generateTimeSlots() {
+    const cachedApps = this.authService.getCachedAppointments();
+    // Filtrar citas que correspondan estrictamente a la fecha seleccionada en el modal
+    const appsForDay = cachedApps.filter((app) => app.date === this.selectedModalDate);
 
-  const slots = [];
-  // Supongamos un horario de atención de 08:00 a 20:00 (8 AM a 8 PM)
-  let currentMinutes = 8 * 60; // 08:00 AM en minutos
-  const endMinutes = 20 * 60;  // 20:00 PM en minutos
-  const interval = 30;         // Intervalos de 30 minutos
+    const slots = [];
+    // Supongamos un horario de atención de 08:00 a 20:00 (8 AM a 8 PM)
+    const durationMins = Number(this.selectedDurationMinutes) || 60;
+    for (const allowedTime of officeBookingSlots(
+      this.bookingOffice,
+      this.selectedModalDate,
+      durationMins,
+    )) {
+      const currentMinutes = timeMinutes(allowedTime);
+      const startH = Math.floor(currentMinutes / 60);
+      const startM = currentMinutes % 60;
+      const timeStr = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
 
-  const durationMins = Number(this.selectedDurationMinutes) || 60;
+      const slotEndMins = currentMinutes + durationMins;
 
-  while (currentMinutes + durationMins <= endMinutes) {
-    const startH = Math.floor(currentMinutes / 60);
-    const startM = currentMinutes % 60;
-    const timeStr = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
+      // Verificar si se cruza con alguna cita existente en ese día
+      let isOccupied = false;
+      for (const app of appsForDay) {
+        if (Number(app.status) === 2) continue;
+        const appStartMins = this.parseTimeToMinutes(app.time);
+        const appEndMins = this.parseTimeToMinutes(
+          app.endTime || this.calculateEndTimeAndLabel(app.time, 60).endTime,
+        );
 
-    const slotEndMins = currentMinutes + durationMins;
-
-    // Verificar si se cruza con alguna cita existente en ese día
-    let isOccupied = false;
-    for (const app of appsForDay) {
-      const appStartMins = this.parseTimeToMinutes(app.time);
-      const appEndMins = this.parseTimeToMinutes(app.endTime || this.calculateEndTimeAndLabel(app.time, 60).endTime);
-
-      // Comprobación de solapamiento de rangos [start, end)
-      if (currentMinutes < appEndMins && slotEndMins > appStartMins) {
-        isOccupied = true;
-        break;
+        // Comprobación de solapamiento de rangos [start, end)
+        if (currentMinutes < appEndMins && slotEndMins > appStartMins) {
+          isOccupied = true;
+          break;
+        }
       }
+
+      slots.push({
+        time: timeStr,
+        label: timeStr, // Puedes formatearlo a 12h si prefieres (ej. 09:00 AM)
+        available:
+          !isOccupied && new Date(this.selectedModalDate + 'T' + timeStr).getTime() > Date.now(),
+      });
     }
 
-    slots.push({
-      time: timeStr,
-      label: timeStr, // Puedes formatearlo a 12h si prefieres (ej. 09:00 AM)
-      available: !isOccupied
-    });
+    this.availableTimeSlots = slots;
 
-    currentMinutes += interval;
+    // Si la hora seleccionada actualmente ya no está disponible, la limpiamos
+    const currentSelected = this.availableTimeSlots.find((s) => s.time === this.selectedModalHour);
+    if (!currentSelected || !currentSelected.available) {
+      this.selectedModalHour = '';
+    }
   }
+  getSpecialtyIcon(code: string | undefined) {
+    if (!code) return this.specialtyIcons.default;
 
-  this.availableTimeSlots = slots;
+    const mapping: Record<string, any> = {
+      GEN: this.specialtyIcons.general,
+      PED: this.specialtyIcons.pediatria,
+      CAR: this.specialtyIcons.cardiologia,
+      DER: this.specialtyIcons.dermatologia,
+      GINE: this.specialtyIcons.ginecologia,
+      TRAUM: this.specialtyIcons.traumatologia,
+      DENT: this.specialtyIcons.dentista,
+    };
 
-  // Si la hora seleccionada actualmente ya no está disponible, la limpiamos
-  const currentSelected = this.availableTimeSlots.find(s => s.time === this.selectedModalHour);
-  if (!currentSelected || !currentSelected.available) {
-    this.selectedModalHour = '';
+    return mapping[code] || this.specialtyIcons.default;
   }
-}
-getSpecialtyIcon(code: string | undefined) {
-  if (!code) return this.specialtyIcons.default;
-
-  const mapping: Record<string, any> = {
-    'GEN': this.specialtyIcons.general,
-    'PED': this.specialtyIcons.pediatria,
-    'CAR': this.specialtyIcons.cardiologia,
-    'DER': this.specialtyIcons.dermatologia,
-    'GINE': this.specialtyIcons.ginecologia,
-    'TRAUM': this.specialtyIcons.traumatologia,
-    'DENT': this.specialtyIcons.dentista,
-  };
-
-  return mapping[code] || this.specialtyIcons.default;
-}
-async saveAppointment() {
-  if (!this.selectedModalDate || !this.selectedModalHour) {
-    alert('Por favor selecciona una fecha y un horario disponible.');
-    return;
-  }
-  if (!this.patientForm.name || !this.patientForm.phone) {
-    alert('Por favor ingresa al menos el nombre y teléfono del paciente.');
-    return;
-  }
-
-  try {
-    this.isSaving = true; // 🔄 Activar loader
-    this.cdr.detectChanges();
-
-    const sessionData = this.authService.getSession();
-    const jwtToken = sessionData?.sessionToken;
-
-    if (!jwtToken) {
-      alert('No se encontró una sesión activa o token JWT. Inicie sesión nuevamente.');
+  async saveAppointment() {
+    if (this.isSaving) return;
+    if (!this.selectedModalDate || !this.selectedModalHour) {
+      alert('Por favor selecciona una fecha y un horario disponible.');
+      return;
+    }
+    this.patientForm.reason = this.reasonUnknown ? 'Sin definir' : this.patientForm.reason.trim();
+    if (!this.patientForm.reason) {
+      alert('Indica el motivo de la cita o selecciona “No lo sé aún”.');
+      return;
+    }
+    if (!this.patientForm.name || !this.patientForm.phone) {
+      alert('Por favor ingresa al menos el nombre y teléfono del paciente.');
       return;
     }
 
-    const normalizedStartTime = this.convertTo24Hour(this.selectedModalHour);
-    const { endTime, durationLabel } = this.calculateEndTimeAndLabel(normalizedStartTime, Number(this.selectedDurationMinutes));
-    const activeSucursal = this.authService.getSucursal();
-    const idConsultorio = activeSucursal?.idConsultorio || 'default_consultorio';
+    try {
+      this.isSaving = true; // 🔄 Activar loader
+      this.cdr.detectChanges();
 
-    const newAppointmentData: any = {
-      time: normalizedStartTime,
-      endTime: endTime,
-      durationMinutes: Number(this.selectedDurationMinutes),
-      durationLabel: durationLabel,
-      patientName: this.patientForm.name,
-      phone: this.patientForm.phone,
-      email: this.patientForm.email,
-      reason: this.patientForm.reason,
-      date: this.selectedModalDate,
-      status: 0,
-      colorClass: this.getRandomStrongColor(),
-      syncId: new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
-    };
+      const sessionData = this.authService.getSession();
+      const jwtToken = sessionData?.sessionToken;
 
-    const payload = {
-      idConsultorio: idConsultorio,
-      appointmentData: newAppointmentData
-    };
+      if (!jwtToken) {
+        alert('No se encontró una sesión activa o token JWT. Inicie sesión nuevamente.');
+        return;
+      }
 
-    const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+      const normalizedStartTime = this.convertTo24Hour(this.selectedModalHour);
+      if (
+        !isOfficeBookingAllowed(
+          this.bookingOffice,
+          this.selectedModalDate,
+          normalizedStartTime,
+          this.selectedDurationMinutes,
+        )
+      )
+        throw new Error('El horario está fuera de atención o cruza un descanso.');
+      const { endTime, durationLabel } = this.calculateEndTimeAndLabel(
+        normalizedStartTime,
+        Number(this.selectedDurationMinutes),
+      );
+      const activeSucursal = this.authService.getSucursal();
+      const idConsultorio = activeSucursal?.idConsultorio || 'default_consultorio';
 
-    const response = await fetch(this.SAVE_APPOINTMENT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-app-signature': this.APP_SECRET_HEADER,
-        'x-client-source': 'angular',
-        'Authorization': `Bearer ${jwtToken}`
-      },
-      body: JSON.stringify({ encryptedData: ciphertext })
-    });
+      const newAppointmentData: any = {
+        time: normalizedStartTime,
+        endTime: endTime,
+        durationMinutes: Number(this.selectedDurationMinutes),
+        durationLabel: durationLabel,
+        ...appointmentPatientLink(
+          this.authService.getCachedPatients().find((p) => patientId(p) === this.selectedPatientId),
+        ),
+        serviceId: this.selectedServiceId || undefined,
+        patientName: this.patientForm.name,
+        phone: this.patientForm.phone,
+        email: this.patientForm.email,
+        reason: this.patientForm.reason.trim(),
+        date: this.selectedModalDate,
+        status: 0,
+        colorClass: this.getRandomStrongColor(),
+      };
 
-    const jsonRes = await response.json();
-    if (!response.ok) {
-      throw new Error(jsonRes.error || 'Error al registrar la cita en el servidor.');
+      const payload = {
+        idConsultorio: idConsultorio,
+        appointmentData: newAppointmentData,
+      };
+
+      const ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify(payload),
+        this.ENCRYPTION_KEY,
+      ).toString();
+
+      const response = await this.tokenInterceptor.authenticatedFetch(this.SAVE_APPOINTMENT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-app-signature': this.APP_SECRET_HEADER,
+          'x-client-source': 'angular',
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify({ encryptedData: ciphertext }),
+      });
+
+      const jsonRes = await response.json();
+      if (!response.ok) {
+        throw new Error(jsonRes.error || 'Error al registrar la cita en el servidor.');
+      }
+
+      // 💾 Guardado local inmediato en caché y actualización de la señal
+      const saved = JSON.parse(
+        CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY).toString(
+          CryptoJS.enc.Utf8,
+        ),
+      );
+      if (!saved.success) throw new Error(saved.error || 'No se pudo guardar la cita');
+      this.authService.saveCachedAppointments([saved.appointment || newAppointmentData]);
+      this.upcomingAppointments.set(this.authService.getCachedAppointments());
+
+      this.showAppointmentModal = false;
+      this.showSuccessModal = true; // ✨ Muestra el diálogo de éxito
+    } catch (error: any) {
+      console.error('Error al guardar la cita:', error);
+      alert(error.message || 'Hubo un error al registrar la cita.');
+    } finally {
+      this.isSaving = false; // ⏹️ Desactivar loader
+      this.cdr.detectChanges();
     }
-
-    // 💾 Guardado local inmediato en caché y actualización de la señal
-    this.authService.saveCachedAppointments([newAppointmentData]);
-    this.upcomingAppointments.set(this.authService.getCachedAppointments());
-
-    this.showAppointmentModal = false;
-    this.showSuccessModal = true; // ✨ Muestra el diálogo de éxito
-
-  } catch (error: any) {
-    console.error('Error al guardar la cita:', error);
-    alert(error.message || 'Hubo un error al registrar la cita.');
-  } finally {
-    this.isSaving = false; // ⏹️ Desactivar loader
-    this.cdr.detectChanges();
   }
-}
-     private formatMinutesToTime(totalMins: number): string {
+  private formatMinutesToTime(totalMins: number): string {
     const normalizedMins = (totalMins + 1440) % 1440; // Evitar negativos
     const h = Math.floor(normalizedMins / 60) % 24;
     const m = normalizedMins % 60;
@@ -376,17 +467,17 @@ async saveAppointment() {
   }
 
   selectAppointment(appointment: any) {
-  this.selectedAppointment.set(appointment);
-  this.isAppointmentDetailModalOpen.set(true);
-  this.appointmentSearchQuery.set(''); // Limpia el buscador al seleccionar
-}
+    this.selectedAppointment.set(appointment);
+    this.isAppointmentDetailModalOpen.set(true);
+    this.appointmentSearchQuery.set(''); // Limpia el buscador al seleccionar
+  }
 
-closeAppointmentDetailModal() {
-  this.isAppointmentDetailModalOpen.set(false);
-  this.selectedAppointment.set(null);
-}
+  closeAppointmentDetailModal() {
+    this.isAppointmentDetailModalOpen.set(false);
+    this.selectedAppointment.set(null);
+  }
 
-    private parseTimeToMinutes(timeStr: string): number {
+  private parseTimeToMinutes(timeStr: string): number {
     if (!timeStr) return 0;
 
     // Limpiar y separar
@@ -412,14 +503,14 @@ closeAppointmentDetailModal() {
       hours = 0;
     }
 
-    return (hours * 60) + minutes;
+    return hours * 60 + minutes;
   }
 
-// Helper auxiliar para asegurar conversión 12h a 24h si el selector usa formato am/pm
-private convertTo24Hour(timeStr: string): string {
-  const totalMins = this.parseTimeToMinutes(timeStr);
-  return this.formatMinutesToTime(totalMins);
-}
+  // Helper auxiliar para asegurar conversión 12h a 24h si el selector usa formato am/pm
+  private convertTo24Hour(timeStr: string): string {
+    const totalMins = this.parseTimeToMinutes(timeStr);
+    return this.formatMinutesToTime(totalMins);
+  }
   /**
    * Calcula hora de fin y etiqueta legible usando el parseo robusto.
    */
@@ -437,13 +528,18 @@ private convertTo24Hour(timeStr: string): string {
     return { endTime, durationLabel };
   }
 
-// 🔄 Cargar los servicios de la sucursal activa al abrir el modal de nueva cita
+  // 🔄 Cargar los servicios de la sucursal activa al abrir el modal de nueva cita
   openNewAppointmentModal() {
+    this.reasonUnknown = false;
+    this.previousReason = '';
+    this.previousServiceId = '';
+    this.selectedPatientId = '';
+    this.selectedServiceId = '';
     this.patientForm = {
       name: '',
       phone: '',
       email: '',
-      reason: ''
+      reason: '',
     };
     this.filteredPatients = [];
     this.showPatientDropdown = false;
@@ -451,7 +547,7 @@ private convertTo24Hour(timeStr: string): string {
 
     // Cargar servicios de la sucursal activa desde el AuthService
     const activeSucursal = this.authService.getSucursal();
-    this.availableServices = activeSucursal?.services || [];
+    this.availableServices = activeSucursal?.services || activeSucursal?.servicesInOffice || [];
     this.filteredServices = [...this.availableServices];
 
     // Establecemos fecha de hoy por defecto en el formato YYYY-MM-DD
@@ -468,12 +564,14 @@ private convertTo24Hour(timeStr: string): string {
 
   // 🔎 Filtrar servicios al escribir en el campo de motivo
   onReasonInput(event: any) {
+    if (this.reasonUnknown) return;
+    this.selectedServiceId = '';
     const query = event.target.value.toLowerCase();
     this.patientForm.reason = event.target.value;
 
     if (this.availableServices.length > 0) {
       this.filteredServices = this.availableServices.filter((s: any) =>
-        s.nombre.toLowerCase().includes(query)
+        s.nombre.toLowerCase().includes(query),
       );
       this.showServiceDropdown = true;
     } else {
@@ -483,14 +581,38 @@ private convertTo24Hour(timeStr: string): string {
 
   // ✨ Seleccionar un servicio del combo y precargar su nombre
   selectServiceReason(service: any) {
+    this.reasonUnknown = false;
+    this.selectedServiceId = service.id || '';
     this.patientForm.reason = service.nombre;
     this.showServiceDropdown = false;
   }
-get minDate(): string {
-  return new Date().toISOString().split('T')[0];
-}
+  get minDate(): string {
+    return new Date().toISOString().split('T')[0];
+  }
   ngOnInit() {
-     this.fcmService.initPushNotifications();
+    this.idleSession.start();
+    this.isSidebarCollapsed = this.sidebarViewport.matches;
+    this.sidebarViewport.addEventListener('change', this.onSidebarViewportChange);
+    this.patientSyncSub = this.authService.patientsUpdated$.subscribe(() => {
+      this.pacientes.set(this.authService.getCachedPatients());
+      this.cdr.detectChanges();
+    });
+    this.liveSyncSub = this.officeSync.updates.subscribe((type) => {
+      if (type === 'offices') {
+        this.availableBranches = this.authService.getAllBranches();
+        this.initSelectedBranch();
+      }
+      if (type === 'notifications') this.restoreNotifications();
+      this.cdr.detectChanges();
+    });
+    this.restoreNotifications();
+    this.branchNotificationsSub = this.authService.branchChanged$.subscribe(() => {
+      this.notificationsRequest?.unsubscribe();
+      this.isLoadingNotifications = false;
+      this.restoreNotifications();
+      if (this.showNotificationsPopup) this.fetchNotifications();
+    });
+    this.fcmService.initPushNotifications();
     this.userData = this.authService.getSession();
     this.checkSavedPrinter();
     this.initSelectedBranch();
@@ -509,98 +631,118 @@ get minDate(): string {
     if (cachedApps.length > 0) {
       this.upcomingAppointments.set(cachedApps);
     }
-    // Sincronizar nuevas citas si ya tenemos consultorio activo seleccionado
-    const activeSucursal = this.authService.getSucursal();
-    const consultorioId = activeSucursal?.idConsultorio || 'default_consultorio';
-    this.cargarFollowingAppointments(consultorioId);
+    // OfficeSyncService loads authorized resources after resolving the selected office.
 
     this.appointmentsSub = this.authService.appointmentsUpdated$.subscribe(() => {
-    const cachedApps = this.authService.getCachedAppointments();
-    this.upcomingAppointments.set(cachedApps);
-    this.cdr.detectChanges();
-  });
+      const cachedApps = this.authService.getCachedAppointments();
+      this.upcomingAppointments.set(cachedApps);
+      this.cdr.detectChanges();
+    });
   }
-ngOnDestroy() {
-  if (this.appointmentsSub) {
-    this.appointmentsSub.unsubscribe();
+  ngOnDestroy() {
+    this.idleSession.stop();
+    this.sidebarViewport.removeEventListener('change', this.onSidebarViewportChange);
+    this.officeSync.stop();
+    this.liveSyncSub?.unsubscribe();
+    this.patientSyncSub?.unsubscribe();
+    this.branchNotificationsSub?.unsubscribe();
+    this.notificationsRequest?.unsubscribe();
+    if (this.appointmentsSub) {
+      this.appointmentsSub.unsubscribe();
+    }
   }
-}
-getRandomStrongColor(): string {
-  const strongColors = [
-    'bg-blue-600 border-blue-400',
-    'bg-purple-600 border-purple-400',
-    'bg-indigo-600 border-indigo-400',
-    'bg-emerald-600 border-emerald-400',
-    'bg-rose-600 border-rose-400',
-    'bg-amber-600 border-amber-400',
-    'bg-teal-600 border-teal-400',
-    'bg-cyan-600 border-cyan-400',
-    'bg-violet-600 border-violet-400',
-    'bg-fuchsia-600 border-fuchsia-400'
-  ];
+  getRandomStrongColor(): string {
+    const strongColors = [
+      'bg-blue-600 border-blue-400',
+      'bg-purple-600 border-purple-400',
+      'bg-indigo-600 border-indigo-400',
+      'bg-emerald-600 border-emerald-400',
+      'bg-rose-600 border-rose-400',
+      'bg-amber-600 border-amber-400',
+      'bg-teal-600 border-teal-400',
+      'bg-cyan-600 border-cyan-400',
+      'bg-violet-600 border-violet-400',
+      'bg-fuchsia-600 border-fuchsia-400',
+    ];
 
-  // Si la cita ya tiene un color asignado previamente, podemos conservarlo para que no cambie al hacer scroll o refrescar.
-  // O podemos seleccionarlo aleatoriamente basado en su nombre o ID único.
-  const randomIndex = Math.floor(Math.random() * strongColors.length);
-  return strongColors[randomIndex];
-}
+    // Si la cita ya tiene un color asignado previamente, podemos conservarlo para que no cambie al hacer scroll o refrescar.
+    // O podemos seleccionarlo aleatoriamente basado en su nombre o ID único.
+    const randomIndex = Math.floor(Math.random() * strongColors.length);
+    return strongColors[randomIndex];
+  }
 
-async cargarFollowingAppointments(consultorioId: string) {
-  try {
-    const clientLastUpdate = this.authService.getLastSyncDateAppointments();
+  async cargarFollowingAppointments(consultorioId: string) {
+    if (!consultorioId || !this.permissions.can('calendar')) return;
+    try {
+      const requestSession = this.authService.getSession();
+      const clientLastUpdate = this.authService.getLastSyncDateAppointments();
 
-    // 1️⃣ Ejecutamos la petición a través del interceptor centralizado para soportar Refresh Token
-    const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
-      console.log('🔍 [cargarFollowingAppointments] Token JWT actual en uso:', token);
+      // 1️⃣ Ejecutamos la petición a través del interceptor centralizado para soportar Refresh Token
+      const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
+        const payload = {
+          idConsultorio: consultorioId,
+          client_last_update: clientLastUpdate,
+        };
 
-      const payload = {
-        idConsultorio: consultorioId,
-        client_last_update: clientLastUpdate
-      };
+        // 🔍 LOG: Muestra el payload plano antes de ser encriptado
+        console.log('📤 [Request Payload - cargarFollowingAppointments]:', payload);
 
-      // 🔍 LOG: Muestra el payload plano antes de ser encriptado
-      console.log('📤 [Request Payload - cargarFollowingAppointments]:', payload);
+        const ciphertext = CryptoJS.AES.encrypt(
+          JSON.stringify(payload),
+          this.ENCRYPTION_KEY,
+        ).toString();
 
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
+        const fetchRes = await versionedFetch(this.GET_FOLLOWING_APPOINTMENTS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-app-signature': this.APP_SECRET_HEADER,
+            'x-client-source': 'angular',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ encryptedData: ciphertext }),
+        });
 
-      const fetchRes = await fetch(this.GET_FOLLOWING_APPOINTMENTS_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ encryptedData: ciphertext })
+        console.log('📥 [cargarFollowingAppointments] Status HTTP recibido:', fetchRes.status);
+        return fetchRes;
       });
 
-      console.log('📥 [cargarFollowingAppointments] Status HTTP recibido:', fetchRes.status);
-      return fetchRes;
-    });
+      const jsonRes = await response.json();
+      if (!response.ok) {
+        console.error('❌ Error HTTP en la respuesta:', jsonRes);
+        return;
+      }
 
-    const jsonRes = await response.json();
-    if (!response.ok) {
-      console.error('❌ Error HTTP en la respuesta:', jsonRes);
-      return;
+      const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
+      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+      // 🔍 LOG: Muestra el objeto completo que respondió el servidor tras desencriptarlo
+      console.log('📥 [Decrypted Response - cargarFollowingAppointments]:', decryptedData);
+
+      const active = this.authService.getSucursal(),
+        current = this.authService.getSession();
+      if (
+        (active?.idConsultorio || active?.id) !== consultorioId ||
+        current?.email !== requestSession?.email ||
+        current?.idDoctor !== requestSession?.idDoctor ||
+        current?.sessionId !== requestSession?.sessionId
+      )
+        return;
+      if (decryptedData.success && Array.isArray(decryptedData.appointments)) {
+        // Guardar en caché y combinar con las existentes
+        this.authService.saveCachedAppointments(
+          decryptedData.appointments,
+          !!decryptedData.replace,
+          decryptedData.lastUpdated,
+        );
+        this.upcomingAppointments.set(this.authService.getCachedAppointments());
+        this.cdr.detectChanges();
+      }
+    } catch (err) {
+      console.error('❌ Error al sincronizar las siguientes citas:', err);
     }
-
-    const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-    // 🔍 LOG: Muestra el objeto completo que respondió el servidor tras desencriptarlo
-    console.log('📥 [Decrypted Response - cargarFollowingAppointments]:', decryptedData);
-
-    if (decryptedData.success && Array.isArray(decryptedData.appointments) && decryptedData.appointments.length > 0) {
-      // Guardar en caché y combinar con las existentes
-      this.authService.saveCachedAppointments(decryptedData.appointments);
-      this.upcomingAppointments.set(this.authService.getCachedAppointments());
-      this.cdr.detectChanges();
-    }
-  } catch (err) {
-    console.error('❌ Error al sincronizar las siguientes citas:', err);
   }
-}
-// 🔍 Mostrar pacientes en caché al hacer clic o dar foco al input
+  // 🔍 Mostrar pacientes en caché al hacer clic o dar foco al input
   onPatientFocus() {
     const allPatients = this.authService.getCachedPatients();
     if (allPatients.length > 0) {
@@ -610,6 +752,7 @@ async cargarFollowingAppointments(consultorioId: string) {
   }
 
   onPatientInput(event: any) {
+    this.selectedPatientId = '';
     const query = event.target.value.toLowerCase();
     this.patientForm.name = event.target.value;
 
@@ -619,21 +762,21 @@ async cargarFollowingAppointments(consultorioId: string) {
       this.filteredPatients = allPatients; // Muestra todos si borra el texto
       this.showPatientDropdown = true;
     } else {
-      this.filteredPatients = allPatients.filter((p: any) =>
-        p.nombre.toLowerCase().includes(query) || p.telefono?.includes(query)
+      this.filteredPatients = allPatients.filter(
+        (p: any) => p.nombre.toLowerCase().includes(query) || p.telefono?.includes(query),
       );
       this.showPatientDropdown = true;
     }
   }
 
   selectPatient(patient: any) {
+    this.selectedPatientId = patient.idPaciente || patient.idPatient || patient.id || '';
     this.patientForm.name = patient.nombre;
     this.patientForm.phone = patient.telefono || '';
     this.patientForm.email = patient.correo || '';
     this.showPatientDropdown = false;
     this.filteredPatients = [];
   }
-
 
   // Inicializa la sucursal guardada o toma la primera por defecto
   initSelectedBranch() {
@@ -646,198 +789,114 @@ async cargarFollowingAppointments(consultorioId: string) {
   }
 
   async cargarPacientes(consultorioId: string) {
-  try {
-    // 1️⃣ Cargar primero desde caché local para tener respuesta inmediata en el buscador
-    const cachedList = this.authService.getCachedPatients();
-    if (cachedList.length > 0) {
-      this.pacientes.set(cachedList);
-    }
-
-    const sessionData = this.authService.getSession();
-    let jwtToken = sessionData?.sessionToken;
-
-    if (!jwtToken) {
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    const lastSync = this.authService.getLastSyncDatePatients();
-
-    const fetchPacientes = async (token: string) => {
-      // Mandamos el idConsultorio y la fecha de última sincronización al servidor
-      const payload = {
-        idConsultorio: consultorioId,
-        ultimaSincronizacion: lastSync
-      };
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-      return await fetch(this.GET_PATIENTS_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ encryptedData: ciphertext })
-      });
-    };
-
-    let response = await fetchPacientes(jwtToken);
-
-    if (response.status === 401) {
-      const refreshTokenValue = sessionData?.sessionToken;
-      if (!refreshTokenValue) {
-        this.router.navigate(['/login']);
-        return;
-      }
-
-      const refreshPayload = { refreshToken: refreshTokenValue };
-      const refreshCiphertext = CryptoJS.AES.encrypt(JSON.stringify(refreshPayload), this.ENCRYPTION_KEY).toString();
-
-      const refreshResponse = await fetch('https://refreshtoken-o7vmreizjq-uc.a.run.app', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular'
-        },
-        body: JSON.stringify({ encryptedData: refreshCiphertext })
-      });
-
-      const refreshJsonRes = await refreshResponse.json();
-      const bytesRefresh = CryptoJS.AES.decrypt(refreshJsonRes.encryptedData, this.ENCRYPTION_KEY);
-      const decryptedRefresh = JSON.parse(bytesRefresh.toString(CryptoJS.enc.Utf8));
-
-      if (decryptedRefresh.success && decryptedRefresh.accessToken) {
-        jwtToken = decryptedRefresh.accessToken;
-        this.authService.updateSessionToken(jwtToken);
-        response = await fetchPacientes(jwtToken);
-      } else {
-        this.router.navigate(['/login']);
-        return;
-      }
-    }
-
-    const jsonRes = await response.json();
-    if (!response.ok) {
-      throw new Error(jsonRes.error || 'Error al obtener los pacientes.');
-    }
-
-    const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-    // Si el servidor envía nuevos datos o una lista actualizada
-    if (decryptedData.success && Array.isArray(decryptedData.patients) && decryptedData.patients.length > 0) {
-      const listaMapeada: Paciente[] = decryptedData.patients.map((p: any) => {
-        const ficha = p.fichaDeIdentificacion || {};
-        const numVisitas = p.contadorDeVisitas || 1;
-        return {
-          id: p.idPaciente || '',
-          nombre: ficha.nombreCompleto || p.nombre || 'Sin nombre',
-          telefono: ficha.telefono || p.telefono || 'Sin teléfono',
-          correo: ficha.correo || 'Sin correo',
-          expedienteNum: p.numeroDeExpediente || 'EXP-2026-0000',
-          categoriaConsulta: p.categoria || 'Medicina General',
-          ultimaVisita: p.ultimaVisita ? p.ultimaVisita.split('T')[0] : '2026-09-29',
-          numeroVisitas: numVisitas,
-          esPrimeraVez: numVisitas === 1,
-          edad: ficha.edad || 0,
-          sexo: ficha.sexo || 'No especificado'
-        };
-      });
-
-      this.pacientes.set(listaMapeada);
-      // Guardar en memoria local y actualizar fecha de sincronización automáticamente
-      this.authService.saveCachedPatients(listaMapeada);
-    }
-  } catch (err) {
-    console.error('Error al cargar pacientes:', err);
-  } finally {
-  }
-}
-
-async fetchDoctorsOffices() {
-  this.isLoadingBranches = true;
-
-  try {
-    // 1️⃣ Ejecutamos la petición a través del interceptor centralizado para soportar Refresh Token
-    const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
-      console.log('🔍 [fetchDoctorsOffices] Token JWT actual en uso:', token);
-
-      // Obtenemos el correo desde la sesión actual para armar el idDoctor
-      const sessionData = this.authService.getSession();
-      const email = sessionData?.email || '';
-      const idDoctor = email.trim().toLowerCase().replace(/[\/\\]/g, '_');
-
-      const payload = {
-        idDoctor: idDoctor
-      };
-
-      // Encriptar el request con CryptoJS AES
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-      const fetchRes = await fetch(this.GET_DOCTORS_OFFICE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ encryptedData: ciphertext })
-      });
-
-      console.log('📥 [fetchDoctorsOffices] Status HTTP recibido:', fetchRes.status);
-      return fetchRes;
-    });
-
-    const jsonRes = await response.json();
-    if (!response.ok) {
-      throw new Error(jsonRes.error || 'Error al obtener los consultorios del servidor.');
-    }
-
-    let decryptedResponse;
+    if (!consultorioId || !this.permissions.can('patients')) return;
     try {
-      const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-      decryptedResponse = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    } catch (decryptErr) {
-      throw new Error('Fallo al desencriptar la respuesta de los consultorios.');
-    }
-
-    if (decryptedResponse && decryptedResponse.success) {
-      this.availableBranches = decryptedResponse.consultorios || [];
-      // Guardar el listado actualizado en segundo plano en el almacenamiento local
-      this.authService.saveAllBranches(this.availableBranches);
-
-      // 🚨 VALIDACIÓN: Si no hay consultorios registrados
-      if (this.availableBranches.length === 0) {
-        this.showNoConsultoriosModal.set(true);
-      } else {
-        // Si no hay ninguna sucursal guardada, seleccionamos la primera por defecto
-        if (!this.authService.getSucursal()) {
-          const defaultOffice = this.availableBranches[0];
-          this.selectedBranch = defaultOffice.name;
-          this.authService.saveSucursal(defaultOffice);
-        }
+      const requestSession = this.authService.getSession();
+      // 1️⃣ Cargar primero desde caché local para tener respuesta inmediata en el buscador
+      const cachedList = this.authService.getCachedPatients();
+      if (cachedList.length > 0) {
+        this.pacientes.set(cachedList);
       }
-    }
-  } catch (error) {
-    console.error('Error al cargar consultorios:', error);
-  } finally {
-    this.isLoadingBranches = false;
-  }
-}
 
-// Método para redirigir a la vista de creación de consultorios
-irACrearConsultorio() {
-  this.showNoConsultoriosModal.set(false);
-  this.router.navigate(['/consultorios']); // Ajusta la ruta según tu app
-}
+      const sessionData = this.authService.getSession();
+      let jwtToken = sessionData?.sessionToken;
+
+      if (!jwtToken) {
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      const lastSync = this.authService.getLastSyncDatePatients();
+
+      const fetchPacientes = async (token: string) => {
+        // Mandamos el idConsultorio y la fecha de última sincronización al servidor
+        const payload = {
+          idConsultorio: consultorioId,
+          ultimaSincronizacion: lastSync,
+        };
+        const ciphertext = CryptoJS.AES.encrypt(
+          JSON.stringify(payload),
+          this.ENCRYPTION_KEY,
+        ).toString();
+
+        return await versionedFetch(this.GET_PATIENTS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-app-signature': this.APP_SECRET_HEADER,
+            'x-client-source': 'angular',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ encryptedData: ciphertext }),
+        });
+      };
+
+      const response = await this.tokenInterceptor.executeWithAuth(fetchPacientes);
+
+      const jsonRes = await response.json();
+      if (!response.ok) {
+        throw new Error(jsonRes.error || 'Error al obtener los pacientes.');
+      }
+
+      const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
+      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+      // Si el servidor envía nuevos datos o una lista actualizada
+      const active = this.authService.getSucursal(),
+        current = this.authService.getSession();
+      if (
+        (active?.idConsultorio || active?.id) !== consultorioId ||
+        current?.email !== requestSession?.email ||
+        current?.idDoctor !== requestSession?.idDoctor ||
+        current?.sessionId !== requestSession?.sessionId
+      )
+        return;
+      if (decryptedData.success && Array.isArray(decryptedData.patients)) {
+        const listaMapeada: Paciente[] = decryptedData.patients.map(patientSummary);
+
+        this.pacientes.set(listaMapeada);
+        // Guardar en memoria local y actualizar fecha de sincronización automáticamente
+        this.authService.saveCachedPatients(listaMapeada);
+      }
+    } catch (err) {
+      console.error('Error al cargar pacientes:', err);
+    } finally {
+    }
+  }
+
+  async fetchDoctorsOffices() {
+    this.isLoadingBranches = true;
+    const requestSession = this.authService.getSession();
+    try {
+      await this.officeSync.refresh('offices', false);
+      const current = this.authService.getSession();
+      if (
+        current?.email !== requestSession?.email ||
+        current?.idDoctor !== requestSession?.idDoctor ||
+        current?.sessionId !== requestSession?.sessionId
+      )
+        return;
+      this.availableBranches = this.authService.getAllBranches();
+      this.showNoConsultoriosModal.set(this.availableBranches.length === 0);
+      if (this.availableBranches.length) this.initSelectedBranch();
+    } catch (error) {
+      console.error('Error al cargar consultorios:', error);
+    } finally {
+      this.isLoadingBranches = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  // Método para redirigir a la vista de creación de consultorios
+  irACrearConsultorio() {
+    this.showNoConsultoriosModal.set(false);
+    this.router.navigate(['/consultorios']); // Ajusta la ruta según tu app
+  }
   openBranchModal() {
     // Si ya hay un objeto guardado, lo buscamos o usamos el nombre actual
     const current = this.authService.getSucursal();
-    this.tempSelectedBranch = current || (this.availableBranches.length > 0 ? this.availableBranches[0] : null);
+    this.tempSelectedBranch =
+      current || (this.availableBranches.length > 0 ? this.availableBranches[0] : null);
     this.showBranchModal = true;
     this.showUserMenu = false;
   }
@@ -846,8 +905,6 @@ irACrearConsultorio() {
     this.showBranchModal = false;
   }
 
-
-
   readonly PanelLeft = PanelLeft;
   readonly PanelLeftClose = PanelLeftClose;
 
@@ -855,6 +912,43 @@ irACrearConsultorio() {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
   }
 
+  readonly localNotifications = inject(LocalNotificationsService);
+  notificationsError = '';
+
+  get unreadNotificationsCount(): number {
+    return this.notificationsList.filter((item) => !item.isRead).length;
+  }
+
+  private notificationContext(): NotificationContext | null {
+    const user = this.authService.getSession()?.email;
+    const branch = this.authService.getSucursal();
+    const branchId = branch?.idConsultorio || branch?.id;
+    return user && branchId ? { user, branch: branchId } : null;
+  }
+
+  private restoreNotifications(): void {
+    const context = this.notificationContext();
+    this.notificationsList = context ? this.localNotifications.read(context) || [] : [];
+    this.notificationsError = '';
+  }
+
+  markNotificationRead(item: InfoNotification): void {
+    item.isRead = true;
+    this.persistNotifications();
+  }
+
+  markAllNotificationsRead(items: InfoNotification[] = this.notificationsList): void {
+    const ids = new Set(items.map((item) => item.id));
+    this.notificationsList = this.notificationsList.map((item) =>
+      ids.has(item.id) ? { ...item, isRead: true } : item,
+    );
+    this.persistNotifications();
+  }
+
+  private persistNotifications(): void {
+    const context = this.notificationContext();
+    if (context) this.localNotifications.save(context, this.notificationsList);
+  }
 
   // Estados para las notificaciones
   showNotificationsPopup = false;
@@ -868,9 +962,9 @@ irACrearConsultorio() {
   bluetoothDevices: any[] = [];
   connectedDevice: any | null = null;
   bluetoothServer: any | null = null;
-availableServices: any[] = [];
-filteredServices: any[] = [];
-showServiceDropdown = false;
+  availableServices: any[] = [];
+  filteredServices: any[] = [];
+  showServiceDropdown = false;
   isScanning = false;
 
   // Iconos del sistema registrados
@@ -902,14 +996,13 @@ showServiceDropdown = false;
   readonly Layers = Layers;
   readonly ChevronRight = ChevronRight;
   readonly Settings = Settings;
-  readonly LogOutIcon =LogOutIcon;
+  readonly LogOutIcon = LogOutIcon;
   readonly Stethoscope = Stethoscope;
 
-
   // Puedes adaptarlo según cómo guardes el estado de tu tema en la app
-get isLightTheme(): boolean {
-  return !document.documentElement.classList.contains('dark');
-}
+  get isLightTheme(): boolean {
+    return !document.documentElement.classList.contains('dark');
+  }
 
   toggleMenu() {
     this.showUserMenu = !this.showUserMenu;
@@ -918,93 +1011,84 @@ get isLightTheme(): boolean {
   toggleNotifications() {
     this.showNotificationsPopup = !this.showNotificationsPopup;
     this.showUserMenu = false;
-    if (this.showNotificationsPopup && this.notificationsList.length === 0) {
-      this.fetchNotifications();
-    }
+    if (this.showNotificationsPopup) this.fetchNotifications();
   }
 
- fetchNotifications() {
-    const sessionData = this.authService.getSession();
-    const jwtToken = sessionData?.sessionToken;
-    const email = sessionData?.email || 'doctor@nexuscliniq.com';
-    const idDoctor = email.trim().toLowerCase().replace(/[\/\\]/g, '_');
-
-    if (!jwtToken) {
-      console.error('No se encontró una sesión activa. Inicie sesión nuevamente.');
+  fetchNotifications(force = false): void {
+    if (!this.permissions.can('calendar')) return;
+    if (this.isLoadingNotifications) return;
+    const context = this.notificationContext();
+    const jwtToken = this.authService.getSession()?.sessionToken;
+    if (!context || !jwtToken) {
+      this.notificationsError = 'Selecciona un consultorio con una sesión activa.';
       return;
     }
-
-    const activeSucursal = this.authService.getSucursal();
-    const consultorioId = activeSucursal?.idConsultorio || 'default_consultorio';
-
-    if (!consultorioId) {
-      console.warn('⚠️ No hay un consultorio seleccionado para consultar notificaciones.');
-      this.notificationsList = [];
+    const cached = this.localNotifications.read(context);
+    if (!force && cached !== null) {
+      this.notificationsList = cached;
       return;
     }
-
     this.isLoadingNotifications = true;
-    this.cdr.detectChanges(); // Forzar actualización visual al empezar a cargar
-
+    this.notificationsError = '';
+    const payload = {
+      idConsultorio: context.branch,
+      idDoctor: (this.authService.getSession()?.idDoctor || context.user)
+        .trim()
+        .toLowerCase()
+        .replace(/[\/\\]/g, '_'),
+    };
     try {
-      const payload = {
-        idConsultorio: consultorioId,
-        idDoctor: idDoctor
-      };
-
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-      const bodyRequest = { encryptedData: ciphertext };
-
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-app-signature': this.APP_SECRET_HEADER,
-        'x-client-source': 'angular',
-        'Authorization': `Bearer ${jwtToken}`
-      };
-
-      const url = 'https://getnotifications-o7vmreizjq-uc.a.run.app';
-
-      this.http.post<{ encryptedData: string }>(url, bodyRequest, { headers })
+      const encryptedData = CryptoJS.AES.encrypt(
+        JSON.stringify(payload),
+        this.ENCRYPTION_KEY,
+      ).toString();
+      this.notificationsRequest = this.http
+        .post<{ encryptedData: string }>(
+          API_URLS.GETNOTIFICATIONS,
+          { encryptedData },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'x-app-signature': this.APP_SECRET_HEADER,
+              'x-client-source': 'angular',
+              Authorization: `Bearer ${jwtToken}`,
+            },
+          },
+        )
         .subscribe({
           next: (res) => {
-            this.isLoadingNotifications = false;
-
             try {
               const bytes = CryptoJS.AES.decrypt(res.encryptedData, this.ENCRYPTION_KEY);
-              const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-              const response = JSON.parse(decryptedString);
-
-              if (response.success) {
-                this.notificationsList = response.notifications || [];
-                console.log('📦 Notificaciones obtenidas con éxito:', this.notificationsList);
-              } else {
-                console.error('Error devuelto por el servidor:', response.error);
-                this.notificationsList = [];
+              const response = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+              if (!response.success || !Array.isArray(response.notifications)) {
+                throw new Error('Respuesta de notificaciones inválida');
               }
-            } catch (decryptErr) {
-              console.error('Error al desencriptar la respuesta de notificaciones:', decryptErr);
-              this.notificationsList = [];
+              this.notificationsList = this.localNotifications.merge(
+                this.notificationsList,
+                response.notifications,
+              );
+              this.localNotifications.save(context, this.notificationsList);
+            } catch {
+              this.notificationsError =
+                'No se pudieron actualizar las notificaciones. Se conserva la lista local.';
             }
-            this.cdr.detectChanges(); // 💡 Obligatorio para refrescar el HTML en Angular
-          },
-          error: (err) => {
             this.isLoadingNotifications = false;
-            console.error('Error de red al obtener notificaciones:', err);
-            this.cdr.detectChanges(); // 💡 Obligatorio para quitar el loader si falla
-          }
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.isLoadingNotifications = false;
+            this.notificationsError =
+              'No se pudo conectar. Puedes consultar las notificaciones guardadas.';
+            this.cdr.detectChanges();
+          },
         });
-
-    } catch (err: any) {
+    } catch {
       this.isLoadingNotifications = false;
-      console.error('Error al preparar la petición encriptada:', err);
-      this.cdr.detectChanges();
+      this.notificationsError = 'No se pudo preparar la consulta de notificaciones.';
     }
   }
   hasPermission(moduleKey: string): boolean {
-    if (!this.userData) return false;
-    const permissions = this.userData.permissions || this.userData;
-    const permissionKey = `permission-${moduleKey}`;
-    return permissions[permissionKey] === true;
+    return this.permissions.can(moduleKey === 'sucursal' ? 'followUps' : moduleKey);
   }
 
   // --- GESTIÓN DE IMPRESORA BLUETOOTH ---
@@ -1036,7 +1120,10 @@ get isLightTheme(): boolean {
       this.isScanning = true;
       const device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '0000ffe0-0000-1000-8000-00805f9b34fb']
+        optionalServices: [
+          '000018f0-0000-1000-8000-00805f9b34fb',
+          '0000ffe0-0000-1000-8000-00805f9b34fb',
+        ],
       });
 
       this.connectToDevice(device);
@@ -1047,22 +1134,28 @@ get isLightTheme(): boolean {
   }
 
   // Añade este método en tu clase MainLayoutComponent para formatear la fecha si lo deseas:
-get formattedExpirationDate(): string {
-  const sessionData = this.authService.getSession();
-  const dateStr = sessionData?.expirationSuscription;
-  if (!dateStr) return '';
+  get formattedExpirationDate(): string {
+    const dateStr = this.billing.state()?.expiresAt;
+    if (!dateStr) return '';
 
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  } catch (e) {
-    return dateStr;
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch (e) {
+      return dateStr;
+    }
   }
-}
+  get formattedPaidThrough(): string {
+    const value = this.billing.state()?.paidThrough;
+    const date = value ? new Date(value) : null;
+    return date && Number.isFinite(date.getTime())
+      ? date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
+      : '';
+  }
   async connectToDevice(device: any) {
     try {
       this.isScanning = true;
@@ -1085,8 +1178,7 @@ get formattedExpirationDate(): string {
     }
   }
   get hasActivePlan(): boolean {
-    const session = this.authService.getSession();
-    return session?.statusSuscription === true && !!session?.currentIdSuscription;
+    return this.billing.active();
   }
 
   disconnectPrinter() {
@@ -1106,14 +1198,24 @@ get formattedExpirationDate(): string {
     this.showLogoutConfirm = true;
   }
 
-  logout() {
-    this.authService.logout();
-    this.showLogoutConfirm = false;
-    this.router.navigate(['/login']);
+  async logout() {
+    if (this.isLoggingOut()) return;
+    this.isLoggingOut.set(true);
+    try {
+      try {
+        await this.authService.logout();
+      } catch (error) {
+        alert((error as Error).message);
+      }
+      this.showLogoutConfirm = false;
+      await this.router.navigate(['/login']);
+    } finally {
+      this.isLoggingOut.set(false);
+    }
   }
 
   irACrearConsultorioDESDEModal() {
-  this.showBranchModal = false; // Cierra el modal actual
-  this.router.navigate(['/consultorios']); // Redirige a la vista de gestión de consultorios
-}
+    this.showBranchModal = false; // Cierra el modal actual
+    this.router.navigate(['/consultorios']); // Redirige a la vista de gestión de consultorios
+  }
 }

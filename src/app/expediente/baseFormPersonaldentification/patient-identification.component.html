@@ -1,293 +1,388 @@
-<div class="space-y-6 animate-in fade-in duration-300" [formGroup]="patientForm">
-
-  <!-- ================= SUB-TABS / PESTAÑAS INTERNAS ================= -->
-  <div class="flex flex-wrap items-center gap-2 border-b border-[var(--border-color)] pb-4">
-    @for (subTab of subTabs; track subTab.id) {
-      <button type="button"
-              (click)="activeSubTab.set(subTab.id)"
-              class="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border"
-              [class.bg-teal-600]="activeSubTab() === subTab.id"
-              [class.text-white]="activeSubTab() === subTab.id"
-              [class.border-teal-500]="activeSubTab() === subTab.id"
-              [class.shadow-md]="activeSubTab() === subTab.id"
-              [class.bg-[var(--bg-primary)]]="activeSubTab() !== subTab.id"
-              [class.text-[var(--text-muted)]]="activeSubTab() !== subTab.id"
-              [class.border-[var(--border-color)]]="activeSubTab() !== subTab.id">
-        <span>{{ subTab.name }}</span>
+<div class="patient-workspace" [formGroup]="patientForm">
+  <header class="workspace-header">
+    <div class="workspace-heading">
+      <span class="heading-icon"><lucide-icon [img]="icons.UserRound" [size]="23" /></span>
+      <div>
+        <span class="eyebrow">EXPEDIENTE DEL PACIENTE</span>
+        <h2>Conozcamos a tu paciente</h2>
+        <p>Captura los datos disponibles y completa su información a tu ritmo.</p>
+      </div>
+    </div>
+    <span class="step-counter"
+      >Sección <strong>{{ activeSubTab() }}</strong> de {{ sectionCount }}</span
+    >
+  </header>
+  <nav class="section-tabs" aria-label="Secciones del registro">
+    @for (tab of subTabs.slice(0, sectionCount); track tab.id) {
+      <button
+        type="button"
+        [class.active]="activeSubTab() === tab.id"
+        [attr.aria-current]="activeSubTab() === tab.id ? 'step' : null"
+        (click)="activeSubTab.set(tab.id)"
+      >
+        <span class="tab-icon"><lucide-icon [img]="tab.icon" [size]="18" /></span
+        ><span class="tab-copy"
+          ><strong>{{ tab.name }}</strong
+          ><small>{{ tab.hint }}</small></span
+        ><span class="tab-number">0{{ tab.id }}</span>
       </button>
     }
-  </div>
-
-  <!-- ================= CONTENEDOR DE LA SUB-PESTAÑA ACTIVA ================= -->
-  <div>
-    @switch (activeSubTab()) {
-
-      <!-- 1. DATOS DE IDENTIFICACIÓN PERSONAL -->
-      @case (1) {
-        <div class="space-y-4 bg-[var(--bg-secondary)] p-5 rounded-3xl border border-[var(--border-color)]">
-          <div>
-            <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">1. Datos de identificación personal</h3>
-            <p class="text-xs text-[var(--text-muted)]">Información general y demográfica del paciente (Campos obligatorios: Nombres y Fecha de Nacimiento).</p>
+  </nav>
+  @switch (activeSubTab()) {
+    @case (1) {
+      @for (section of personalSections; track section.title) {
+        <section class="form-panel">
+          <div class="panel-heading">
+            <span class="section-icon"><lucide-icon [img]="section.icon" [size]="19" /></span>
+            <div>
+              <h3>{{ section.title }}</h3>
+              <p>{{ section.description }}</p>
+            </div>
           </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            <!-- Nombre -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Nombre(s) <span class="text-red-500">*</span></label>
-              <input type="text" formControlName="firstName" placeholder="Nombre(s)" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Apellido Paterno -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Apellido Paterno <span class="text-red-500">*</span></label>
-              <input type="text" formControlName="paternalSurname" placeholder="Apellido paterno" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Apellido Materno -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Apellido Materno</label>
-              <input type="text" formControlName="maternalSurname" placeholder="Apellido materno" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Fecha de Nacimiento -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase flex items-center justify-between">
-                <span>Fecha de Nacimiento <span class="text-red-500">*</span></span>
-                <label class="cursor-pointer text-teal-500 hover:underline flex items-center gap-1 text-[10px]">
-                  <lucide-icon [img]="icons.Calendar" class="w-3.5 h-3.5"></lucide-icon>
-                  Calendario
-                  <input type="date" (change)="onCalendarChange($event)" class="hidden">
+          <div class="field-grid">
+            @for (field of section.fields; track field.key) {
+              <div
+                class="field"
+                [class.full]="field.type === 'textarea'"
+                [class.has-error]="invalid(field.key)"
+              >
+                <label [for]="'patient-' + field.key"
+                  >{{ field.label }}
+                  @if (field.required) {
+                    <span class="required" aria-hidden="true">*</span>
+                  }
                 </label>
-              </label>
-              <div class="flex items-center gap-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3 py-1.5">
-                <input type="text" maxlength="2" placeholder="DD" [value]="birthDay()" (input)="onDateInput('day', $event, monthInput)" class="w-10 text-center bg-transparent text-xs text-[var(--text-main)] outline-none font-mono">
-                <span class="text-[var(--text-muted)] font-bold">/</span>
-                <input type="text" #monthInput maxlength="2" placeholder="MM" [value]="birthMonth()" (input)="onDateInput('month', $event, yearInput)" class="w-10 text-center bg-transparent text-xs text-[var(--text-main)] outline-none font-mono">
-                <span class="text-[var(--text-muted)] font-bold">/</span>
-                <input type="text" #yearInput maxlength="4" placeholder="AAAA" [value]="birthYear()" (input)="onDateInput('year', $event)" class="w-16 text-center bg-transparent text-xs text-[var(--text-main)] outline-none font-mono">
+                <div class="input-wrap">
+                  <lucide-icon [img]="field.icon" [size]="16" />
+                  @if (field.options) {
+                    <select
+                      [id]="'patient-' + field.key"
+                      [formControlName]="field.key"
+                      [attr.aria-invalid]="invalid(field.key)"
+                      [attr.aria-describedby]="invalid(field.key) ? 'error-' + field.key : null"
+                      appPermission="patients:write"
+                      [appPermissionDisabled]="
+                        field.key === 'state' && patientForm.get('country')?.value !== 'México'
+                      "
+                    >
+                      <option value="">
+                        {{
+                          field.key === 'state' && patientForm.get('country')?.value !== 'México'
+                            ? 'Selecciona primero México'
+                            : 'Selecciona una opción'
+                        }}
+                      </option>
+                      @for (option of field.options; track option) {
+                        <option [value]="option">{{ option }}</option>
+                      }
+                    </select>
+                  } @else if (field.type === 'textarea') {
+                    <textarea
+                      [id]="'patient-' + field.key"
+                      [formControlName]="field.key"
+                      rows="3"
+                      maxlength="2000"
+                      placeholder="Agrega una observación si lo necesitas"
+                      appPermission="patients:write"
+                    ></textarea>
+                  } @else {
+                    <input
+                      [id]="'patient-' + field.key"
+                      [type]="field.type || 'text'"
+                      [attr.inputmode]="field.type === 'tel' ? 'numeric' : null"
+                      [attr.pattern]="field.type === 'tel' ? '[0-9]{10}' : null"
+                      (input)="normalizePhone(field.key, $event)"
+                      (paste)="pastePhone(field.key, $event)"
+                      [formControlName]="field.key"
+                      [placeholder]="
+                        field.placeholder ||
+                        (field.readonly ? 'Se calcula automáticamente' : field.label)
+                      "
+                      [attr.maxlength]="field.max || 2000"
+                      [attr.max]="field.type === 'date' ? today : null"
+                      [readonly]="!!field.readonly"
+                      [attr.aria-required]="field.required ? 'true' : null"
+                      [attr.aria-invalid]="invalid(field.key)"
+                      [attr.aria-describedby]="invalid(field.key) ? 'error-' + field.key : null"
+                      appPermission="patients:write"
+                    />
+                  }
+                </div>
+                @if (invalid(field.key)) {
+                  <small class="field-error" [id]="'error-' + field.key">{{
+                    fieldError(field.key)
+                  }}</small>
+                }
+                @if (field.key === 'state') {
+                  <small class="field-hint">32 entidades de la República Mexicana.</small>
+                }
               </div>
-            </div>
-
-            <!-- Edad -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Edad (Años)</label>
-              <input type="number" formControlName="age" readonly placeholder="Auto-calculada" class="w-full bg-[var(--bg-primary)]/50 border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none cursor-not-allowed">
-            </div>
-
-            <!-- Género -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Género</label>
-              <select formControlName="gender" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-teal-500 cursor-pointer">
-                <option value="" disabled selected>Selecciona</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </div>
-
-            <!-- CURP -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">CURP</label>
-              <input type="text" formControlName="curp" maxlength="18" placeholder="CURP de 18 caracteres" class="w-full uppercase bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500 font-mono">
-            </div>
-
-            <!-- Celular -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Celular (10 Dígitos)</label>
-              <input type="text" formControlName="cellphone" maxlength="10" placeholder="3312345678" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500 font-mono">
-            </div>
-
-            <!-- Teléfono de casa -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Teléfono de Casa (10 Dígitos)</label>
-              <input type="text" formControlName="homePhone" maxlength="10" placeholder="3387654321" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500 font-mono">
-            </div>
-
-            <!-- Correo -->
-            <div class="space-y-1 sm:col-span-2">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Correo Electrónico</label>
-              <input type="email" formControlName="email" placeholder="correo@ejemplo.com" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Calle y Número -->
-            <div class="space-y-1 sm:col-span-2">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Calle y Número</label>
-              <input type="text" formControlName="streetAndNumber" placeholder="Ej. Av. Vallarta #1230" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Colonia -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Colonia</label>
-              <input type="text" formControlName="neighborhood" placeholder="Colonia o Fraccionamiento" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Municipio -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Municipio / Alcaldía</label>
-              <input type="text" formControlName="municipality" placeholder="Municipio" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Estado -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Estado</label>
-              <input type="text" formControlName="state" placeholder="Estado" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- País -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">País</label>
-              <input type="text" formControlName="country" placeholder="País" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Estado Civil -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Estado Civil</label>
-              <select formControlName="maritalStatus" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-teal-500 cursor-pointer">
-                <option value="" disabled selected>Selecciona</option>
-                <option value="Soltero(a)">Soltero(a)</option>
-                <option value="Casado(a)">Casado(a)</option>
-                <option value="Divorciado(a)">Divorciado(a)</option>
-                <option value="Viudo(a)">Viudo(a)</option>
-                <option value="Unión libre">Unión libre</option>
-              </select>
-            </div>
-
-            <!-- Escolaridad -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Escolaridad</label>
-              <select formControlName="educationLevel" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] outline-none focus:border-teal-500 cursor-pointer">
-                <option value="" disabled selected>Selecciona</option>
-                <option value="Primaria">Primaria</option>
-                <option value="Secundaria">Secundaria</option>
-                <option value="Bachillerato">Bachillerato / Preparatoria</option>
-                <option value="Licenciatura">Licenciatura</option>
-                <option value="Posgrado">Posgrado</option>
-                <option value="Ninguna">Ninguna</option>
-              </select>
-            </div>
-
-            <!-- Religión -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Religión</label>
-              <input type="text" formControlName="religion" placeholder="Religión" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Ocupación -->
-            <div class="space-y-1">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Ocupación</label>
-              <input type="text" formControlName="occupation" placeholder="Ocupación" class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-            </div>
-
-            <!-- Nota Adicional -->
-            <div class="space-y-1 sm:col-span-3">
-              <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Nota Adicional / Observaciones</label>
-              <textarea formControlName="additionalNote" rows="2" placeholder="Observaciones generales..." class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500"></textarea>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- 2. ANTECEDENTES HEREDOFAMILIARES -->
-      @case (2) {
-        <div class="space-y-4 bg-[var(--bg-secondary)] p-5 rounded-3xl border border-[var(--border-color)]">
-          <div>
-            <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">2. Antecedentes Heredofamiliares</h3>
-            <p class="text-xs text-[var(--text-muted)]">Seleccione los antecedentes familiares que apliquen:</p>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" formGroupName="familyBackground">
-            @for (item of hereditaryOptions; track item.key) {
-              <label class="flex items-center gap-2 p-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl cursor-pointer hover:border-teal-500">
-                <input type="checkbox" [formControlName]="item.key" class="rounded text-teal-600 focus:ring-teal-500 w-4 h-4">
-                <span class="text-xs text-[var(--text-main)]">{{ item.label }}</span>
-              </label>
             }
           </div>
-          <div class="space-y-1 mt-2">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Otras Enfermedades Heredofamiliares</label>
-            <input type="text" formControlName="familyBackgroundOther" placeholder="Especifique otras..." class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-          </div>
-        </div>
+        </section>
       }
-
-      <!-- 3. ANTECEDENTES PATOLÓGICOS -->
-      @case (3) {
-        <div class="space-y-4 bg-[var(--bg-secondary)] p-5 rounded-3xl border border-[var(--border-color)]">
-          <div>
-            <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">3. Antecedentes Patológicos</h3>
-            <p class="text-xs text-[var(--text-muted)]">Enfermedades o condiciones médicas previas del paciente:</p>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" formGroupName="pathologicalBackground">
-            @for (item of pathologicalOptions; track item.key) {
-              <label class="flex items-center gap-2 p-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl cursor-pointer hover:border-teal-500">
-                <input type="checkbox" [formControlName]="item.key" class="rounded text-teal-600 focus:ring-teal-500 w-4 h-4">
-                <span class="text-xs text-[var(--text-main)]">{{ item.label }}</span>
-              </label>
-            }
-          </div>
-          <div class="space-y-1 mt-2">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Otros Antecedentes Patológicos</label>
-            <input type="text" formControlName="pathologicalBackgroundOther" placeholder="Especifique otros..." class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-          </div>
-        </div>
-      }
-
-      <!-- 4. ANTECEDENTES NO PATOLÓGICOS -->
-      @case (4) {
-        <div class="space-y-4 bg-[var(--bg-secondary)] p-5 rounded-3xl border border-[var(--border-color)]">
-          <div>
-            <h3 class="text-sm font-black uppercase tracking-wider text-[var(--text-main)]">4. Antecedentes No Patológicos</h3>
-            <p class="text-xs text-[var(--text-muted)]">Estilo de vida y hábitos:</p>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3" formGroupName="nonPathologicalBackground">
-            @for (item of nonPathologicalOptions; track item.key) {
-              <label class="flex items-center gap-2 p-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl cursor-pointer hover:border-teal-500">
-                <input type="checkbox" [formControlName]="item.key" class="rounded text-teal-600 focus:ring-teal-500 w-4 h-4">
-                <span class="text-xs text-[var(--text-main)]">{{ item.label }}</span>
-              </label>
-            }
-          </div>
-          <div class="space-y-1 mt-2">
-            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Otros Antecedentes No Patológicos</label>
-            <input type="text" formControlName="nonPathologicalBackgroundOther" placeholder="Especifique otros..." class="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl px-3.5 py-2.5 text-xs text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none focus:border-teal-500">
-          </div>
-        </div>
-      }
-
     }
-  </div>
-
-  <!-- ================= BOTONERA DE NAVEGACIÓN INTERNA Y GUARDADO GLOBAL ================= -->
-  <div class="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
-
-    <!-- Botón Anterior -->
-    <button type="button"
-            (click)="prevSubTab()"
-            [disabled]="activeSubTab() === 1"
-            class="px-4 py-2 rounded-2xl text-xs font-bold bg-[var(--bg-primary)] hover:opacity-80 text-[var(--text-main)] border border-[var(--border-color)] transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
-      Anterior sección
+    @case (2) {
+      <section class="form-panel">
+        <div class="panel-heading">
+          <span class="section-icon"><lucide-icon [img]="icons.Users" [size]="20" /></span>
+          <div>
+            <h3>Antecedentes heredofamiliares</h3>
+            <p>Selecciona los antecedentes familiares conocidos. Todos son opcionales.</p>
+          </div>
+        </div>
+        <div class="condition-grid" formGroupName="familyBackground">
+          @for (item of hereditaryOptions; track item.key) {
+            <label
+              class="condition"
+              [class.chosen]="patientForm.get('familyBackground.' + item.key)?.value"
+              ><lucide-icon [img]="optionIcon(item.key)" [size]="20" /><span>{{ item.label }}</span
+              ><input type="checkbox" [formControlName]="item.key" appPermission="records:write"
+            /></label>
+          }
+        </div>
+        <div class="detail-grid">
+          <label class="field"
+            >Otros antecedentes familiares
+            <div class="input-wrap">
+              <lucide-icon [img]="icons.NotebookPen" [size]="16" /><textarea
+                formControlName="familyBackgroundOther"
+                rows="3"
+                placeholder="Otras enfermedades en la familia"
+                appPermission="records:write"
+              ></textarea></div></label
+          ><label class="field" for="family-background-details"
+            >Parentesco y detalles
+            <div class="input-wrap">
+              <lucide-icon [img]="icons.Users" [size]="16" /><textarea
+                id="family-background-details"
+                formControlName="familyBackgroundDetails"
+                rows="3"
+                placeholder="Indica qué familiar presenta el antecedente"
+                appPermission="records:write"
+              ></textarea></div
+          ></label>
+        </div>
+      </section>
+    }
+    @case (3) {
+      <section class="form-panel">
+        <div class="panel-heading">
+          <span class="section-icon"><lucide-icon [img]="icons.ShieldCheck" [size]="20" /></span>
+          <div>
+            <h3>Antecedentes patológicos</h3>
+            <p>Enfermedades, cirugías y condiciones médicas previas. Captura lo que conozcas.</p>
+          </div>
+        </div>
+        <div class="condition-grid" formGroupName="pathologicalBackground">
+          @for (item of pathologicalOptions; track item.key) {
+            <label
+              class="condition"
+              [class.chosen]="patientForm.get('pathologicalBackground.' + item.key)?.value"
+              ><lucide-icon [img]="optionIcon(item.key)" [size]="20" /><span>{{ item.label }}</span
+              ><input type="checkbox" [formControlName]="item.key" appPermission="records:write"
+            /></label>
+          }
+        </div>
+        <div class="detail-grid">
+          <label class="field"
+            >Otros antecedentes patológicos
+            <div class="input-wrap">
+              <lucide-icon [img]="icons.NotebookPen" [size]="16" /><textarea
+                formControlName="pathologicalBackgroundOther"
+                rows="3"
+                placeholder="Especifica otras condiciones si existen"
+                appPermission="records:write"
+              ></textarea></div></label
+          ><label class="field" for="prior-treatments"
+            >Tratamientos previos
+            <div class="input-wrap">
+              <lucide-icon [img]="icons.Pill" [size]="16" /><textarea
+                id="prior-treatments"
+                formControlName="priorTreatments"
+                rows="3"
+                placeholder="Tratamientos que haya recibido"
+                appPermission="records:write"
+              ></textarea></div
+          ></label>
+          @if (patientForm.get('pathologicalBackground.allergy')?.value) {
+            <label class="field full" for="allergy-details"
+              >Sustancia y reacción alérgica
+              <div class="input-wrap">
+                <lucide-icon [img]="icons.ShieldCheck" [size]="16" /><textarea
+                  id="allergy-details"
+                  formControlName="allergyDetails"
+                  rows="3"
+                  placeholder="Sustancia o medicamento y reacción que presentó"
+                  appPermission="records:write"
+                ></textarea></div
+            ></label>
+          }
+        </div>
+      </section>
+    }
+    @case (4) {
+      <section class="form-panel">
+        <div class="panel-heading">
+          <span class="section-icon"><lucide-icon [img]="icons.Heart" [size]="20" /></span>
+          <div>
+            <h3>Antecedentes no patológicos</h3>
+            <p>Hábitos y estilo de vida. Completa únicamente la información disponible.</p>
+          </div>
+        </div>
+        <div class="condition-grid" formGroupName="nonPathologicalBackground">
+          @for (item of nonPathologicalOptions; track item.key) {
+            <label
+              class="condition"
+              [class.chosen]="patientForm.get('nonPathologicalBackground.' + item.key)?.value"
+              ><lucide-icon [img]="optionIcon(item.key)" [size]="20" /><span>{{ item.label }}</span
+              ><input type="checkbox" [formControlName]="item.key" appPermission="records:write"
+            /></label>
+          }
+        </div>
+        <label class="field detail-spacing"
+          >Otros antecedentes no patológicos
+          <div class="input-wrap">
+            <lucide-icon [img]="icons.NotebookPen" [size]="16" /><textarea
+              formControlName="nonPathologicalBackgroundOther"
+              rows="2"
+              placeholder="Otros hábitos o antecedentes"
+              appPermission="records:write"
+            ></textarea></div
+        ></label>
+        <div class="detail-grid">
+          @for (field of lifestyleFields; track field.key) {
+            <label class="field"
+              >{{ field.label }}
+              <div class="input-wrap">
+                <lucide-icon [img]="field.icon" [size]="16" /><textarea
+                  [formControlName]="field.key"
+                  rows="3"
+                  [placeholder]="'Información de ' + field.label.toLowerCase()"
+                  appPermission="records:write"
+                ></textarea></div
+            ></label>
+          }
+        </div>
+      </section>
+    }
+    @case (5) {
+      <section class="form-panel" formGroupName="vitals">
+        <div class="panel-heading">
+          <span class="section-icon"><lucide-icon [img]="icons.HeartPulse" [size]="20" /></span>
+          <div>
+            <h3>Signos vitales</h3>
+            <p>Todos son opcionales. Deja vacías las mediciones que no se hayan tomado.</p>
+          </div>
+        </div>
+        <div class="field-grid">
+          @for (field of vitalFields; track field.key) {
+            <div class="field" [class.has-error]="invalid('vitals.' + field.key)">
+              <label [for]="'vital-' + field.key">{{ field.label }}</label>
+              <div class="input-wrap">
+                <lucide-icon [img]="vitalIcon(field.key)" [size]="17" /><input
+                  [id]="'vital-' + field.key"
+                  type="number"
+                  step="any"
+                  [min]="field.min"
+                  [max]="field.max"
+                  [formControlName]="field.key"
+                  placeholder="Sin capturar"
+                  [attr.aria-invalid]="invalid('vitals.' + field.key)"
+                  appPermission="records:write"
+                /><span class="unit">{{ field.unit }}</span>
+              </div>
+              @if (invalid('vitals.' + field.key)) {
+                <small class="field-error"
+                  >Usa un valor entre {{ field.min }} y {{ field.max }} {{ field.unit }}.</small
+                >
+              }
+            </div>
+          }
+        </div>
+        <div class="bmi-card">
+          <span class="section-icon"><lucide-icon [img]="icons.Activity" [size]="22" /></span>
+          <div>
+            <p>Índice de masa corporal</p>
+            <strong>{{ bmi || '—' }} <small>kg/m²</small></strong>
+            <p>Se calcula con el peso y la talla capturados.</p>
+          </div>
+        </div>
+      </section>
+    }
+  }
+  <footer class="form-footer">
+    <div class="navigation">
+      <button
+        type="button"
+        class="secondary"
+        (click)="prevSubTab()"
+        [disabled]="activeSubTab() === 1"
+      >
+        <lucide-icon [img]="icons.ArrowLeft" [size]="15" />Anterior
+      </button>
+      @if (activeSubTab() < sectionCount) {
+        <button type="button" class="secondary" (click)="nextSubTab()">
+          Siguiente<lucide-icon [img]="icons.ArrowRight" [size]="15" />
+        </button>
+      }
+    </div>
+    <button
+      type="button"
+      class="primary save-patient"
+      (click)="onSubmit()"
+      appPermission="patients:write"
+    >
+      <lucide-icon [img]="icons.Save" [size]="16" />Guardar datos del paciente
     </button>
-
-    <!-- Indicador de sección actual -->
-    <span class="text-xs font-bold text-[var(--text-muted)]">
-      Sección {{ activeSubTab() }} de 4
-    </span>
-
-    <!-- Botón Siguiente o Guardar General -->
-    @if (activeSubTab() < 4) {
-      <button type="button"
-              (click)="nextSubTab()"
-              class="px-5 py-2 rounded-2xl text-xs font-black bg-teal-600 hover:bg-teal-500 text-white shadow-lg shadow-teal-600/20 transition-all cursor-pointer">
-        Siguiente sección
-      </button>
-    } @else {
-      <!-- ÚNICO BOTÓN GLOBAL PARA GUARDAR TODO EL FORMULARIO DE LAS SUB-TABS -->
-      <button type="button"
-              (click)="onSubmit()"
-              class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-teal-500/20 cursor-pointer">
-        Guardar Datos de Identificación y Antecedentes
-      </button>
-    }
-
-  </div>
-
+  </footer>
 </div>
+<dialog #validationDialog class="validation-dialog" aria-labelledby="patient-validation-title">
+  <header class="validation-heading">
+    <span class="warning-icon"><lucide-icon [img]="icons.TriangleAlert" [size]="23" /></span
+    ><button
+      type="button"
+      class="close-dialog"
+      aria-label="Cerrar diálogo"
+      (click)="closeValidation()"
+    >
+      <lucide-icon [img]="icons.X" [size]="18" />
+    </button>
+  </header>
+  <span class="eyebrow">REVISIÓN DEL REGISTRO</span>
+  <h2 id="patient-validation-title">
+    {{ saveError() ? 'No pudimos guardar el registro' : 'Revisa estos datos antes de guardar' }}
+  </h2>
+  @if (saveError()) {
+    <p class="dialog-copy" role="alert">{{ saveError() }}</p>
+  } @else {
+    <p class="dialog-copy">
+      Los campos marcados con * son los únicos obligatorios. Si capturaste datos opcionales, revisa
+      que su formato sea válido.
+    </p>
+    <ul class="issue-list">
+      @for (issue of issues(); track issue.key) {
+        <li>
+          <button type="button" (click)="goToIssue(issue)">
+            <span class="issue-icon"
+              ><lucide-icon
+                [img]="issue.tab === 5 ? icons.HeartPulse : icons.FileText"
+                [size]="17" /></span
+            ><span
+              ><strong>{{ issue.label }}</strong
+              ><small>{{ issue.message }}</small></span
+            ><lucide-icon [img]="icons.ChevronRight" [size]="17" />
+          </button>
+        </li>
+      }
+    </ul>
+  }
+  <button
+    type="button"
+    class="primary dialog-action"
+    (click)="issues().length ? goToIssue(issues()[0]) : closeValidation()"
+  >
+    {{ issues().length ? 'Ir a corregir' : 'Entendido'
+    }}<lucide-icon [img]="icons.ArrowRight" [size]="16" />
+  </button>
+</dialog>

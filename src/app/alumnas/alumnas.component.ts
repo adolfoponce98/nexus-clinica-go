@@ -2,10 +2,35 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  LucideAngularModule, Search, Filter, Plus, ChevronDown, ChevronUp,
-  FileText, Activity, Camera, AlertCircle, Clock, Phone, Users, UserCheck,
-  CheckCircle2, ArrowLeft, ArrowRight, Calendar, DollarSign, Heart, Mail, MapPin,
-  ShieldAlert, Pill,MessageSquare, Utensils, Moon, CreditCard, Image as ImageIcon
+  LucideAngularModule,
+  Search,
+  Filter,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Activity,
+  Camera,
+  AlertCircle,
+  Clock,
+  Phone,
+  Users,
+  UserCheck,
+  CheckCircle2,
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  DollarSign,
+  Heart,
+  Mail,
+  MapPin,
+  ShieldAlert,
+  Pill,
+  MessageSquare,
+  Utensils,
+  Moon,
+  CreditCard,
+  Image as ImageIcon,
 } from 'lucide-angular';
 
 export interface Alumno {
@@ -40,14 +65,38 @@ export interface Alumno {
   selector: 'app-alumnos',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
-  templateUrl: './alumnos.component.html'
+  templateUrl: './alumnos.component.html',
 })
 export class AlumnosComponent {
   readonly icons = {
-    Search, Filter, Plus, ChevronDown, ChevronUp,
-    FileText, Activity, Camera, AlertCircle, Clock, Phone, Users, UserCheck,
-    CheckCircle2, ArrowLeft, ArrowRight, Calendar, DollarSign, Heart, Mail, MapPin,
-    ShieldAlert, Pill, Utensils, Moon, CreditCard, ImageIcon ,MessageSquare
+    Search,
+    Filter,
+    Plus,
+    ChevronDown,
+    ChevronUp,
+    FileText,
+    Activity,
+    Camera,
+    AlertCircle,
+    Clock,
+    Phone,
+    Users,
+    UserCheck,
+    CheckCircle2,
+    ArrowLeft,
+    ArrowRight,
+    Calendar,
+    DollarSign,
+    Heart,
+    Mail,
+    MapPin,
+    ShieldAlert,
+    Pill,
+    Utensils,
+    Moon,
+    CreditCard,
+    ImageIcon,
+    MessageSquare,
   };
 
   searchTerm = signal('');
@@ -85,14 +134,36 @@ export class AlumnosComponent {
       tipoSangre: 'O Positivo (O+)',
       medicoResponsable: 'Dr. Roberto Sánchez',
       tutores: [
-        { nombre: 'Ana López', parentesco: 'Madre', rol: 'Tutor Principal', telefono: '+34 600 111 222', foto: 'https://ui-avatars.com/api/?name=Ana+Lopez&background=1e1b4b&color=93c5fd' },
-        { nombre: 'Carlos García', parentesco: 'Padre', rol: 'Tutor Secundario', telefono: '+34 600 333 444', foto: 'https://ui-avatars.com/api/?name=Carlos+Garcia&background=1e1b4b&color=93c5fd' }
+        {
+          nombre: 'Ana López',
+          parentesco: 'Madre',
+          rol: 'Tutor Principal',
+          telefono: '+34 600 111 222',
+          foto: 'https://ui-avatars.com/api/?name=Ana+Lopez&background=1e1b4b&color=93c5fd',
+        },
+        {
+          nombre: 'Carlos García',
+          parentesco: 'Padre',
+          rol: 'Tutor Secundario',
+          telefono: '+34 600 333 444',
+          foto: 'https://ui-avatars.com/api/?name=Carlos+Garcia&background=1e1b4b&color=93c5fd',
+        },
       ],
       autorizados: [
-        { nombre: 'Rosa Martínez', parentesco: 'Abuela Materna', telefono: '+34 600 555 666', foto: 'https://ui-avatars.com/api/?name=Rosa+Martinez&background=1e1b4b&color=93c5fd' },
-        { nombre: 'Luis López', parentesco: 'Tío', telefono: '+34 600 777 888', foto: 'https://ui-avatars.com/api/?name=Luis+Lopez&background=1e1b4b&color=93c5fd' }
+        {
+          nombre: 'Rosa Martínez',
+          parentesco: 'Abuela Materna',
+          telefono: '+34 600 555 666',
+          foto: 'https://ui-avatars.com/api/?name=Rosa+Martinez&background=1e1b4b&color=93c5fd',
+        },
+        {
+          nombre: 'Luis López',
+          parentesco: 'Tío',
+          telefono: '+34 600 777 888',
+          foto: 'https://ui-avatars.com/api/?name=Luis+Lopez&background=1e1b4b&color=93c5fd',
+        },
       ],
-      expanded: false
+      expanded: false,
     },
     {
       id: '2',
@@ -118,13 +189,24 @@ export class AlumnosComponent {
       tipoSangre: 'A Positivo (A+)',
       medicoResponsable: 'Dra. Carmen Morales',
       tutores: [
-        { nombre: 'María López', parentesco: 'Madre', rol: 'Tutor Principal', telefono: '+34 611 222 333', foto: 'https://ui-avatars.com/api/?name=Maria+Lopez&background=1e1b4b&color=93c5fd' }
+        {
+          nombre: 'María López',
+          parentesco: 'Madre',
+          rol: 'Tutor Principal',
+          telefono: '+34 611 222 333',
+          foto: 'https://ui-avatars.com/api/?name=Maria+Lopez&background=1e1b4b&color=93c5fd',
+        },
       ],
       autorizados: [
-        { nombre: 'Ana Gómez', parentesco: 'Abuela', telefono: '+34 611 444 555', foto: 'https://ui-avatars.com/api/?name=Ana+Gomez&background=1e1b4b&color=93c5fd' }
+        {
+          nombre: 'Ana Gómez',
+          parentesco: 'Abuela',
+          telefono: '+34 611 444 555',
+          foto: 'https://ui-avatars.com/api/?name=Ana+Gomez&background=1e1b4b&color=93c5fd',
+        },
       ],
-      expanded: false
-    }
+      expanded: false,
+    },
   ]);
 
   setCategory(cat: string) {
@@ -132,8 +214,8 @@ export class AlumnosComponent {
   }
 
   toggleExpand(alumnoId: string) {
-    this.alumnosList.update(list =>
-      list.map(a => a.id === alumnoId ? { ...a, expanded: !a.expanded } : a)
+    this.alumnosList.update((list) =>
+      list.map((a) => (a.id === alumnoId ? { ...a, expanded: !a.expanded } : a)),
     );
   }
 
@@ -155,11 +237,12 @@ export class AlumnosComponent {
     const term = this.searchTerm().toLowerCase();
     const cat = this.selectedCategory();
 
-    return this.alumnosList().filter(alumno => {
+    return this.alumnosList().filter((alumno) => {
       const matchesCategory = cat === 'Todos' || alumno.categoria === cat;
-      const matchesSearch = alumno.name.toLowerCase().includes(term) ||
-                            alumno.grupo.toLowerCase().includes(term) ||
-                            alumno.tutores.some(t => t.nombre.toLowerCase().includes(term));
+      const matchesSearch =
+        alumno.name.toLowerCase().includes(term) ||
+        alumno.grupo.toLowerCase().includes(term) ||
+        alumno.tutores.some((t) => t.nombre.toLowerCase().includes(term));
       return matchesCategory && matchesSearch;
     });
   }

@@ -5,5 +5,5 @@ export interface Student {
   phone: string;
   createdAt: string;
   lastCheckIn: string;
-  status:string;
+  status: string;
 }

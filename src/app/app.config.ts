@@ -1,6 +1,7 @@
+import { SessionHttpInterceptor } from './auth/session-http.interceptor';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { routes } from './app.routes';
 
 // Importaciones directas del SDK modular de Firebase (sin @angular/fire)
@@ -18,10 +19,11 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptorsFromDi()),
+    { provide: HTTP_INTERCEPTORS, useClass: SessionHttpInterceptor, multi: true },
     // Proveer las instancias directas para inyectarlas donde las necesites
     { provide: 'FIREBASE_APP', useValue: firebaseApp },
     { provide: 'FIRESTORE_DB', useValue: db },
-    { provide: 'FIREBASE_MESSAGING', useValue: messaging }
-  ]
+    { provide: 'FIREBASE_MESSAGING', useValue: messaging },
+  ],
 };

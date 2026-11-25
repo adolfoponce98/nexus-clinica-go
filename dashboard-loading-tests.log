@@ -1,0 +1,135 @@
+> Building...
+√ Building...
+Initial chunk files                                                 | Names                                                            |  Raw size
+spec-app-auth-progressive-navigation.js                             | spec-app-auth-progressive-navigation                             |   2.47 MB | 
+chunk-U4ZGRMFM.js                                                   | -                                                                | 430.04 kB | 
+chunk-GKZN3MBX.js                                                   | -                                                                | 234.42 kB | 
+chunk-ZZ6KCF5E.js                                                   | -                                                                | 217.84 kB | 
+chunk-5Q2G5WZ5.js                                                   | -                                                                | 209.95 kB | 
+styles.css                                                          | styles                                                           | 163.78 kB | 
+chunk-FJZQMJQD.js                                                   | -                                                                |  29.80 kB | 
+chunk-GNPQPQJ4.js                                                   | -                                                                |  20.55 kB | 
+spec-app-calendar-calendar.component.js                             | spec-app-calendar-calendar.component                             |  10.82 kB | 
+spec-app-auth-employee-data.js                                      | spec-app-auth-employee-data                                      |   8.72 kB | 
+chunk-HES7XDLY.js                                                   | -                                                                |   7.09 kB | 
+chunk-5JXFHWSU.js                                                   | -                                                                |   5.84 kB | 
+spec-app-calendar-onboarding-calendar-practice-dialogs.component.js | spec-app-calendar-onboarding-calendar-practice-dialogs.component |   5.54 kB | 
+chunk-JBWBLPNK.js                                                   | -                                                                |   5.19 kB | 
+chunk-IQWKLBXG.js                                                   | -                                                                |   4.52 kB | 
+spec-app-home-home-loading.js                                       | spec-app-home-home-loading                                       |   4.04 kB | 
+chunk-LQP6KDUV.js                                                   | -                                                                |   3.86 kB | 
+spec-app-calendar-onboarding-calendar-onboarding.component.js       | spec-app-calendar-onboarding-calendar-onboarding.component       |   3.46 kB | 
+chunk-ED4K2N3Y.js                                                   | -                                                                |   2.97 kB | 
+init-testbed.js                                                     | init-testbed                                                     |   1.21 kB | 
+vitest-mock-patch.js                                                | vitest-mock-patch                                                | 969 bytes | 
+
+                                                                    | Initial total                                                    |   3.84 MB
+
+Lazy chunk files                                                    | Names                                                            |  Raw size
+chunk-34R63K2H.js                                                   | public-registration-component                                    |  69.16 kB | 
+chunk-DGKK7K22.js                                                   | payment-result-component                                         |  26.37 kB | 
+
+Application bundle generation complete. [11.084 seconds] - 2026-11-23T17:42:01.467Z
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:277:185:
+      277 │ ...Cobrado: {{ (appointment?.amountPaid ?? 0) | currency:'MXN':'s...
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:278:22:
+      278 │     @if (appointment?.finalCost !== null && appointment?.finalCos...
+          ╵                       ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:278:57:
+      278 │ ...t !== null && appointment?.finalCost !== undefined) { <p>Costo...
+          ╵                               ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:279:27:
+      279 │     @else if (appointment?.quotedCost !== null && appointment?.qu...
+          ╵                            ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:279:63:
+      279 │ ... !== null && appointment?.quotedCost !== undefined) { <p>Preci...
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:3:171:
+      3 │ ...emplateUrl:'./calendar-practice-dialogs.component.html',styles:[...
+        ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:40:4:
+      40 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:102:167:
+      102 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:45:57:
+      45 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:14:80:
+      14 │ ...ule, FormsModule, LucideAngularModule, Advanced3DViewerComponent],
+         ╵                                           ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+ RUN  v4.1.2 D:/GitHub/nexus-admin-nexo-salud
+
+
+ Test Files  6 passed (6)
+      Tests  38 passed (38)
+   Start at  11:42:01
+   Duration  4.64s (transform 3.40s, setup 2.88s, import 7.66s, tests 1.72s, environment 7.75s)
+

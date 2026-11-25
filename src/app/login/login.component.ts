@@ -1,3 +1,8 @@
+import { PasswordRecoveryService } from '../password-recovery/password-recovery.service';
+import { ClinicaGoBackgroundComponent } from '../shared/clinica-go-background.component';
+import { PermissionService } from '../auth/permission.service';
+import { SECURITY_CONFIG } from '../config/security.config';
+import { API_URLS } from '../config/api-urls';
 import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -24,19 +29,23 @@ import {
   UserCheck,
   HelpCircle,
   X,
-  ArrowLeft
+  ArrowLeft,
 } from 'lucide-angular';
 
 @Component({
   selector: 'app-root',
-  imports: [MatIconModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [ClinicaGoBackgroundComponent, MatIconModule, ReactiveFormsModule, LucideAngularModule],
   standalone: true,
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
   loginForm: FormGroup;
   employeeLoginForm: FormGroup;
+  recoveryForm: FormGroup;
+  readonly recovery = inject(PasswordRecoveryService);
+  readonly passwordResetNotice = signal('');
 
+  private readonly permissions = inject(PermissionService);
   private authService = inject(AuthService);
   themeService = inject(ThemeService);
 
@@ -74,26 +83,28 @@ export class LoginComponent {
   isLoading = signal(false);
 
   // Credenciales de Seguridad y Endpoints
-  private readonly LOGIN_URL = 'https://loginuser-o7vmreizjq-uc.a.run.app';
-  private readonly LOGIN_EMPLOYEE_URL = 'https://loginemployee-o7vmreizjq-uc.a.run.app';
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
+  private readonly LOGIN_URL = API_URLS.LOGINUSER;
+  private readonly LOGIN_EMPLOYEE_URL = API_URLS.LOGINEMPLOYEE;
+  private readonly ENCRYPTION_KEY = SECURITY_CONFIG.ENCRYPTION_KEY;
+  private readonly APP_SECRET_HEADER = SECURITY_CONFIG.APP_SECRET_HEADER;
 
   constructor() {
+    this.recoveryForm = this.fb.group({ email: ['', [Validators.required, Validators.email]] });
+    this.passwordResetNotice.set(this.recovery.takeNotice());
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]]
+      password: ['', [Validators.required]],
     });
 
     this.employeeLoginForm = this.fb.group({
       nip: ['', [Validators.required, Validators.minLength(11)]], // 6 dígitos + 5 guiones
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]]
+      password: ['', [Validators.required]],
     });
   }
 
   togglePasswordVisibility() {
-    this.showPassword.update(value => !value);
+    this.showPassword.update((value) => !value);
   }
 
   toggleEmployeeMode(isEmployee: boolean) {
@@ -118,8 +129,12 @@ export class LoginComponent {
     this.userData = this.authService.getSession();
   }
 
-  cerrarSesion() {
-    this.authService.logout();
+  async cerrarSesion() {
+    try {
+      await this.authService.logout();
+    } catch (error) {
+      alert((error as Error).message);
+    }
     this.router.navigate(['/login']);
   }
 
@@ -134,24 +149,26 @@ export class LoginComponent {
 
         const rawPayload = {
           email: payload.email.trim().toLowerCase(),
-          password: payload.password
+          password: payload.password,
         };
 
-        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(rawPayload), this.ENCRYPTION_KEY).toString();
+        const ciphertext = CryptoJS.AES.encrypt(
+          JSON.stringify(rawPayload),
+          this.ENCRYPTION_KEY,
+        ).toString();
 
-        const response = await fetch(this.LOGIN_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular'
-          },
-          body: JSON.stringify({ encryptedData: ciphertext })
-        });
+        const response = await this.authService.login(this.LOGIN_URL, ciphertext);
 
         const jsonRes = await response.json();
         if (!response.ok) {
-          throw new Error(jsonRes.error || 'Error en la conexión con el servidor.');
+          const failure = jsonRes.encryptedData
+            ? JSON.parse(
+                CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY).toString(
+                  CryptoJS.enc.Utf8,
+                ),
+              )
+            : jsonRes;
+          throw new Error(failure.error || 'Error en la conexión con el servidor.');
         }
 
         if (jsonRes.encryptedData) {
@@ -159,18 +176,20 @@ export class LoginComponent {
           const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
           const responseData = JSON.parse(decryptedString);
 
-          console.log('🔓 Response desencriptado del servidor (Doctor/Clínica):', responseData);
-
           if (responseData.success) {
             this.authService.saveSession(responseData);
-            this.router.navigate(['/home']);
+            this.authService.initializeEmployeeOffice();
+            this.router.navigate([
+              responseData.mustChangePassword
+                ? '/cambiar-contrasena'
+                : this.permissions.firstRoute(),
+            ]);
           } else {
             throw new Error(responseData.error || 'Credenciales incorrectas.');
           }
         } else {
           throw new Error(jsonRes.error || 'Respuesta inválida del servidor.');
         }
-
       } catch (err: any) {
         console.error('Error en login:', err);
         this.errorMessage.set(err.message || 'Credenciales incorrectas o error de servidor.');
@@ -193,24 +212,26 @@ export class LoginComponent {
         const rawPayload = {
           nip: payload.nip ? payload.nip.replace(/-/g, '').trim() : '', // Limpia los guiones dejando solo los 6 dígitos
           email: payload.email.trim().toLowerCase(),
-          password: payload.password
+          password: payload.password,
         };
 
-        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(rawPayload), this.ENCRYPTION_KEY).toString();
+        const ciphertext = CryptoJS.AES.encrypt(
+          JSON.stringify(rawPayload),
+          this.ENCRYPTION_KEY,
+        ).toString();
 
-        const response = await fetch(this.LOGIN_EMPLOYEE_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular'
-          },
-          body: JSON.stringify({ encryptedData: ciphertext })
-        });
+        const response = await this.authService.login(this.LOGIN_EMPLOYEE_URL, ciphertext);
 
         const jsonRes = await response.json();
         if (!response.ok) {
-          throw new Error(jsonRes.error || 'Error en la conexión con el servidor de empleados.');
+          const failure = jsonRes.encryptedData
+            ? JSON.parse(
+                CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY).toString(
+                  CryptoJS.enc.Utf8,
+                ),
+              )
+            : jsonRes;
+          throw new Error(failure.error || 'Error en la conexión con el servidor de empleados.');
         }
 
         if (jsonRes.encryptedData) {
@@ -218,21 +239,25 @@ export class LoginComponent {
           const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
           const responseData = JSON.parse(decryptedString);
 
-          console.log('🔓 Response desencriptado del servidor (Empleado):', responseData);
-
           if (responseData.success) {
             this.authService.saveSession(responseData);
-            this.router.navigate(['/home']);
+            this.authService.initializeEmployeeOffice();
+            this.router.navigate([
+              responseData.mustChangePassword
+                ? '/cambiar-contrasena'
+                : this.permissions.firstRoute(),
+            ]);
           } else {
             throw new Error(responseData.error || 'NIP o credenciales incorrectas.');
           }
         } else {
           throw new Error(jsonRes.error || 'Respuesta inválida del servidor.');
         }
-
       } catch (err: any) {
         console.error('Error en login de empleados:', err);
-        this.errorMessage.set(err.message || 'Credenciales de empleado incorrectas o error de servidor.');
+        this.errorMessage.set(
+          err.message || 'Credenciales de empleado incorrectas o error de servidor.',
+        );
         this.showErrorModal.set(true);
       } finally {
         this.isLoading.set(false);
@@ -245,12 +270,17 @@ export class LoginComponent {
   }
 
   openForgotPasswordModal() {
+    this.recovery.reset();
+    this.recoveryForm.patchValue({ email: this.loginForm.get('email')?.value || '' });
     this.showForgotPasswordModal.set(true);
   }
 
-  submitForgotPassword() {
-    alert('Se han enviado las instrucciones de recuperación a tu correo electrónico.');
-    this.showForgotPasswordModal.set(false);
+  async submitForgotPassword() {
+    if (this.recoveryForm.invalid || this.recovery.busy()) return;
+    if (await this.recovery.requestCode(this.recoveryForm.value.email)) {
+      this.showForgotPasswordModal.set(false);
+      await this.router.navigate(['/recuperar-contrasena']);
+    }
   }
 
   openRegisterModal() {

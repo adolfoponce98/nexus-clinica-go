@@ -1,0 +1,154 @@
+@if (appointment(); as a) {
+  <aside
+    role="region"
+    aria-label="Cita del horario actual"
+    class="current-appointment-card fixed bottom-5 right-5 z-40 w-[calc(100vw-2.5rem)] max-w-sm rounded-3xl border shadow-2xl p-5 space-y-4 max-h-[75vh] overflow-y-auto"
+    style="
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-main);
+    "
+  >
+    <div class="flex items-start gap-3">
+      <span class="p-2 rounded-xl bg-blue-500/15 text-blue-500"
+        ><lucide-icon [img]="icons.Clock" class="w-6 h-6"
+      /></span>
+      <div class="flex-1">
+        <p class="text-xs font-black uppercase text-blue-500">Es la hora de esta cita</p>
+        <p class="text-xs mt-1" style="color: var(--text-muted)">
+          {{ a.time }} – {{ a.endTime || 'Fin según duración' }}
+        </p>
+      </div>
+      <button
+        (click)="dismiss()"
+        aria-label="Cerrar tarjeta de cita"
+        class="p-2 rounded-xl hover:bg-blue-500/10"
+      >
+        <lucide-icon [img]="icons.X" class="w-4 h-4" />
+      </button>
+    </div>
+    <p class="text-xs flex gap-2">
+      <lucide-icon [img]="icons.Building2" class="w-4 h-4 shrink-0" />{{ office() }}
+    </p>
+    <h2 class="font-bold text-lg break-words">{{ a.patientName || a.name }}</h2>
+    <div class="space-y-2 text-sm">
+      <p class="flex gap-2 break-all">
+        <lucide-icon [img]="icons.Phone" class="w-4 h-4 shrink-0" />{{
+          a.phone && a.phone !== '-' ? a.phone : 'Sin teléfono'
+        }}
+      </p>
+      <p class="flex gap-2 break-all">
+        <lucide-icon [img]="icons.Mail" class="w-4 h-4 shrink-0" />{{
+          a.email && a.email !== '-' ? a.email : 'Sin correo'
+        }}
+      </p>
+      <p class="flex gap-2">
+        <lucide-icon [img]="icons.Stethoscope" class="w-4 h-4 shrink-0" />{{
+          a.reason || 'Sin definir'
+        }}
+      </p>
+    </div>
+    @if (linked()) {
+      <p class="rounded-xl bg-emerald-500/10 p-3 text-xs text-emerald-500">
+        Expediente vinculado: {{ a.numeroDeExpediente || 'Paciente registrado' }}
+      </p>
+    } @else {
+      <p class="rounded-xl bg-amber-500/10 p-3 text-xs text-amber-500">
+        Esta cita aún no tiene un expediente vinculado. Si el paciente ya está registrado, búscalo
+        antes de crear otro.
+      </p>
+    }
+    @if (error()) {
+      <p role="alert" class="text-xs text-red-500">{{ error() }}</p>
+    }
+    <button
+      (click)="act()"
+      [disabled]="
+        busy() ||
+        (linked() ? !permissions.can('followUps', 'write') : !permissions.can('records', 'write'))
+      "
+      class="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 text-white py-3 text-xs font-bold disabled:opacity-40"
+    >
+      <lucide-icon [img]="linked() ? icons.ArrowRight : icons.FilePlus" class="w-4 h-4" />{{
+        linked() ? 'ATENDER CONSULTA' : 'CREAR EXPEDIENTE'
+      }}
+    </button>
+    @if (permissions.can('patients') && permissions.can('calendar', 'write')) {
+      <button
+        (click)="search()"
+        [disabled]="busy()"
+        class="w-full flex items-center justify-center gap-2 rounded-xl border py-2 text-xs font-bold"
+        style="border-color: var(--border-color)"
+      >
+        <lucide-icon [img]="icons.Search" class="w-4 h-4" />{{
+          linked() ? 'Cambiar paciente vinculado' : 'Vincular paciente existente'
+        }}
+      </button>
+    }
+  </aside>
+}
+@if (searching()) {
+  <div
+    class="app-dialog-overlay fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+  >
+    <section
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="link-patient-title"
+      class="w-full max-w-xl rounded-3xl border p-5 flex flex-col max-h-[85vh] shadow-2xl"
+      style="
+        background: var(--bg-secondary);
+        color: var(--text-main);
+        border-color: var(--border-color);
+      "
+    >
+      <div class="flex items-center mb-4">
+        <h2 id="link-patient-title" class="font-bold text-lg flex-1">
+          Vincular expediente a la cita
+        </h2>
+        <button
+          (click)="searching.set(false)"
+          [disabled]="busy()"
+          aria-label="Cerrar buscador"
+          class="p-2"
+        >
+          <lucide-icon [img]="icons.X" class="w-5 h-5" />
+        </button>
+      </div>
+      <input
+        [(ngModel)]="query"
+        [disabled]="busy()"
+        placeholder="Nombre, teléfono, correo o expediente"
+        aria-label="Buscar paciente"
+        class="w-full border rounded-xl p-3 mb-4 outline-none"
+        style="background: var(--bg-primary); border-color: var(--border-color)"
+      />
+      @if (error()) {
+        <p role="alert" class="text-red-500 text-sm mb-3">{{ error() }}</p>
+      }
+      @if (busy()) {
+        <p role="status" class="text-blue-500 text-sm mb-3 animate-pulse">Vinculando expediente…</p>
+      }
+      <div class="overflow-y-auto min-h-0 space-y-2">
+        @for (p of patients(); track id(p)) {
+          <button
+            (click)="select(p)"
+            [disabled]="busy()"
+            class="w-full text-left border rounded-2xl p-4 hover:border-blue-500 disabled:opacity-50"
+            style="border-color: var(--border-color)"
+          >
+            <p class="font-bold">{{ name(p) }}</p>
+            <p class="text-xs text-blue-500 mt-1">
+              {{ p.numeroDeExpediente || 'Expediente registrado' }}
+            </p>
+            <p class="text-xs mt-2 break-all" style="color: var(--text-muted)">
+              {{ phone(p) }} · {{ email(p) }}
+            </p>
+          </button>
+        } @empty {
+          <p class="text-sm p-4">No hay pacientes que coincidan en este consultorio.</p>
+        }
+      </div>
+    </section>
+  </div>
+}

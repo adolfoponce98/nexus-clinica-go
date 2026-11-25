@@ -1,59 +1,105 @@
 @if (isLoading) {
   <div class="flex flex-col items-center justify-center h-screen bg-zinc-50">
-    <div class="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+    <div
+      class="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"
+    ></div>
     <p class="text-zinc-500 mt-3 font-medium text-sm">Cargando usuarios de sistema...</p>
   </div>
 } @else {
   <div class="space-y-8 animate-in fade-in duration-500 p-6">
     <div class="flex justify-between items-end">
       <div>
-        <p class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">Control de Accesos</p>
-        <h2 class="text-4xl font-black uppercase tracking-tighter text-zinc-900">Usuarios de Sistema</h2>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">
+          Control de Accesos
+        </p>
+        <h2 class="text-4xl font-black uppercase tracking-tighter text-zinc-900">
+          Usuarios de Sistema
+        </h2>
       </div>
-      <div class="bg-zinc-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest">
+      <div
+        class="bg-zinc-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest"
+      >
         Total: {{ systemUsers().length }} Usuarios
       </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
       <!-- Panel Lateral de Edición -->
       <div class="lg:col-span-4 space-y-6">
         @if (selectedUser(); as user) {
-          <div class="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm animate-in slide-in-from-left-4 duration-300">
+          <div
+            class="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm animate-in slide-in-from-left-4 duration-300"
+          >
             <div class="flex justify-between items-center mb-6">
               <h3 class="text-xl font-black text-zinc-900">Edita o Actualiza</h3>
               <div class="flex items-center gap-2">
-                <button (click)="confirmarEliminacion(user)" class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg bg-rose-50 transition-colors cursor-pointer" title="Eliminar Usuario">
+                <button
+                  (click)="confirmarEliminacion(user)"
+                  class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg bg-rose-50 transition-colors cursor-pointer"
+                  title="Eliminar Usuario"
+                  appPermission="usersSystem:write"
+                >
                   <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
                 </button>
                 <lucide-icon [img]="UserRoundPen" class="text-cyan-400 w-5 h-5"></lucide-icon>
               </div>
             </div>
 
-            <form [formGroup]="editUserForm" (ngSubmit)="actualizarUsuarioActual()" class="space-y-4">
+            <form
+              [formGroup]="editUserForm"
+              (ngSubmit)="actualizarUsuarioActual()"
+              class="space-y-4"
+            >
               <div class="flex items-center gap-4 mb-2">
-                <img [src]="user.photoUrl || 'https://i.pravatar.cc/150?u=default'" class="w-16 h-16 rounded-2xl object-cover shadow-md" />
+                <img
+                  [src]="user.photoUrl || 'https://i.pravatar.cc/150?u=default'"
+                  class="w-16 h-16 rounded-2xl object-cover shadow-md"
+                />
                 <div>
-                  <span class="px-2 py-0.5 bg-lime-100 text-lime-700 text-[7px] font-black rounded-md uppercase">ID / Email</span>
-                  <p class="text-xs text-zinc-500 font-bold truncate max-w-[180px]">{{ user.email }}</p>
+                  <span
+                    class="px-2 py-0.5 bg-lime-100 text-lime-700 text-[7px] font-black rounded-md uppercase"
+                    >ID / Email</span
+                  >
+                  <p class="text-xs text-zinc-500 font-bold truncate max-w-[180px]">
+                    {{ user.email }}
+                  </p>
                 </div>
               </div>
 
               <div class="space-y-1">
-                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Nombre</label>
-                <input formControlName="name" type="text" class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors text-sm">
+                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                  >Nombre</label
+                >
+                <input
+                  formControlName="name"
+                  type="text"
+                  class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors text-sm"
+                  appPermission="usersSystem:write"
+                />
               </div>
 
               <div class="space-y-1">
-                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Teléfono</label>
-                <input formControlName="phone" type="text" class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors text-sm">
+                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                  >Teléfono</label
+                >
+                <input
+                  formControlName="phone"
+                  type="text"
+                  class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors text-sm"
+                  appPermission="usersSystem:write"
+                />
               </div>
 
               <!-- Selector de Tipo de Usuario -->
               <div class="space-y-1">
-                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Tipo de Usuario (Rol)</label>
-                <select formControlName="typeUser" class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 text-xs bg-transparent">
+                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                  >Tipo de Usuario (Rol)</label
+                >
+                <select
+                  formControlName="typeUser"
+                  class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 text-xs bg-transparent"
+                  appPermission="usersSystem:write"
+                >
                   <option [value]="2">Administración (2)</option>
                   <option [value]="1">Recepción (1)</option>
                   <option [value]="3">Maestro (3)</option>
@@ -61,26 +107,57 @@
               </div>
 
               <div class="space-y-1">
-                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Color distintivo</label>
+                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                  >Color distintivo</label
+                >
                 <div class="flex items-center gap-3 py-1">
-                  <input formControlName="colorHex" type="text" class="w-28 border-b border-zinc-200 py-1 font-bold text-zinc-900 outline-none text-xs">
-                  <div class="w-6 h-6 rounded-full border border-zinc-200" [style.background-color]="editUserForm.value.colorHex"></div>
+                  <input
+                    formControlName="colorHex"
+                    type="text"
+                    class="w-28 border-b border-zinc-200 py-1 font-bold text-zinc-900 outline-none text-xs"
+                    appPermission="usersSystem:write"
+                  />
+                  <div
+                    class="w-6 h-6 rounded-full border border-zinc-200"
+                    [style.background-color]="editUserForm.value.colorHex"
+                  ></div>
                 </div>
               </div>
 
               <div class="space-y-1">
-                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Nueva Contraseña (Opcional)</label>
-                <input formControlName="password" type="password" placeholder="••••••••" class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 text-sm">
+                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                  >Nueva Contraseña (Opcional)</label
+                >
+                <input
+                  formControlName="password"
+                  type="password"
+                  placeholder="••••••••"
+                  class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 text-sm"
+                  appPermission="usersSystem:write"
+                />
               </div>
 
               <div class="space-y-1">
-                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Biografía</label>
-                <textarea formControlName="description" rows="2" class="w-full bg-zinc-50 border border-zinc-100 rounded-2xl p-3 text-xs font-bold text-zinc-900 outline-none resize-none"></textarea>
+                <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                  >Biografía</label
+                >
+                <textarea
+                  formControlName="description"
+                  rows="2"
+                  class="w-full bg-zinc-50 border border-zinc-100 rounded-2xl p-3 text-xs font-bold text-zinc-900 outline-none resize-none"
+                  appPermission="usersSystem:write"
+                ></textarea>
               </div>
 
-              <button type="submit" [disabled]="editUserForm.invalid || isSubmitting" class="w-full bg-zinc-950 text-white font-black py-4 rounded-2xl uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition-all cursor-pointer shadow-md disabled:opacity-50 mt-4 flex items-center justify-center">
+              <button
+                type="submit"
+                [disabled]="editUserForm.invalid || isSubmitting"
+                class="w-full bg-zinc-950 text-white font-black py-4 rounded-2xl uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition-all cursor-pointer shadow-md disabled:opacity-50 mt-4 flex items-center justify-center"
+              >
                 @if (isSubmitting) {
-                  <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  <div
+                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+                  ></div>
                   Actualizando...
                 } @else {
                   Actualizar Datos
@@ -92,32 +169,55 @@
       </div>
 
       <!-- Lista de Cards de Usuarios de Sistema -->
-      <div [class]="selectedUserId() ? 'lg:col-span-8' : 'lg:col-span-12'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 transition-all duration-500">
+      <div
+        [class]="selectedUserId() ? 'lg:col-span-8' : 'lg:col-span-12'"
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 transition-all duration-500"
+      >
         @for (user of systemUsers(); track user.email) {
           <div
             (click)="selectUser(user.email)"
-            [class]="(selectedUserId() === user.email || selectedUserId() === user.id) ? 'border-rose-500 ring-4 ring-rose-500/10' : 'border-zinc-100'"
+            [class]="
+              selectedUserId() === user.email || selectedUserId() === user.id
+                ? 'border-rose-500 ring-4 ring-rose-500/10'
+                : 'border-zinc-100'
+            "
             class="bg-white p-6 rounded-[32px] border cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden flex flex-col justify-between"
           >
             <div>
               <div class="flex items-start gap-4 mb-4">
-                <img [src]="user.photoUrl || 'https://i.pravatar.cc/150?u=default'" class="w-16 h-16 rounded-2xl object-cover shadow-md" />
-                <div class="flex-1">
+                <img
+                  [src]="user.photoUrl || 'https://i.pravatar.cc/150?u=default'"
+                  class="w-16 h-16 rounded-2xl object-cover shadow-md"
+                />
+                <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2 mb-1">
-                    <span [class]="getTypeUserBadgeClass(user.typeUser)" class="px-2 py-0.5 text-[7px] font-black rounded-md uppercase">
+                    <span
+                      [class]="getTypeUserBadgeClass(user.typeUser)"
+                      class="px-2 py-0.5 text-[7px] font-black rounded-md uppercase"
+                    >
                       {{ getTypeUserLabel(user.typeUser) }}
                     </span>
-                    <div class="w-2 h-2 rounded-full ml-auto" [style.background-color]="user.colorHex || '#E63946'"></div>
+                    <div
+                      class="w-2 h-2 rounded-full ml-auto"
+                      [style.background-color]="user.colorHex || '#E63946'"
+                    ></div>
                   </div>
-                  <h4 class="text-lg font-black text-zinc-900 leading-none mb-1">{{ user.name }}</h4>
-                  <p class="text-xs text-zinc-400 font-medium truncate max-w-[180px]">{{ user.email }}</p>
+                  <h4 class="text-lg font-black text-zinc-900 leading-none mb-1">
+                    {{ user.name }}
+                  </h4>
+                  <p class="text-xs text-zinc-400 font-medium truncate max-w-[180px]">
+                    {{ user.email }}
+                  </p>
                 </div>
               </div>
 
               @if (user.skills && user.skills.length > 0) {
                 <div class="flex flex-wrap gap-1 mb-6">
                   @for (skill of user.skills; track skill) {
-                    <span class="px-2 py-0.5 bg-zinc-100 text-zinc-600 text-[7px] font-bold rounded-md uppercase">{{ skill }}</span>
+                    <span
+                      class="px-2 py-0.5 bg-zinc-100 text-zinc-600 text-[7px] font-bold rounded-md uppercase"
+                      >{{ skill }}</span
+                    >
                   }
                 </div>
               }
@@ -136,8 +236,14 @@
         }
 
         <!-- Botón para Registrar Nuevo Usuario -->
-        <div (click)="abrirModalCrear()" class="border-2 border-dashed border-zinc-200 rounded-[32px] flex flex-col items-center justify-center p-8 text-zinc-300 hover:border-rose-400 hover:text-rose-400 transition-all cursor-pointer bg-zinc-50/50 min-h-[220px]">
-          <div class="w-12 h-12 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center shadow-sm mb-4">
+        <div
+          (click)="abrirModalCrear()"
+          class="border-2 border-dashed border-zinc-200 rounded-[32px] flex flex-col items-center justify-center p-8 text-zinc-300 hover:border-rose-400 hover:text-rose-400 transition-all cursor-pointer bg-zinc-50/50 min-h-[220px]"
+          appPermission="usersSystem:write"
+        >
+          <div
+            class="w-12 h-12 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center shadow-sm mb-4"
+          >
             <lucide-icon [img]="Plus" class="w-6 h-6"></lucide-icon>
           </div>
           <p class="text-xs font-black uppercase tracking-tighter">Registrar Usuario de Sistema</p>
@@ -149,99 +255,195 @@
 
 <!-- ================= MODAL DE NUEVO USUARIO DE SISTEMA ================= -->
 @if (showUserModal) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
-    <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl space-y-6">
+  <div
+    class="app-dialog-overlay fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300"
+  >
+    <div
+      class="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl space-y-6"
+    >
       <div class="flex justify-between items-center border-b border-zinc-100 pb-4">
         <div>
-          <h3 class="text-2xl font-black uppercase tracking-tight text-zinc-900">Registrar Usuario de Sistema</h3>
-          <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Credenciales y permisos para el sistema de sucursal</p>
+          <h3 class="text-2xl font-black uppercase tracking-tight text-zinc-900">
+            Registrar Usuario de Sistema
+          </h3>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+            Credenciales y permisos para el sistema de sucursal
+          </p>
         </div>
-        <button (click)="showUserModal = false" class="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all cursor-pointer font-black">✕</button>
+        <button
+          (click)="showUserModal = false"
+          class="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all cursor-pointer font-black"
+        >
+          ✕
+        </button>
       </div>
 
       <form [formGroup]="userForm" (ngSubmit)="saveUser()" class="space-y-6">
-        <div class="flex flex-col sm:flex-row items-center gap-6 bg-zinc-50 p-6 rounded-3xl border border-zinc-100">
+        <div
+          class="flex flex-col sm:flex-row items-center gap-6 bg-zinc-50 p-6 rounded-3xl border border-zinc-100"
+        >
           <div class="relative group">
-            <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-zinc-200 flex items-center justify-center">
+            <div
+              class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-zinc-200 flex items-center justify-center"
+            >
               @if (photoPreview) {
-                <img [src]="photoPreview" class="w-full h-full object-cover" alt="Preview">
+                <img [src]="photoPreview" class="w-full h-full object-cover" alt="Preview" />
               } @else {
                 <lucide-icon [img]="icons.UserPlus" class="w-8 h-8 text-zinc-400"></lucide-icon>
               }
             </div>
-            <label class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-black uppercase">
+            <label
+              class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-black uppercase"
+            >
               Cambiar
-              <input type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)">
+              <input
+                type="file"
+                accept="image/*"
+                class="hidden"
+                (change)="onPhotoSelected($event)"
+              />
             </label>
           </div>
 
-          <div class="space-y-2 flex-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest block">Color Identificador (Elige uno)</label>
+          <div class="min-w-0 space-y-2 flex-1">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest block"
+              >Color Identificador (Elige uno)</label
+            >
             <div class="flex flex-wrap gap-2.5 items-center">
               @for (color of colorOptions; track color) {
-                <button type="button"
-                        (click)="userForm.patchValue({ colorHex: color })"
-                        [style.background-color]="color"
-                        [class.ring-4]="userForm.value.colorHex === color"
-                        [class.scale-110]="userForm.value.colorHex === color"
-                        class="w-7 h-7 rounded-full ring-offset-2 ring-zinc-900 transition-all cursor-pointer shadow-sm"
-                        [title]="color">
-                </button>
+                <button
+                  type="button"
+                  (click)="userForm.patchValue({ colorHex: color })"
+                  [style.background-color]="color"
+                  [class.ring-4]="userForm.value.colorHex === color"
+                  [class.scale-110]="userForm.value.colorHex === color"
+                  class="w-7 h-7 rounded-full ring-offset-2 ring-zinc-900 transition-all cursor-pointer shadow-sm"
+                  [title]="color"
+                ></button>
               }
             </div>
-            <p class="text-[9px] font-bold text-zinc-400 pt-1">Seleccionado: <span class="font-mono text-zinc-800">{{ userForm.value.colorHex }}</span></p>
+            <p class="text-[9px] font-bold text-zinc-400 pt-1">
+              Seleccionado:
+              <span class="font-mono text-zinc-800">{{ userForm.value.colorHex }}</span>
+            </p>
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Nombre Completo</label>
-            <input formControlName="name" type="text" placeholder="Ej. Juan Pérez" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >Nombre Completo</label
+            >
+            <input
+              formControlName="name"
+              type="text"
+              placeholder="Ej. Juan Pérez"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="usersSystem:write"
+            />
           </div>
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Teléfono</label>
-            <input formControlName="phone" type="text" placeholder="Ej. 33 1234 5678" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >Teléfono</label
+            >
+            <input
+              formControlName="phone"
+              type="text"
+              placeholder="Ej. 33 1234 5678"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="usersSystem:write"
+            />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Correo Electrónico (ID)</label>
-            <input formControlName="email" type="email" placeholder="correo@email.com" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >Correo Electrónico (ID)</label
+            >
+            <input
+              formControlName="email"
+              type="email"
+              placeholder="correo@email.com"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="usersSystem:write"
+            />
           </div>
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Contraseña Temporal</label>
-            <input formControlName="password" type="password" placeholder="••••••••" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >Contraseña Temporal</label
+            >
+            <input
+              formControlName="password"
+              type="password"
+              placeholder="••••••••"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="usersSystem:write"
+            />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Tipo de Usuario (Rol)</label>
-            <select formControlName="typeUser" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-4 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >Tipo de Usuario (Rol)</label
+            >
+            <select
+              formControlName="typeUser"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-4 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="usersSystem:write"
+            >
               <option [value]="2">2 - Administración</option>
               <option [value]="1">1 - Recepción</option>
               <option [value]="3">3 - Maestro</option>
             </select>
           </div>
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">F. Nacimiento</label>
-            <input formControlName="birthDate" type="date" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-4 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >F. Nacimiento</label
+            >
+            <input
+              formControlName="birthDate"
+              type="date"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-4 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="usersSystem:write"
+            />
           </div>
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">F. Contratación</label>
-            <input formControlName="hireDate" type="date" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-4 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >F. Contratación</label
+            >
+            <input
+              formControlName="hireDate"
+              type="date"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-4 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="usersSystem:write"
+            />
           </div>
         </div>
 
         <div class="space-y-1">
-          <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Biografía / Notas</label>
-          <textarea formControlName="description" rows="2" placeholder="Notas sobre el usuario..." class="w-full bg-zinc-50 border-none rounded-2xl p-5 text-sm font-bold text-zinc-900 outline-none resize-none"></textarea>
+          <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+            >Biografía / Notas</label
+          >
+          <textarea
+            formControlName="description"
+            rows="2"
+            placeholder="Notas sobre el usuario..."
+            class="w-full bg-zinc-50 border-none rounded-2xl p-5 text-sm font-bold text-zinc-900 outline-none resize-none"
+            appPermission="usersSystem:write"
+          ></textarea>
         </div>
 
-        <button type="submit" [disabled]="userForm.invalid || isSubmitting" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg disabled:opacity-30 flex items-center justify-center">
+        <button
+          type="submit"
+          [disabled]="userForm.invalid || isSubmitting"
+          class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg disabled:opacity-30 flex items-center justify-center"
+        >
           @if (isSubmitting) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+            ></div>
             Registrando usuario...
           } @else {
             Registrar Usuario
@@ -254,14 +456,25 @@
 
 <!-- ================= MODAL DE ÉXITO ================= -->
 @if (showSuccessModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-in fade-in">
-    <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4">
-      <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+  <div
+    class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-in fade-in"
+  >
+    <div
+      class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4"
+    >
+      <div
+        class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto shadow-inner"
+      >
         <lucide-icon [img]="CheckCircle2" class="w-8 h-8"></lucide-icon>
       </div>
-      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter">¡Operación Exitosa!</h3>
+      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter">
+        ¡Operación Exitosa!
+      </h3>
       <p class="text-xs font-medium text-zinc-500 leading-relaxed">{{ successMessage }}</p>
-      <button (click)="showSuccessModal = false" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg">
+      <button
+        (click)="showSuccessModal = false"
+        class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg"
+      >
         Entendido
       </button>
     </div>
@@ -270,23 +483,42 @@
 
 <!-- ================= MODAL DE ELIMINACIÓN ================= -->
 @if (showDeleteModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in">
-    <div class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4">
-      <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+  <div
+    class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in"
+  >
+    <div
+      class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4"
+    >
+      <div
+        class="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto shadow-inner"
+      >
         <lucide-icon [img]="AlertCircle" class="w-8 h-8"></lucide-icon>
       </div>
-      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter">¿Eliminar Usuario de Sistema?</h3>
+      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter">
+        ¿Eliminar Usuario de Sistema?
+      </h3>
       <p class="text-xs font-medium text-zinc-500 leading-relaxed">
-        ¿Estás seguro de eliminar este acceso del sistema? El usuario ya no podrá iniciar sesión en la sucursal.
+        ¿Estás seguro de eliminar este acceso del sistema? El usuario ya no podrá iniciar sesión en
+        la sucursal.
       </p>
 
       <div class="grid grid-cols-2 gap-3 pt-2">
-        <button (click)="showDeleteModal = false" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition-all cursor-pointer">
+        <button
+          (click)="showDeleteModal = false"
+          class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition-all cursor-pointer"
+          appPermission="usersSystem:delete"
+        >
           Cancelar
         </button>
-        <button (click)="ejecutarEliminacion()" [disabled]="isDeleting" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 transition-all cursor-pointer shadow-lg flex items-center justify-center">
+        <button
+          (click)="ejecutarEliminacion()"
+          [disabled]="isDeleting"
+          class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 transition-all cursor-pointer shadow-lg flex items-center justify-center"
+        >
           @if (isDeleting) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
           } @else {
             Sí, Eliminar
           }

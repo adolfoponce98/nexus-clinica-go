@@ -1,26 +1,45 @@
 @if (isLoading) {
   <div class="flex flex-col items-center justify-center h-screen bg-zinc-50">
-    <div class="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+    <div
+      class="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"
+    ></div>
     <p class="text-zinc-500 mt-3 font-medium text-sm">Cargando información del dashboard...</p>
   </div>
 } @else {
   <div class="space-y-8 animate-in fade-in duration-500 p-6">
-
     <!-- PESTAÑAS DE NAVEGACIÓN SUPERIOR -->
     <div class="flex gap-4 border-b border-zinc-200 pb-4 overflow-x-auto">
-      <button (click)="activeTab = 'maestras'"
-        [class]="activeTab === 'maestras' ? 'bg-zinc-950 text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'"
-        class="px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-wider transition-all cursor-pointer">
+      <button
+        (click)="activeTab = 'maestras'"
+        [class]="
+          activeTab === 'maestras'
+            ? 'bg-zinc-950 text-white'
+            : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+        "
+        class="px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-wider transition-all cursor-pointer"
+      >
         Maestr@s
       </button>
-      <button (click)="activeTab = 'tabuladores'; obtenerTabuladoresData()"
-        [class]="activeTab === 'tabuladores' ? 'bg-zinc-950 text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'"
-        class="px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-wider transition-all cursor-pointer">
+      <button
+        (click)="activeTab = 'tabuladores'; obtenerTabuladoresData()"
+        [class]="
+          activeTab === 'tabuladores'
+            ? 'bg-zinc-950 text-white'
+            : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+        "
+        class="px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-wider transition-all cursor-pointer"
+      >
         Tabuladores de Pago
       </button>
-      <button (click)="activeTab = 'pagos'; cargarNomina()"
-        [class]="activeTab === 'pagos' ? 'bg-zinc-950 text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'"
-        class="px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-wider transition-all cursor-pointer">
+      <button
+        (click)="activeTab = 'pagos'; cargarNomina()"
+        [class]="
+          activeTab === 'pagos'
+            ? 'bg-zinc-950 text-white'
+            : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+        "
+        class="px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-wider transition-all cursor-pointer"
+      >
         Pagos Maestras
       </button>
     </div>
@@ -31,24 +50,34 @@
     @if (activeTab === 'maestras') {
       <div class="flex justify-between items-end">
         <div>
-          <p class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">Administra tu Staff</p>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">
+            Administra tu Staff
+          </p>
           <h2 class="text-4xl font-black uppercase tracking-tighter text-zinc-900">Maestr@s</h2>
         </div>
-        <div class="bg-zinc-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest">
+        <div
+          class="bg-zinc-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest"
+        >
           Total: {{ instructors().length }} Maestr@s
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
         <!-- Panel de Edición / Detalles de la Maestra Seleccionada -->
         <div class="lg:col-span-4 space-y-6">
           @if (selectedStaff(); as staff) {
-            <div class="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm animate-in slide-in-from-left-4 duration-300">
+            <div
+              class="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm animate-in slide-in-from-left-4 duration-300"
+            >
               <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-black text-zinc-900">Edita o Actualiza</h3>
                 <div class="flex items-center gap-2">
-                  <button (click)="confirmarEliminacion(staff)" class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg bg-rose-50 transition-colors cursor-pointer" title="Eliminar Maestro">
+                  <button
+                    (click)="confirmarEliminacion(staff)"
+                    class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg bg-rose-50 transition-colors cursor-pointer"
+                    title="Eliminar Maestro"
+                    appPermission="staff:write"
+                  >
                     <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
                   </button>
                   <lucide-icon [img]="UserRoundPen" class="text-cyan-400 w-5 h-5"></lucide-icon>
@@ -56,28 +85,60 @@
               </div>
 
               <!-- Formulario Reactivo del Panel Lateral -->
-              <form [formGroup]="editStaffForm" (ngSubmit)="actualizarMaestroActual()" class="space-y-4">
+              <form
+                [formGroup]="editStaffForm"
+                (ngSubmit)="actualizarMaestroActual()"
+                class="space-y-4"
+              >
                 <div class="flex items-center gap-4 mb-2">
-                  <img [src]="staff.photoUrl || 'https://i.pravatar.cc/150?u=default'" class="w-16 h-16 rounded-2xl object-cover shadow-md" />
+                  <img
+                    [src]="staff.photoUrl || 'https://i.pravatar.cc/150?u=default'"
+                    class="w-16 h-16 rounded-2xl object-cover shadow-md"
+                  />
                   <div>
-                    <span class="px-2 py-0.5 bg-lime-100 text-lime-700 text-[7px] font-black rounded-md uppercase">ID / Email</span>
-                    <p class="text-xs text-zinc-500 font-bold truncate max-w-[180px]">{{ staff.email }}</p>
+                    <span
+                      class="px-2 py-0.5 bg-lime-100 text-lime-700 text-[7px] font-black rounded-md uppercase"
+                      >ID / Email</span
+                    >
+                    <p class="text-xs text-zinc-500 font-bold truncate max-w-[180px]">
+                      {{ staff.email }}
+                    </p>
                   </div>
                 </div>
 
                 <div class="space-y-1">
-                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Nombre del maestr@</label>
-                  <input formControlName="name" type="text" class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors text-sm">
+                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                    >Nombre del maestr@</label
+                  >
+                  <input
+                    formControlName="name"
+                    type="text"
+                    class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors text-sm"
+                    appPermission="staff:write"
+                  />
                 </div>
 
                 <div class="space-y-1">
-                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Teléfono</label>
-                  <input formControlName="phone" type="text" class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors text-sm">
+                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                    >Teléfono</label
+                  >
+                  <input
+                    formControlName="phone"
+                    type="text"
+                    class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 transition-colors text-sm"
+                    appPermission="staff:write"
+                  />
                 </div>
 
                 <div class="space-y-1">
-                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Tabulador de Pago</label>
-                  <select formControlName="tabulador" class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 text-sm bg-transparent">
+                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                    >Tabulador de Pago</label
+                  >
+                  <select
+                    formControlName="tabulador"
+                    class="w-full border-b border-zinc-200 py-2 font-bold text-zinc-900 outline-none focus:border-rose-500 text-sm bg-transparent"
+                    appPermission="staff:write"
+                  >
                     <option value="">Selecciona un tabulador</option>
                     @for (tab of tabuladores(); track tab.id) {
                       <option [value]="tab.id">{{ tab.nombre }}</option>
@@ -86,21 +147,45 @@
                 </div>
 
                 <div class="space-y-1">
-                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Color distintivo (Hexadecimal)</label>
+                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                    >Color distintivo (Hexadecimal)</label
+                  >
                   <div class="flex items-center gap-3 py-1">
-                    <input formControlName="colorHex" type="text" placeholder="#aabbcc" class="w-28 border-b border-zinc-200 py-1 font-bold text-zinc-900 outline-none focus:border-rose-500 text-xs">
-                    <div class="w-6 h-6 rounded-full border border-zinc-200" [style.background-color]="editStaffForm.value.colorHex"></div>
+                    <input
+                      formControlName="colorHex"
+                      type="text"
+                      placeholder="#aabbcc"
+                      class="w-28 border-b border-zinc-200 py-1 font-bold text-zinc-900 outline-none focus:border-rose-500 text-xs"
+                      appPermission="staff:write"
+                    />
+                    <div
+                      class="w-6 h-6 rounded-full border border-zinc-200"
+                      [style.background-color]="editStaffForm.value.colorHex"
+                    ></div>
                   </div>
                 </div>
 
                 <div class="space-y-1">
-                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Biografía</label>
-                  <textarea formControlName="description" rows="2" class="w-full bg-zinc-50 border border-zinc-100 rounded-2xl p-3 text-xs font-bold text-zinc-900 outline-none resize-none"></textarea>
+                  <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-400"
+                    >Biografía</label
+                  >
+                  <textarea
+                    formControlName="description"
+                    rows="2"
+                    class="w-full bg-zinc-50 border border-zinc-100 rounded-2xl p-3 text-xs font-bold text-zinc-900 outline-none resize-none"
+                    appPermission="staff:write"
+                  ></textarea>
                 </div>
 
-                <button type="submit" [disabled]="editStaffForm.invalid || isSubmitting" class="w-full bg-zinc-950 text-white font-black py-4 rounded-2xl uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition-all cursor-pointer shadow-md disabled:opacity-50 mt-4 flex items-center justify-center">
+                <button
+                  type="submit"
+                  [disabled]="editStaffForm.invalid || isSubmitting"
+                  class="w-full bg-zinc-950 text-white font-black py-4 rounded-2xl uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition-all cursor-pointer shadow-md disabled:opacity-50 mt-4 flex items-center justify-center"
+                >
                   @if (isSubmitting) {
-                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <div
+                      class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+                    ></div>
                     Actualizando...
                   } @else {
                     Actualizar Datos
@@ -112,23 +197,43 @@
         </div>
 
         <!-- Lista de Cards de Instructoras -->
-        <div [class]="selectedStaffId() ? 'lg:col-span-8' : 'lg:col-span-12'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 transition-all duration-500">
+        <div
+          [class]="selectedStaffId() ? 'lg:col-span-8' : 'lg:col-span-12'"
+          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 transition-all duration-500"
+        >
           @for (instructor of instructors(); track instructor.id) {
             <div
               (click)="selectStaff(instructor.id)"
-              [class]="selectedStaffId() === instructor.id ? 'border-rose-500 ring-4 ring-rose-500/10' : 'border-zinc-100'"
+              [class]="
+                selectedStaffId() === instructor.id
+                  ? 'border-rose-500 ring-4 ring-rose-500/10'
+                  : 'border-zinc-100'
+              "
               class="bg-white p-6 rounded-[32px] border cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden flex flex-col justify-between"
             >
               <div>
                 <div class="flex items-start gap-4 mb-4">
-                  <img [src]="instructor.photoUrl || 'https://i.pravatar.cc/150?u=default'" class="w-16 h-16 rounded-2xl object-cover shadow-md" />
-                  <div class="flex-1">
+                  <img
+                    [src]="instructor.photoUrl || 'https://i.pravatar.cc/150?u=default'"
+                    class="w-16 h-16 rounded-2xl object-cover shadow-md"
+                  />
+                  <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2 mb-1">
-                      <span class="px-2 py-0.5 bg-lime-100 text-lime-700 text-[7px] font-black rounded-md uppercase">INSTRUCTOR</span>
-                      <div class="w-2 h-2 rounded-full ml-auto" [style.background-color]="instructor.colorHex || '#f43f5e'"></div>
+                      <span
+                        class="px-2 py-0.5 bg-lime-100 text-lime-700 text-[7px] font-black rounded-md uppercase"
+                        >INSTRUCTOR</span
+                      >
+                      <div
+                        class="w-2 h-2 rounded-full ml-auto"
+                        [style.background-color]="instructor.colorHex || '#f43f5e'"
+                      ></div>
                     </div>
-                    <h4 class="text-lg font-black text-zinc-900 leading-none mb-1">{{ instructor.name }}</h4>
-                    <p class="text-xs text-zinc-400 font-medium truncate max-w-[180px]">{{ instructor.email }}</p>
+                    <h4 class="text-lg font-black text-zinc-900 leading-none mb-1">
+                      {{ instructor.name }}
+                    </h4>
+                    <p class="text-xs text-zinc-400 font-medium truncate max-w-[180px]">
+                      {{ instructor.email }}
+                    </p>
                   </div>
                 </div>
 
@@ -137,10 +242,17 @@
                   @let tabInfo = tabuladores().find(t => t.id === instructor.tabulador);
                   @if (tabInfo && tabInfo.rangos && tabInfo.rangos.length > 0) {
                     <div class="mb-4">
-                      <p class="text-[8px] font-black uppercase text-zinc-400 tracking-wider mb-1.5">{{ tabInfo.nombre }}</p>
+                      <p
+                        class="text-[8px] font-black uppercase text-zinc-400 tracking-wider mb-1.5"
+                      >
+                        {{ tabInfo.nombre }}
+                      </p>
                       <div class="flex flex-wrap gap-1">
                         @for (rango of tabInfo.rangos; track rango.minAlumnas) {
-                          <span [class]="obtenerColorRango(rango.montoPorHora, tabInfo.rangos)" class="px-2 py-0.5 text-[7px] font-black rounded-md border uppercase">
+                          <span
+                            [class]="obtenerColorRango(rango.montoPorHora, tabInfo.rangos)"
+                            class="px-2 py-0.5 text-[7px] font-black rounded-md border uppercase"
+                          >
                             {{ rango.minAlumnas }}-{{ rango.maxAlumnas }}: ${{ rango.montoPorHora }}
                           </span>
                         }
@@ -152,19 +264,29 @@
 
               <div class="flex justify-between items-end border-t border-zinc-50 pt-4">
                 <div class="flex items-center gap-1 text-zinc-400">
-                  <lucide-icon [img]="Star" class="w-3 h-3 fill-amber-400 text-amber-400"></lucide-icon>
+                  <lucide-icon
+                    [img]="Star"
+                    class="w-3 h-3 fill-amber-400 text-amber-400"
+                  ></lucide-icon>
                   <span class="text-[10px] font-bold text-zinc-900">4.9</span>
                 </div>
                 <p class="text-xs font-bold text-zinc-400">
-                  Contratación: <span class="text-zinc-900 font-black">{{ instructor.hireDate || 'N/A' }}</span>
+                  Contratación:
+                  <span class="text-zinc-900 font-black">{{ instructor.hireDate || 'N/A' }}</span>
                 </p>
               </div>
             </div>
           }
 
           <!-- Botón para Agregar Nueva Maestra -->
-          <div (click)="abrirModalCrear()" class="border-2 border-dashed border-zinc-200 rounded-[32px] flex flex-col items-center justify-center p-8 text-zinc-300 hover:border-rose-400 hover:text-rose-400 transition-all cursor-pointer bg-zinc-50/50 min-h-[220px]">
-            <div class="w-12 h-12 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center shadow-sm mb-4">
+          <div
+            (click)="abrirModalCrear()"
+            class="border-2 border-dashed border-zinc-200 rounded-[32px] flex flex-col items-center justify-center p-8 text-zinc-300 hover:border-rose-400 hover:text-rose-400 transition-all cursor-pointer bg-zinc-50/50 min-h-[220px]"
+            appPermission="staff:write"
+          >
+            <div
+              class="w-12 h-12 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center shadow-sm mb-4"
+            >
               <lucide-icon [img]="Plus" class="w-6 h-6"></lucide-icon>
             </div>
             <p class="text-xs font-black uppercase tracking-tighter">Agregar Maestr@</p>
@@ -180,10 +302,17 @@
       <div class="space-y-6 animate-in fade-in duration-300">
         <div class="flex justify-between items-center">
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">Esquema de Comisiones</p>
-            <h3 class="text-3xl font-black uppercase tracking-tighter text-zinc-900">Tabuladores por Hora</h3>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">
+              Esquema de Comisiones
+            </p>
+            <h3 class="text-3xl font-black uppercase tracking-tighter text-zinc-900">
+              Tabuladores por Hora
+            </h3>
           </div>
-          <button (click)="showTabuladorModal = true" class="bg-zinc-950 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-zinc-800 transition-all cursor-pointer shadow-lg">
+          <button
+            (click)="showTabuladorModal = true"
+            class="bg-zinc-950 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-zinc-800 transition-all cursor-pointer shadow-lg"
+          >
             + Crear Nuevo Tabulador
           </button>
         </div>
@@ -191,17 +320,30 @@
         <!-- Grid de Tabuladores Guardados -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           @for (tab of tabuladores(); track tab.id) {
-            <div class="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm space-y-4 flex flex-col justify-between">
+            <div
+              class="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm space-y-4 flex flex-col justify-between"
+            >
               <div>
                 <h4 class="text-lg font-black text-zinc-900 mb-3 flex items-center justify-between">
                   {{ tab.nombre }}
-                  <span class="text-[9px] bg-cyan-50 text-cyan-600 px-2.5 py-1 rounded-full uppercase">Activo</span>
+                  <span
+                    class="text-[9px] bg-cyan-50 text-cyan-600 px-2.5 py-1 rounded-full uppercase"
+                    >Activo</span
+                  >
                 </h4>
                 <div class="space-y-2">
                   @for (rango of tab.rangos; track rango.minAlumnas) {
-                    <div class="flex justify-between items-center text-xs bg-zinc-50 p-2.5 rounded-xl border border-zinc-100 font-bold">
-                      <span class="text-zinc-500">De {{ rango.minAlumnas }} a {{ rango.maxAlumnas }} alumnas:</span>
-                      <span [class]="obtenerColorRango(rango.montoPorHora, tab.rangos)" class="px-2.5 py-1 rounded-lg border font-black">${{ rango.montoPorHora }} / hr</span>
+                    <div
+                      class="flex justify-between items-center text-xs bg-zinc-50 p-2.5 rounded-xl border border-zinc-100 font-bold"
+                    >
+                      <span class="text-zinc-500"
+                        >De {{ rango.minAlumnas }} a {{ rango.maxAlumnas }} alumnas:</span
+                      >
+                      <span
+                        [class]="obtenerColorRango(rango.montoPorHora, tab.rangos)"
+                        class="px-2.5 py-1 rounded-lg border font-black"
+                        >${{ rango.montoPorHora }} / hr</span
+                      >
                     </div>
                   }
                 </div>
@@ -212,32 +354,46 @@
       </div>
     }
 
-
     <!-- ========================================================== -->
     <!-- PESTAÑA 3: PAGOS MAESTRAS -->
     <!-- ========================================================== -->
     @else if (activeTab === 'pagos') {
       <div class="space-y-6 animate-in fade-in duration-300">
-      <!-- ENCABEZADO CON SELECTOR DE PERIODO Y BOTÓN DE ENMASCARAMIENTO -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-[28px] border border-zinc-100 shadow-sm gap-4">
+        <!-- ENCABEZADO CON SELECTOR DE PERIODO Y BOTÓN DE ENMASCARAMIENTO -->
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-[28px] border border-zinc-100 shadow-sm gap-4"
+        >
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-cyan-500 mb-1">Control Financiero</p>
-            <h3 class="text-3xl font-black uppercase tracking-tighter text-zinc-900">Nómina: {{ nominaData()?.periodo || currentAnio + '-' + currentMes }}</h3>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-cyan-500 mb-1">
+              Control Financiero
+            </p>
+            <h3 class="text-3xl font-black uppercase tracking-tighter text-zinc-900">
+              Nómina: {{ nominaData()?.periodo || currentAnio + '-' + currentMes }}
+            </h3>
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
             <!-- Selector de Mes y Año Nativo -->
-            <div class="flex items-center gap-2 bg-zinc-50 px-4 py-3 rounded-2xl border border-zinc-200 shadow-sm">
-              <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400">Periodo:</span>
+            <div
+              class="flex items-center gap-2 bg-zinc-50 px-4 py-3 rounded-2xl border border-zinc-200 shadow-sm"
+            >
+              <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400"
+                >Periodo:</span
+              >
               <input
                 type="month"
                 [ngModel]="currentAnio + '-' + currentMes"
                 (ngModelChange)="onPeriodoSelected($event)"
-                class="bg-transparent text-xs font-black text-zinc-900 outline-none cursor-pointer">
+                class="bg-transparent text-xs font-black text-zinc-900 outline-none cursor-pointer"
+                appPermission="staff:write"
+              />
             </div>
 
             <!-- Botón de Ojo para enmascarar/revelar montos -->
-            <button (click)="verMontos.set(!verMontos())" class="flex items-center gap-2 bg-zinc-900 text-white px-5 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-zinc-800 transition-all cursor-pointer shadow-md">
+            <button
+              (click)="verMontos.set(!verMontos())"
+              class="flex items-center gap-2 bg-zinc-900 text-white px-5 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-zinc-800 transition-all cursor-pointer shadow-md"
+            >
               <span>{{ verMontos() ? '👁️ Ocultar Montos' : '👁️‍🗨️ Ver Montos' }}</span>
             </button>
           </div>
@@ -245,65 +401,97 @@
 
         @if (isLoadingNomina) {
           <div class="flex flex-col items-center justify-center py-20">
-            <div class="w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-zinc-400 mt-3 font-bold text-xs uppercase">Calculando nómina y tabuladores...</p>
+            <div
+              class="w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"
+            ></div>
+            <p class="text-zinc-400 mt-3 font-bold text-xs uppercase">
+              Calculando nómina y tabuladores...
+            </p>
           </div>
         } @else {
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
             <!-- LADO IZQUIERDO: DETALLE DEL COACH SELECCIONADO -->
             <div class="lg:col-span-5 space-y-4">
               @if (selectedCoachNomina(); as coachSelected) {
-                <div class="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm space-y-6 sticky top-6">
-                 <div class="border-b border-zinc-100 pb-4">
-  <div class="flex justify-between items-center mb-1">
-    <span class="px-2.5 py-1 bg-cyan-50 text-cyan-600 text-[8px] font-black rounded-md uppercase">Detalle de Clases</span>
-    @if (coachSelected.tabuladorInfo) {
-      <span class="text-[9px] font-black uppercase text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-lg">{{ coachSelected.tabuladorInfo.nombre }}</span>
-    }
-  </div>
-  <h4 class="text-2xl font-black text-zinc-900 mt-1">{{ coachSelected.nombreCoach }}</h4>
-  <!-- Usamos calcularTotalClases para sumar dinámicamente todos los horarios de los días -->
-  <p class="text-xs text-zinc-400 font-bold mt-1">Total Clases Impartidas: <span class="text-zinc-900">{{ calcularTotalClases(coachSelected) }}</span></p>
-</div>
+                <div
+                  class="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm space-y-6 sticky top-6"
+                >
+                  <div class="border-b border-zinc-100 pb-4">
+                    <div class="flex justify-between items-center mb-1">
+                      <span
+                        class="px-2.5 py-1 bg-cyan-50 text-cyan-600 text-[8px] font-black rounded-md uppercase"
+                        >Detalle de Clases</span
+                      >
+                      @if (coachSelected.tabuladorInfo) {
+                        <span
+                          class="text-[9px] font-black uppercase text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-lg"
+                          >{{ coachSelected.tabuladorInfo.nombre }}</span
+                        >
+                      }
+                    </div>
+                    <h4 class="text-2xl font-black text-zinc-900 mt-1">
+                      {{ coachSelected.nombreCoach }}
+                    </h4>
+                    <!-- Usamos calcularTotalClases para sumar dinámicamente todos los horarios de los días -->
+                    <p class="text-xs text-zinc-400 font-bold mt-1">
+                      Total Clases Impartidas:
+                      <span class="text-zinc-900">{{ calcularTotalClases(coachSelected) }}</span>
+                    </p>
+                  </div>
 
                   <!-- Desglose por Días y Horarios -->
-                <div class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-  @if (coachSelected.desgloseDias && coachSelected.desgloseDias.length > 0) {
-    @for (diaInfo of coachSelected.desgloseDias; track diaInfo.dia) {
-      <div class="bg-zinc-50 px-3.5 py-2.5 rounded-xl border border-zinc-100 flex items-center justify-between gap-3 text-xs">
+                  <div class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                    @if (coachSelected.desgloseDias && coachSelected.desgloseDias.length > 0) {
+                      @for (diaInfo of coachSelected.desgloseDias; track diaInfo.dia) {
+                        <div
+                          class="bg-zinc-50 px-3.5 py-2.5 rounded-xl border border-zinc-100 flex items-center justify-between gap-3 text-xs"
+                        >
+                          <!-- Fecha y Horarios resumidos -->
+                          <div class="flex items-center gap-2 truncate">
+                            <span class="font-black text-zinc-900 shrink-0"
+                              >📅 {{ diaInfo.dia }}</span
+                            >
+                            <span class="text-zinc-300">|</span>
 
-        <!-- Fecha y Horarios resumidos -->
-        <div class="flex items-center gap-2 truncate">
-          <span class="font-black text-zinc-900 shrink-0">📅 {{ diaInfo.dia }}</span>
-          <span class="text-zinc-300">|</span>
+                            <!-- Lista compacta de horarios -->
+                            <div class="flex flex-wrap items-center gap-1.5">
+                              @for (horario of diaInfo.horarios; track horario.horario) {
+                                <span
+                                  class="bg-white px-2 py-0.5 rounded-lg border border-zinc-200/70 text-[11px] font-medium text-zinc-600"
+                                >
+                                  🕒 {{ horario.horario }}
+                                  <strong class="text-zinc-900"
+                                    >({{ horario.agendadas }} 👩)</strong
+                                  >
+                                </span>
+                              }
+                            </div>
+                          </div>
 
-          <!-- Lista compacta de horarios -->
-          <div class="flex flex-wrap items-center gap-1.5">
-            @for (horario of diaInfo.horarios; track horario.horario) {
-              <span class="bg-white px-2 py-0.5 rounded-lg border border-zinc-200/70 text-[11px] font-medium text-zinc-600">
-                🕒 {{ horario.horario }} <strong class="text-zinc-900">({{ horario.agendadas }} 👩)</strong>
-              </span>
-            }
-          </div>
-        </div>
-
-        <!-- Monto Total del Día -->
-        <div class="text-right shrink-0">
-          <span class="font-black text-emerald-600 text-xs">
-            {{ verMontos() ? ('$' + calcularMontoDia(diaInfo.horarios, coachSelected.tabuladorInfo)) : '****' }}
-          </span>
-        </div>
-
-      </div>
-    }
-  } @else {
-    <p class="text-xs text-zinc-400 italic text-center py-6">No hay registros de clases para este periodo.</p>
-  }
-</div>
+                          <!-- Monto Total del Día -->
+                          <div class="text-right shrink-0">
+                            <span class="font-black text-emerald-600 text-xs">
+                              {{
+                                verMontos()
+                                  ? '$' +
+                                    calcularMontoDia(diaInfo.horarios, coachSelected.tabuladorInfo)
+                                  : '****'
+                              }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+                    } @else {
+                      <p class="text-xs text-zinc-400 italic text-center py-6">
+                        No hay registros de clases para este periodo.
+                      </p>
+                    }
+                  </div>
                 </div>
               } @else {
-                <div class="bg-white p-8 rounded-[32px] border border-zinc-100 text-center text-zinc-400 text-xs font-bold">
+                <div
+                  class="bg-white p-8 rounded-[32px] border border-zinc-100 text-center text-zinc-400 text-xs font-bold"
+                >
                   Selecciona una maestra de la derecha para ver su desglose detallado.
                 </div>
               }
@@ -315,124 +503,221 @@
                 @for (coach of nominaData()!.coaches; track coach.idCoach) {
                   <div
                     (click)="selectCoachNomina(coach)"
-                    [class]="selectedCoachNomina()?.idCoach === coach.idCoach ? 'border-rose-500 ring-4 ring-rose-500/10' : 'border-zinc-100'"
-                    class="bg-white p-6 rounded-[32px] border cursor-pointer hover:shadow-xl transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-
+                    [class]="
+                      selectedCoachNomina()?.idCoach === coach.idCoach
+                        ? 'border-rose-500 ring-4 ring-rose-500/10'
+                        : 'border-zinc-100'
+                    "
+                    class="bg-white p-6 rounded-[32px] border cursor-pointer hover:shadow-xl transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                  >
                     <div class="space-y-1">
                       <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 bg-lime-100 text-lime-700 text-[7px] font-black rounded-md uppercase">COACH ACTIVO</span>
+                        <span
+                          class="px-2 py-0.5 bg-lime-100 text-lime-700 text-[7px] font-black rounded-md uppercase"
+                          >COACH ACTIVO</span
+                        >
                         @if (coach.tabuladorInfo) {
-                          <span class="text-[8px] font-black uppercase text-cyan-600 bg-cyan-50 px-2 py-0.5 rounded-md">{{ coach.tabuladorInfo.nombre }}</span>
+                          <span
+                            class="text-[8px] font-black uppercase text-cyan-600 bg-cyan-50 px-2 py-0.5 rounded-md"
+                            >{{ coach.tabuladorInfo.nombre }}</span
+                          >
                         }
                       </div>
                       <h4 class="text-xl font-black text-zinc-900">{{ coach.nombreCoach }}</h4>
-                      <p class="text-xs text-zinc-400 font-bold">Clases en el mes: <span class="text-zinc-900 font-black">{{ calcularTotalClases(coach) }}</span></p>
+                      <p class="text-xs text-zinc-400 font-bold">
+                        Clases en el mes:
+                        <span class="text-zinc-900 font-black">{{
+                          calcularTotalClases(coach)
+                        }}</span>
+                      </p>
                     </div>
 
-                    <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-zinc-100">
+                    <div
+                      class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-zinc-100"
+                    >
                       <div class="text-right">
-                        <p class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">A Pagar Hasta Hoy</p>
+                        <p class="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+                          A Pagar Hasta Hoy
+                        </p>
                         <p class="text-lg font-black text-emerald-600">
-                          {{ verMontos() ? ('$' + calcularMontoTotalMes(coach)) : '****' }}
+                          {{ verMontos() ? '$' + calcularMontoTotalMes(coach) : '****' }}
                         </p>
                       </div>
 
-                      <button (click)="$event.stopPropagation(); pagarMontoCoach(coach)" class="bg-zinc-950 hover:bg-zinc-800 text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-md">
+                      <button
+                        (click)="$event.stopPropagation(); pagarMontoCoach(coach)"
+                        class="bg-zinc-950 hover:bg-zinc-800 text-white px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-md"
+                      >
                         Pagar Monto
                       </button>
                     </div>
                   </div>
                 }
               } @else {
-                <div class="bg-white p-12 rounded-[32px] border border-zinc-100 text-center text-zinc-400 text-xs font-bold">
+                <div
+                  class="bg-white p-12 rounded-[32px] border border-zinc-100 text-center text-zinc-400 text-xs font-bold"
+                >
                   No se encontraron registros de nómina para esta sucursal en el periodo actual.
                 </div>
               }
             </div>
-
           </div>
         }
       </div>
     }
-
   </div>
 }
 
 <!-- ================= MODAL DE NUEVO MAESTRO ================= -->
 @if (showTeacherModal) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
-    <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl space-y-6">
+  <div
+    class="app-dialog-overlay fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300"
+  >
+    <div
+      class="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl space-y-6"
+    >
       <div class="flex justify-between items-center border-b border-zinc-100 pb-4">
         <div>
-          <h3 class="text-2xl font-black uppercase tracking-tight text-zinc-900">Registrar Nuevo Maestro</h3>
-          <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Completa la información del perfil del instructor</p>
+          <h3 class="text-2xl font-black uppercase tracking-tight text-zinc-900">
+            Registrar Nuevo Maestro
+          </h3>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+            Completa la información del perfil del instructor
+          </p>
         </div>
-        <button (click)="showTeacherModal = false" class="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all cursor-pointer font-black">✕</button>
+        <button
+          (click)="showTeacherModal = false"
+          class="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all cursor-pointer font-black"
+        >
+          ✕
+        </button>
       </div>
 
       <form [formGroup]="teacherForm" (ngSubmit)="saveTeacher()" class="space-y-6">
-        <div class="flex flex-col sm:flex-row items-center gap-6 bg-zinc-50 p-6 rounded-3xl border border-zinc-100">
+        <div
+          class="flex flex-col sm:flex-row items-center gap-6 bg-zinc-50 p-6 rounded-3xl border border-zinc-100"
+        >
           <div class="relative group">
-            <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-zinc-200 flex items-center justify-center">
+            <div
+              class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-zinc-200 flex items-center justify-center"
+            >
               @if (photoPreview) {
-                <img [src]="photoPreview" class="w-full h-full object-cover" alt="Preview">
+                <img [src]="photoPreview" class="w-full h-full object-cover" alt="Preview" />
               } @else {
                 <lucide-icon [img]="icons.UserPlus" class="w-8 h-8 text-zinc-400"></lucide-icon>
               }
             </div>
-            <label class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-black uppercase">
+            <label
+              class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-black uppercase"
+            >
               Cambiar
-              <input type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)">
+              <input
+                type="file"
+                accept="image/*"
+                class="hidden"
+                (change)="onPhotoSelected($event)"
+                appPermission="staff:write"
+              />
             </label>
           </div>
 
-         <div class="space-y-2 flex-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest block">Color Identificador (Elige uno)</label>
+          <div class="min-w-0 space-y-2 flex-1">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest block"
+              >Color Identificador (Elige uno)</label
+            >
             <div class="flex flex-wrap gap-2.5 items-center">
               @for (color of colorOptions; track color) {
-                <button type="button"
-                        (click)="teacherForm.patchValue({ colorHex: color })"
-                        [style.background-color]="color"
-                        [class.ring-4]="teacherForm.value.colorHex === color"
-                        [class.scale-110]="teacherForm.value.colorHex === color"
-                        class="w-7 h-7 rounded-full ring-offset-2 ring-zinc-900 transition-all cursor-pointer shadow-sm"
-                        [title]="color">
-                </button>
+                <button
+                  type="button"
+                  (click)="teacherForm.patchValue({ colorHex: color })"
+                  [style.background-color]="color"
+                  [class.ring-4]="teacherForm.value.colorHex === color"
+                  [class.scale-110]="teacherForm.value.colorHex === color"
+                  class="w-7 h-7 rounded-full ring-offset-2 ring-zinc-900 transition-all cursor-pointer shadow-sm"
+                  [title]="color"
+                ></button>
               }
             </div>
-            <p class="text-[9px] font-bold text-zinc-400 pt-1">Seleccionado: <span class="font-mono text-zinc-800">{{ teacherForm.value.colorHex }}</span></p>
+            <p class="text-[9px] font-bold text-zinc-400 pt-1">
+              Seleccionado:
+              <span class="font-mono text-zinc-800">{{ teacherForm.value.colorHex }}</span>
+            </p>
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Nombre Completo</label>
-            <input formControlName="name" type="text" placeholder="Ej. Ana Sofía Garza" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >Nombre Completo</label
+            >
+            <input
+              formControlName="name"
+              type="text"
+              placeholder="Ej. Ana Sofía Garza"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="staff:write"
+            />
           </div>
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Teléfono</label>
-            <input formControlName="phone" type="text" placeholder="Ej. 33 1234 5678" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >Teléfono</label
+            >
+            <input
+              formControlName="phone"
+              type="text"
+              placeholder="Ej. 33 1234 5678"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="staff:write"
+            />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Correo Electrónico</label>
-            <input formControlName="email" type="email" placeholder="correo@email.com" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >Correo Electrónico</label
+            >
+            <input
+              formControlName="email"
+              type="email"
+              placeholder="correo@email.com"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="staff:write"
+            />
           </div>
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">F. Nacimiento</label>
-            <input formControlName="birthDate" type="date" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >F. Nacimiento</label
+            >
+            <input
+              formControlName="birthDate"
+              type="date"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="staff:write"
+            />
           </div>
           <div class="space-y-1">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">F. Contratación</label>
-            <input formControlName="hireDate" type="date" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >F. Contratación</label
+            >
+            <input
+              formControlName="hireDate"
+              type="date"
+              class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+              appPermission="staff:write"
+            />
           </div>
         </div>
 
         <div class="space-y-1">
-          <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Tabulador de Pago Asignado</label>
-          <select formControlName="tabulador" class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+          <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+            >Tabulador de Pago Asignado</label
+          >
+          <select
+            formControlName="tabulador"
+            class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+            appPermission="staff:write"
+          >
             <option value="">Selecciona un tabulador</option>
             @for (tab of tabuladores(); track tab.id) {
               <option [value]="tab.id">{{ tab.nombre }}</option>
@@ -442,15 +727,32 @@
 
         <div class="space-y-1">
           <div class="flex justify-between items-center ml-2 mr-2">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Biografía</label>
-            <span class="text-[9px] font-bold text-zinc-400">{{ teacherForm.value.description?.length || 0 }}/300</span>
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest"
+              >Biografía</label
+            >
+            <span class="text-[9px] font-bold text-zinc-400"
+              >{{ teacherForm.value.description?.length || 0 }}/300</span
+            >
           </div>
-          <textarea formControlName="description" maxlength="300" rows="3" placeholder="Breve descripción del instructor..." class="w-full bg-zinc-50 border-none rounded-2xl p-5 text-sm font-bold text-zinc-900 outline-none resize-none"></textarea>
+          <textarea
+            formControlName="description"
+            maxlength="300"
+            rows="3"
+            placeholder="Breve descripción del instructor..."
+            class="w-full bg-zinc-50 border-none rounded-2xl p-5 text-sm font-bold text-zinc-900 outline-none resize-none"
+            appPermission="staff:write"
+          ></textarea>
         </div>
 
-        <button type="submit" [disabled]="teacherForm.invalid || isSubmitting" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg disabled:opacity-30 flex items-center justify-center">
+        <button
+          type="submit"
+          [disabled]="teacherForm.invalid || isSubmitting"
+          class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg disabled:opacity-30 flex items-center justify-center"
+        >
           @if (isSubmitting) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+            ></div>
             Guardando maestro...
           } @else {
             Guardar Maestro
@@ -463,37 +765,91 @@
 
 <!-- ================= MODAL CREAR TABULADOR ================= -->
 @if (showTabuladorModal) {
-  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in">
+  <div
+    class="app-dialog-overlay fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in"
+  >
     <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-xl shadow-2xl space-y-6">
       <div class="flex justify-between items-center border-b border-zinc-100 pb-4">
         <h3 class="text-xl font-black uppercase text-zinc-900">Nuevo Tabulador de Pagos</h3>
-        <button (click)="showTabuladorModal = false" class="text-zinc-400 font-black cursor-pointer">✕</button>
+        <button
+          (click)="showTabuladorModal = false"
+          class="text-zinc-400 font-black cursor-pointer"
+        >
+          ✕
+        </button>
       </div>
 
       <div class="space-y-4">
         <div class="space-y-1">
-          <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Nombre del Tabulador (Ej. Master Coach)</label>
-          <input [(ngModel)]="nombreTabuladorInput" type="text" placeholder="Ej. Senior, Junior..." class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none">
+          <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+            >Nombre del Tabulador (Ej. Master Coach)</label
+          >
+          <input
+            [(ngModel)]="nombreTabuladorInput"
+            type="text"
+            placeholder="Ej. Senior, Junior..."
+            class="w-full bg-zinc-50 border-none rounded-2xl py-4 px-5 text-sm font-bold text-zinc-900 outline-none"
+            appPermission="staff:write"
+          />
         </div>
 
         <div class="space-y-3">
           <div class="flex justify-between items-center">
-            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2">Rangos de Alumnas y Montos</label>
-            <button type="button" (click)="agregarRango()" class="text-xs font-black text-rose-500 hover:text-rose-700 cursor-pointer">+ Agregar Rango</button>
+            <label class="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-2"
+              >Rangos de Alumnas y Montos</label
+            >
+            <button
+              type="button"
+              (click)="agregarRango()"
+              class="text-xs font-black text-rose-500 hover:text-rose-700 cursor-pointer"
+              appPermission="staff:write"
+            >
+              + Agregar Rango
+            </button>
           </div>
 
           @for (rango of rangosList(); track $index; let idx = $index) {
             <div class="flex items-center gap-2 bg-zinc-50 p-3 rounded-2xl border border-zinc-100">
-              <input [(ngModel)]="rango.min" type="number" class="w-16 bg-white p-2 text-center text-xs font-bold rounded-xl outline-none border" placeholder="Mín">
+              <input
+                [(ngModel)]="rango.min"
+                type="number"
+                class="w-16 bg-white p-2 text-center text-xs font-bold rounded-xl outline-none border"
+                placeholder="Mín"
+                appPermission="staff:write"
+              />
               <span class="text-xs text-zinc-400 font-bold">a</span>
-              <input [(ngModel)]="rango.max" type="number" class="w-16 bg-white p-2 text-center text-xs font-bold rounded-xl outline-none border" placeholder="Máx">
-              <input [(ngModel)]="rango.monto" type="number" class="flex-1 bg-white p-2 text-center text-xs font-bold rounded-xl outline-none border" placeholder="$ Monto x Hora">
-              <button type="button" (click)="eliminarRango(idx)" class="text-rose-400 hover:text-rose-600 p-2 cursor-pointer">🗑</button>
+              <input
+                [(ngModel)]="rango.max"
+                type="number"
+                class="w-16 bg-white p-2 text-center text-xs font-bold rounded-xl outline-none border"
+                placeholder="Máx"
+                appPermission="staff:write"
+              />
+              <input
+                [(ngModel)]="rango.monto"
+                type="number"
+                class="min-w-0 flex-1 bg-white p-2 text-center text-xs font-bold rounded-xl outline-none border"
+                placeholder="$ Monto x Hora"
+                appPermission="staff:write"
+              />
+              <button
+                type="button"
+                (click)="eliminarRango(idx)"
+                class="text-rose-400 hover:text-rose-600 p-2 cursor-pointer"
+                appPermission="staff:delete"
+              >
+                🗑
+              </button>
             </div>
           }
         </div>
 
-        <button (click)="guardarTabulador()" [disabled]="isSubmitting" class="w-full bg-zinc-950 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg cursor-pointer">
+        <button
+          (click)="guardarTabulador()"
+          [appPermissionDisabled]="isSubmitting"
+          class="w-full bg-zinc-950 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg cursor-pointer"
+          appPermission="staff:write"
+        >
           Guardar Tabulador
         </button>
       </div>
@@ -503,14 +859,25 @@
 
 <!-- ================= MODAL DE ÉXITO ================= -->
 @if (showSuccessModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-in fade-in">
-    <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4">
-      <div class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+  <div
+    class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-in fade-in"
+  >
+    <div
+      class="relative bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4"
+    >
+      <div
+        class="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto shadow-inner"
+      >
         <lucide-icon [img]="CheckCircle2" class="w-8 h-8"></lucide-icon>
       </div>
-      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter">¡Operación Exitosa!</h3>
+      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter">
+        ¡Operación Exitosa!
+      </h3>
       <p class="text-xs font-medium text-zinc-500 leading-relaxed">{{ successMessage }}</p>
-      <button (click)="showSuccessModal = false" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg">
+      <button
+        (click)="showSuccessModal = false"
+        class="w-full bg-zinc-950 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all cursor-pointer shadow-lg"
+      >
         Entendido
       </button>
     </div>
@@ -519,24 +886,43 @@
 
 <!-- ================= MODAL DE ELIMINACIÓN ================= -->
 @if (showDeleteModal) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in">
-    <div class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4">
-      <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+  <div
+    class="app-dialog-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in"
+  >
+    <div
+      class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4"
+    >
+      <div
+        class="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto shadow-inner"
+      >
         <lucide-icon [img]="AlertCircle" class="w-8 h-8"></lucide-icon>
       </div>
-      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter">¿Eliminar Maestr@?</h3>
+      <h3 class="text-xl font-black text-zinc-900 uppercase tracking-tighter">
+        ¿Eliminar Maestr@?
+      </h3>
       <p class="text-xs font-medium text-zinc-500 leading-relaxed">
         ¿Estás seguro de eliminar a este instructor?
-        <strong class="text-rose-600 block mt-1">Aviso importante:</strong> Las clases que ya se agendaron con este instructor deberán cambiarse manualmente en el calendario.
+        <strong class="text-rose-600 block mt-1">Aviso importante:</strong> Las clases que ya se
+        agendaron con este instructor deberán cambiarse manualmente en el calendario.
       </p>
 
       <div class="grid grid-cols-2 gap-3 pt-2">
-        <button (click)="showDeleteModal = false" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition-all cursor-pointer">
+        <button
+          (click)="showDeleteModal = false"
+          class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition-all cursor-pointer"
+          appPermission="staff:delete"
+        >
           Cancelar
         </button>
-        <button (click)="ejecutarEliminacion()" [disabled]="isDeleting" class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 transition-all cursor-pointer shadow-lg flex items-center justify-center">
+        <button
+          (click)="ejecutarEliminacion()"
+          [disabled]="isDeleting"
+          class="py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 transition-all cursor-pointer shadow-lg flex items-center justify-center"
+        >
           @if (isDeleting) {
-            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
           } @else {
             Sí, Eliminar
           }

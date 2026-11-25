@@ -1,0 +1,336 @@
+:host {
+  display: block;
+  min-width: 0;
+  flex: 1;
+}
+.office-information {
+  display: grid;
+  gap: 16px;
+}
+.office-header-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr) max-content minmax(0, 1.6fr);
+  gap: 20px;
+  align-items: start;
+}
+.office-header-row > *,
+.office-name-group > div,
+.compact-address > div {
+  min-width: 0;
+}
+.office-name-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+.office-avatar {
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  flex-shrink: 0;
+  background: #3b82f60c;
+  border: 1px solid #3b82f624;
+  border-radius: 13px;
+  color: var(--accent-color, #3b82f6);
+}
+.office-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+h2 {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.45;
+  color: var(--text-main);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.office-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 8px;
+  color: #059669;
+  background: #10b9810c;
+  border: 1px solid #10b98122;
+  border-radius: 6px;
+  padding: 3px 6px;
+  margin-top: 7px;
+}
+.office-active i {
+  width: 4px;
+  height: 4px;
+  background: currentColor;
+  border-radius: 50%;
+}
+h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 10px;
+}
+h3 lucide-icon,
+.compact-address > lucide-icon {
+  color: var(--accent-color, #3b82f6);
+  flex-shrink: 0;
+}
+h3 > small {
+  margin-left: auto;
+  font-size: 10px;
+  border-radius: 6px;
+  background: #3b82f610;
+  padding: 3px 7px;
+  color: #3b82f6;
+}
+section {
+  min-width: 0;
+}
+dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  margin: 0;
+}
+dt {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+dd {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-main);
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+.office-identity h3 {
+  font-size: 10px;
+}
+.office-identity dl {
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+.location-code {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  border: 1px solid #3b82f626;
+  border-radius: 11px;
+  background: #3b82f608;
+  padding: 9px 10px;
+  color: var(--accent-color, #3b82f6);
+}
+.location-code > lucide-icon {
+  margin-top: 3px;
+}
+.location-code span {
+  display: block;
+  font-size: 9px;
+}
+.location-code strong {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 1px;
+  margin-top: 3px;
+}
+.compact-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.compact-address > lucide-icon {
+  margin-top: 2px;
+}
+.compact-address strong {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 650;
+}
+.compact-address p {
+  margin: 3px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-main);
+  overflow-wrap: anywhere;
+}
+.compact-address small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-top: 3px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.office-summary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 22px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  padding-top: 15px;
+}
+.unspecified,
+.schedule-note {
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+.schedule-row {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 5px;
+}
+.schedule-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.schedule-row strong {
+  font-size: 9px;
+  color: var(--text-main);
+  line-height: 1.6;
+}
+.schedule-row span {
+  font-size: 10px;
+  font-weight: 650;
+  color: var(--accent-color, #3b82f6);
+  line-height: 1.6;
+}
+.schedule-row.closed span {
+  color: var(--text-muted);
+  font-weight: 450;
+}
+.schedule-row small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  margin-top: 6px;
+  color: var(--text-muted);
+}
+.schedule-note {
+  font-size: 9px;
+}
+.accessibility,
+.services {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.accessibility li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 9px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.accessibility li span {
+  line-height: 1.5;
+}
+.accessibility small {
+  font-size: 8px;
+  flex-shrink: 0;
+  background: var(--bg-primary);
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+.accessibility .available small {
+  color: #059669;
+  background: #10b98110;
+}
+.office-information > section {
+  border-top: 1px solid var(--border-color);
+  padding-top: 14px;
+}
+.services {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 20px;
+}
+.services li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 10px;
+  color: var(--text-main);
+  overflow-wrap: anywhere;
+}
+.services strong {
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+  color: var(--accent-color, #3b82f6);
+}
+@media (max-width: 1100px) {
+  .office-header-row {
+    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) max-content minmax(0, 1.3fr);
+  }
+  .office-name-group {
+    gap: 8px;
+  }
+  .office-avatar {
+    width: 34px;
+    height: 34px;
+  }
+  .office-summary-row {
+    gap: 16px;
+  }
+  .office-summary-row dl {
+    grid-template-columns: 1fr;
+  }
+  h2 {
+    font-size: 13px;
+  }
+}
+@media (max-width: 760px) {
+  .office-header-row {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+  .office-name-group {
+    grid-column: 1;
+  }
+  .office-identity {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .location-code {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .compact-address {
+    grid-column: 1/-1;
+  }
+  .office-summary-row {
+    grid-template-columns: 1fr;
+  }
+  .office-summary-row > section + section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 14px;
+  }
+  .office-summary-row dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .services {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 420px) {
+  .office-summary-row dl {
+    grid-template-columns: 1fr;
+  }
+}

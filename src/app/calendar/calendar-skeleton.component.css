@@ -1,0 +1,122 @@
+:host {
+  display: block;
+}
+.calendar-skeleton {
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 24px;
+  padding: 20px;
+  background: var(--bg-secondary, #fff);
+  overflow: hidden;
+}
+.calendar-loading-caption {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--text-muted, #64748b);
+  margin-bottom: 18px;
+}
+.calendar-loading-caption i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #60a5fa;
+}
+.calendar-placeholders {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 9px;
+}
+.column-label {
+  padding: 7px 15px 14px;
+}
+.column-label span {
+  height: 9px;
+  width: 60%;
+  margin: auto;
+}
+.calendar-placeholder {
+  min-width: 0;
+  height: 106px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 15px;
+  padding: 12px;
+  background: var(--bg-primary, #f8fafc);
+}
+.calendar-placeholder b {
+  height: 10px;
+  width: 18px;
+}
+.calendar-placeholder span {
+  height: 19px;
+  width: 90%;
+  margin-top: 17px;
+}
+.calendar-placeholder em {
+  height: 8px;
+  width: 65%;
+  margin-top: 8px;
+}
+.time-view .calendar-placeholder {
+  height: 75px;
+  border-radius: 7px;
+}
+.day-view {
+  grid-template-columns: 1fr;
+}
+.day-view .calendar-placeholder {
+  height: 65px;
+}
+.day-view .calendar-placeholder span {
+  width: 40%;
+  height: 10px;
+  margin-top: 10px;
+}
+.day-view .calendar-placeholder em {
+  display: none;
+}
+.column-label span,
+.calendar-placeholder b,
+.calendar-placeholder span,
+.calendar-placeholder em {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(100deg, #64748b12 20%, #64748b25 45%, #64748b12 70%);
+  background-size: 220% 100%;
+  animation: calendar-shimmer 1.6s linear infinite;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+@keyframes calendar-shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
+@media (max-width: 700px) {
+  .calendar-skeleton {
+    padding: 12px;
+  }
+  .calendar-placeholders {
+    gap: 5px;
+  }
+  .calendar-placeholder {
+    height: 85px;
+    padding: 8px;
+  }
+  .column-label {
+    padding: 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
+}

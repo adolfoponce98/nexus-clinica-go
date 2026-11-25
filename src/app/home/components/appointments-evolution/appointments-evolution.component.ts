@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-appointment-evolution',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './appointments-evolution.component.html'
+  templateUrl: './appointments-evolution.component.html',
 })
 export class AppointmentsEvolutionComponent {
   appointments = input.required<any[]>();
@@ -22,7 +22,7 @@ export class AppointmentsEvolutionComponent {
 
     // Calcular la fecha límite hacia atrás en milisegundos
     const daysBack = mode === '30' ? 30 : mode === '60' ? 60 : 90;
-    const limitDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
+    const limitDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
 
     // Filtrar citas dentro del rango de días
     const validAppointments = rawAppointments.filter((item: any) => {
@@ -31,13 +31,29 @@ export class AppointmentsEvolutionComponent {
       return !isNaN(dateObj.getTime()) && dateObj >= limitDate && dateObj <= now;
     });
 
-    const groups: Record<string, { completed: number; pending: number; cancelled: number; total: number; label: string }> = {};
+    const groups: Record<
+      string,
+      { completed: number; pending: number; cancelled: number; total: number; label: string }
+    > = {};
 
     // Inicializar contenedores de tiempo agrupados por fecha
     validAppointments.forEach((item: any) => {
       const dateObj = new Date(item.date);
       const dateKey = dateObj.toISOString().split('T')[0];
-      const monthNamesShort = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const monthNamesShort = [
+        'Ene',
+        'Feb',
+        'Mar',
+        'Abr',
+        'May',
+        'Jun',
+        'Jul',
+        'Ago',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dic',
+      ];
 
       const label = `${dateObj.getDate()} ${monthNamesShort[dateObj.getMonth()]}`;
 
@@ -70,7 +86,7 @@ export class AppointmentsEvolutionComponent {
       pending: groups[key].pending,
       cancelled: groups[key].cancelled,
       total: groups[key].total,
-      isCurrentMonth: index === sortedKeys.length - 1
+      isCurrentMonth: index === sortedKeys.length - 1,
     }));
   });
 
@@ -87,7 +103,10 @@ export class AppointmentsEvolutionComponent {
   getMaxVal(): number {
     const data = this.filteredData();
     if (!data || data.length === 0) return 1;
-    return Math.max(...data.map((d: any) => Math.max(d.completed, d.pending, d.cancelled, d.total)), 1);
+    return Math.max(
+      ...data.map((d: any) => Math.max(d.completed, d.pending, d.cancelled, d.total)),
+      1,
+    );
   }
 
   // Cálculo de la altura de las barras en porcentaje

@@ -1,0 +1,308 @@
+:host {
+  display: block;
+}
+.mini-paper {
+  box-sizing: border-box;
+  background: #fff;
+  color: var(--card-color);
+  height: 198px;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #e2e8ed;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.mini-heading {
+  order: 10;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  border-bottom: 1px solid var(--card-color);
+  padding-bottom: 10px;
+}
+.mini-cross {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.mini-heading > div {
+  flex: 1;
+  min-width: 0;
+}
+.mini-heading b,
+.mini-heading i,
+.mini-lines i {
+  display: block;
+  height: 3px;
+  background: var(--card-color);
+  margin-bottom: 4px;
+  border-radius: 2px;
+}
+.mini-heading b {
+  width: 85%;
+}
+.mini-heading i {
+  width: 65%;
+  opacity: 0.3;
+  height: 2px;
+}
+.mini-mark {
+  font-size: 17px;
+  font-weight: 300;
+}
+.mini-doctor-logo {
+  display: block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+.mini-office-logo {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+.mini-meta {
+  order: 20;
+  height: 3px;
+  background: #cbd5e1;
+  width: 70%;
+  margin-top: 9px;
+  flex-shrink: 0;
+}
+.mini-patient {
+  order: 30;
+  height: 14px;
+  border-block: 1px solid #e8edf1;
+  margin-top: 9px;
+  flex-shrink: 0;
+}
+.mini-rx {
+  order: 40;
+  font-size: 20px;
+  margin: 5px 0;
+}
+.mini-lines {
+  order: 45;
+}
+.mini-lines i {
+  background: #d9e1e8;
+  height: 2px;
+  margin-bottom: 6px;
+}
+.mini-lines i:nth-child(even) {
+  width: 76%;
+}
+.mini-footer {
+  order: 60;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 20px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+.mini-signature {
+  width: 45%;
+  border-bottom: 1px solid #b8c4ce;
+}
+.mini-qr {
+  width: 18px;
+  height: 18px;
+  background: repeating-conic-gradient(currentColor 0 25%, white 0 50%) 0/6px 6px;
+  border: 3px solid white;
+  outline: 1px solid #e8edf1;
+}
+.mini-watermark {
+  position: absolute;
+  left: 28%;
+  top: 42%;
+  width: 44%;
+  height: 40%;
+  object-fit: contain;
+  opacity: 0.045;
+  pointer-events: none;
+}
+[data-layout='wave'] .mini-heading {
+  border-top: 3px solid var(--card-color);
+  padding-top: 6px;
+}
+[data-layout='wave'] .mini-footer {
+  border-top: 1px solid var(--card-accent);
+  margin-top: 10px;
+}
+[data-layout='rail'] {
+  border-left: 4px solid var(--card-color);
+}
+[data-layout='rail'] .mini-meta {
+  order: 15;
+}
+[data-layout='rail'] .mini-patient {
+  border-left: 2px solid var(--card-accent);
+}
+[data-layout='rail'] .mini-footer {
+  flex-direction: row-reverse;
+}
+[data-layout='serif'] .mini-heading {
+  flex-wrap: wrap;
+  justify-content: center;
+  border-bottom: 3px double var(--card-color);
+}
+[data-layout='serif'] .mini-heading > div {
+  flex: 0 1 70%;
+}
+[data-layout='serif'] .mini-mark {
+  display: none;
+}
+[data-layout='serif'] .mini-footer {
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border-top: 3px double var(--card-color);
+  margin-top: 10px;
+}
+[data-layout='serif'] .mini-signature {
+  width: 50%;
+}
+[data-layout='split'] .mini-meta {
+  order: 5;
+  width: 100%;
+  margin: 0 0 8px;
+  background: var(--card-accent);
+}
+[data-layout='split'] .mini-heading {
+  border: 0;
+}
+[data-layout='split'] .mini-mark {
+  border-left: 2px solid var(--card-accent);
+  padding-left: 6px;
+}
+[data-layout='split'] .mini-footer {
+  border-top: 1px solid var(--card-accent);
+  margin-top: 8px;
+}
+[data-layout='edge'] {
+  border-right: 4px solid var(--card-color);
+}
+[data-layout='edge'] .mini-heading {
+  flex-direction: row-reverse;
+}
+[data-layout='edge'] .mini-mark {
+  display: none;
+}
+[data-layout='edge'] .mini-footer {
+  flex-direction: row-reverse;
+}
+[data-layout='edge'] .mini-qr {
+  border-right: 3px solid var(--card-accent);
+}
+[data-layout='dark'] .mini-heading {
+  background: #f1f3f6;
+  padding: 8px;
+  border-top: 2px solid #334155;
+  border-bottom: 0;
+}
+[data-layout='dark'] .mini-meta {
+  order: 50;
+  margin-bottom: 8px;
+}
+[data-layout='dark'] .mini-footer {
+  border-top: 3px solid #334155;
+  padding-top: 6px;
+}
+[data-layout='frame'] {
+  outline: 1px solid #d9e4da;
+  outline-offset: -5px;
+  border-color: #a3b6a5;
+}
+[data-layout='frame'] .mini-meta {
+  order: 50;
+  margin-bottom: 8px;
+}
+[data-layout='frame'] .mini-qr {
+  outline-color: #a3b6a5;
+  border-radius: 3px;
+}
+[data-layout='frame'] .mini-footer {
+  border-top: 1px solid #c3d0c5;
+}
+[data-layout='soft'] .mini-heading {
+  padding: 10px;
+  background: #fcf0f5;
+  border: 0;
+  border-radius: 10px;
+}
+[data-layout='soft'] .mini-mark {
+  display: none;
+}
+[data-layout='soft'] .mini-meta {
+  order: 35;
+}
+[data-layout='soft'] .mini-signature {
+  background: #fcf0f5;
+  padding: 7px;
+  border-radius: 4px;
+  border: 0;
+}
+[data-layout='band'] .mini-meta {
+  order: 5;
+  background: #eff5ff;
+  border-top: 3px solid var(--card-color);
+  height: 7px;
+  width: 100%;
+  margin: 0 0 10px;
+}
+[data-layout='band'] .mini-heading {
+  border-bottom: 3px solid var(--card-color);
+}
+[data-layout='band'] .mini-footer {
+  flex-direction: row-reverse;
+  border-top: 2px solid var(--card-color);
+  margin-top: 8px;
+}
+[data-layout='minimal'] .mini-heading {
+  border: 0;
+}
+[data-layout='minimal'] .mini-mark {
+  display: none;
+}
+[data-layout='minimal'] .mini-meta {
+  order: 50;
+  margin-block: 8px;
+}
+[data-layout='minimal'] .mini-footer {
+  border-top: 1px solid var(--card-accent);
+}
+.mini-paper.landscape {
+  height: 158px;
+}
+.mini-paper.landscape .mini-patient {
+  position: absolute;
+  top: 68px;
+  left: 15px;
+  width: 25%;
+}
+.mini-paper.landscape .mini-rx,
+.mini-paper.landscape .mini-lines {
+  margin-left: 35%;
+  width: 63%;
+}
+.mini-paper.landscape .mini-rx {
+  font-size: 17px;
+  margin-block: 4px;
+}
+.mini-paper.landscape .mini-lines i {
+  margin-bottom: 4px;
+}
+.mini-paper.landscape .mini-footer {
+  padding-top: 4px;
+  margin-top: auto;
+}
+.mini-paper.landscape[data-layout='serif'] .mini-footer {
+  flex-direction: row;
+}
+.mini-paper.landscape[data-layout='split'] .mini-patient,
+.mini-paper.landscape[data-layout='band'] .mini-patient {
+  top: 82px;
+}

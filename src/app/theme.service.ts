@@ -1,7 +1,7 @@
 import { Injectable, signal, effect } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ThemeService {
   // Usamos Signals de Angular para detectar si está en modo oscuro
@@ -30,6 +30,6 @@ export class ThemeService {
   }
 
   toggleTheme() {
-    this.isDarkMode.update(dark => !dark);
+    this.isDarkMode.update((dark) => !dark);
   }
 }

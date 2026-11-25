@@ -1,0 +1,88 @@
+:host {
+  position: relative;
+  z-index: 240;
+}
+.coach-highlight {
+  position: fixed;
+  z-index: 240;
+  border: 2px solid #3b82f6;
+  border-radius: 13px;
+  box-shadow:
+    0 0 0 5px #3b82f61b,
+    0 3px 18px #2563eb22;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+.coach-arrow {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 242;
+  pointer-events: none;
+  overflow: visible;
+}
+.coach-arrow > path {
+  stroke: #2563eb;
+  stroke-width: 2.5;
+  fill: none;
+}
+.coach-arrow marker path {
+  fill: #2563eb;
+}
+.coach-card {
+  position: fixed;
+  z-index: 243;
+  width: min(305px, calc(100vw - 24px));
+  box-sizing: border-box;
+  border: 1px solid #3b82f640;
+  border-radius: 16px;
+  padding: 16px;
+  background: var(--bg-secondary, #fff);
+  color: var(--text-main, #172033);
+  box-shadow: 0 12px 40px #02061730;
+  text-align: left;
+}
+.coach-eyebrow {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #458ac8;
+}
+.coach-card h4 {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+  margin: 7px 0;
+}
+.coach-card p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+.coach-card button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-top: 13px;
+  padding: 10px 12px;
+  background: #2563eb;
+  color: white;
+  border: 0;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.coach-card button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.coach-card button:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 3px;
+}

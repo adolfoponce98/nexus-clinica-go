@@ -1,0 +1,251 @@
+<div class="p-4 sm:p-6 space-y-5 min-w-0" style="color: var(--text-main)">
+  <header class="flex flex-wrap justify-between items-center gap-3">
+    <div>
+      <a routerLink="/home" class="text-sm text-blue-500">← Volver al inicio</a>
+      <h1 class="text-2xl font-black mt-2">{{ title() }}</h1>
+      <p class="text-sm mt-1" style="color: var(--text-muted)">
+        Métricas mensuales por consultorio · importes en pesos mexicanos
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button
+        type="button"
+        [disabled]="!data() || exporting()"
+        (click)="export('pdf')"
+        class="px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold disabled:opacity-40"
+      >
+        Descargar PDF</button
+      ><button
+        type="button"
+        [disabled]="!data() || exporting()"
+        (click)="export('xlsx')"
+        class="px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold disabled:opacity-40"
+      >
+        Descargar Excel
+      </button>
+    </div>
+  </header>
+  <nav aria-label="Tipos de reporte" class="flex flex-wrap gap-2">
+    @for (item of ['patients', 'appointments', 'office', 'services']; track item) {
+      <a
+        [routerLink]="['/reportes', item]"
+        class="px-3 py-2 rounded-xl border text-xs font-bold"
+        [class.bg-blue-600]="type() === item"
+        [class.text-white]="type() === item"
+        style="border-color: var(--border-color)"
+        >{{ titles[item] }}</a
+      >
+    }
+  </nav>
+  <section
+    aria-label="Filtros del reporte"
+    class="p-4 rounded-3xl border space-y-4"
+    style="background: var(--bg-secondary); border-color: var(--border-color)"
+  >
+    <div class="flex flex-wrap items-end gap-3">
+      <label class="text-xs font-bold"
+        >Desde el mes<input
+          type="month"
+          [ngModel]="startMonth"
+          (ngModelChange)="startMonth = $event; invalidate()"
+          [max]="endMonth"
+          class="block mt-1 px-3 py-2 border rounded-xl"
+          style="background: var(--bg-primary); border-color: var(--border-color)" /></label
+      ><label class="text-xs font-bold"
+        >Hasta el mes<input
+          type="month"
+          [ngModel]="endMonth"
+          (ngModelChange)="endMonth = $event; invalidate()"
+          [min]="startMonth"
+          class="block mt-1 px-3 py-2 border rounded-xl"
+          style="background: var(--bg-primary); border-color: var(--border-color)" /></label
+      ><button
+        type="button"
+        [disabled]="loading() || preparing()"
+        (click)="load()"
+        class="px-4 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl disabled:opacity-50"
+      >
+        {{ loading() ? 'Consultando…' : 'Consultar reporte' }}
+      </button>
+    </div>
+    <div>
+      <div class="flex items-center gap-3">
+        <h2 class="text-sm font-bold">Consultorios</h2>
+        <button type="button" class="text-xs text-blue-500" (click)="selectAll()">
+          Seleccionar todos
+        </button>
+      </div>
+      <div class="flex flex-wrap gap-3 mt-2">
+        @for (office of offices; track office.id) {
+          <label class="flex items-center gap-2 text-sm"
+            ><input
+              type="checkbox"
+              [checked]="selected.includes(office.id)"
+              (change)="toggle(office.id, $any($event.target).checked)"
+            />{{ office.name }}</label
+          >
+        }
+      </div>
+    </div>
+    @if (type() === 'office') {
+      <label class="block text-xs font-bold"
+        >Agrupar consultorios por<select
+          [(ngModel)]="officePeriod"
+          (ngModelChange)="invalidate()"
+          class="block mt-1 px-3 py-2 border rounded-xl"
+          style="background: var(--bg-primary); border-color: var(--border-color)"
+        >
+          <option value="month">Mes</option>
+          <option value="week">Semana (lunes a domingo)</option>
+        </select></label
+      >
+      @if (officePeriod === 'week') {
+        <p class="text-xs" style="color: var(--text-muted)">
+          Se muestran semanas completas que intersectan los meses seleccionados; pueden incluir días
+          de meses adyacentes.
+        </p>
+      }
+    }
+    <p class="text-xs" style="color: var(--text-muted)">
+      Hasta 12 meses por reporte. Los ingresos corresponden a pagos registrados, separados del costo
+      de consulta.
+    </p>
+  </section>
+  @if (error()) {
+    <p role="alert" class="p-4 rounded-2xl border border-rose-500/40 text-sm text-rose-500">
+      {{ error() }}
+    </p>
+  }
+  @if (progress()) {
+    <p role="status" class="text-sm">{{ progress() }}</p>
+  }
+  @if (exporting()) {
+    <p role="status" class="text-sm">Generando archivo…</p>
+  }
+  @if (data()) {
+    @if (incomplete()) {
+      <div class="p-4 border border-amber-500/40 rounded-2xl space-y-2 text-sm">
+        <p>
+          El periodo incluye meses sin preparación histórica. Las métricas contienen las operaciones
+          registradas desde su activación; podrían faltar citas anteriores.
+        </p>
+        <p>Meses por preparar: {{ missingMonths() }}.</p>
+        @if (!auth.getSession()?.idDoctor && auth.getSession()?.typeUser !== 2) {
+          <button
+            type="button"
+            [disabled]="preparing()"
+            (click)="prepare()"
+            class="text-blue-500 font-bold disabled:opacity-50"
+          >
+            Preparar históricos del mes seleccionado
+          </button>
+        }
+        <p class="text-xs" style="color: var(--text-muted)">
+          La preparación requiere seleccionar un solo mes y consultorio; no cambia las citas.
+        </p>
+      </div>
+    }
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div
+        class="p-4 rounded-2xl border"
+        style="border-color: var(--border-color); background: var(--bg-secondary)"
+      >
+        <p class="text-xs">Citas reservadas</p>
+        <p class="text-xl font-black">{{ data().totals.bookings }}</p>
+      </div>
+      <div
+        class="p-4 rounded-2xl border"
+        style="border-color: var(--border-color); background: var(--bg-secondary)"
+      >
+        <p class="text-xs">Asistencias</p>
+        <p class="text-xl font-black">{{ data().totals.attendances }}</p>
+      </div>
+      <div
+        class="p-4 rounded-2xl border"
+        style="border-color: var(--border-color); background: var(--bg-secondary)"
+      >
+        <p class="text-xs">Ingresos registrados</p>
+        <p class="text-xl font-black">
+          {{ data().totals.paidCents / 100 | currency: 'MXN' : 'symbol' : '1.2-2' }}
+        </p>
+      </div>
+      <div
+        class="p-4 rounded-2xl border"
+        style="border-color: var(--border-color); background: var(--bg-secondary)"
+      >
+        <p class="text-xs">Consultas sin costo definido</p>
+        <p class="text-xl font-black">{{ data().totals.unpriced }}</p>
+      </div>
+    </div>
+    <p class="text-sm">
+      {{ rows().length }} registros · {{ data().startMonth }} a {{ data().endMonth }}
+    </p>
+    <div
+      class="overflow-x-auto max-w-full border rounded-2xl"
+      role="region"
+      aria-label="Datos del reporte"
+      tabindex="0"
+      style="border-color: var(--border-color); background: var(--bg-secondary)"
+    >
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr>
+            @for (column of columns(); track column.key) {
+              <th class="p-3 whitespace-nowrap border-b" style="border-color: var(--border-color)">
+                {{ column.label }}
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of visible(); track $index) {
+            <tr>
+              @for (column of columns(); track column.key) {
+                <td
+                  class="p-3 border-b min-w-28 max-w-xs break-words"
+                  style="border-color: var(--border-color)"
+                >
+                  {{
+                    column.money
+                      ? (value(row, column) | currency: 'MXN' : 'symbol' : '1.2-2')
+                      : value(row, column)
+                  }}
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td [attr.colspan]="columns().length" class="p-8 text-center">
+                No hay registros en el periodo seleccionado.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (pages() > 1) {
+      <nav aria-label="Paginación del reporte" class="flex justify-between items-center text-sm">
+        <button
+          type="button"
+          [disabled]="page() === 1"
+          (click)="page.set(page() - 1)"
+          class="px-3 py-2 border rounded-xl disabled:opacity-40"
+        >
+          Anterior</button
+        ><span>Página {{ page() }} de {{ pages() }}</span
+        ><button
+          type="button"
+          [disabled]="page() === pages()"
+          (click)="page.set(page() + 1)"
+          class="px-3 py-2 border rounded-xl disabled:opacity-40"
+        >
+          Siguiente
+        </button>
+      </nav>
+    }
+    <p class="text-xs" style="color: var(--text-muted)">
+      PDF y Excel incluyen todos los registros del reporte consultado, no solo esta página.
+      Generado: {{ data().generatedAt | date: 'medium' }}
+    </p>
+  }
+</div>

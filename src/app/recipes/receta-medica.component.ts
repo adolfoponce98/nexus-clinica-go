@@ -1,31 +1,114 @@
+import { PhysicalTemplateDialogComponent } from './physical-template-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  ClinicalAssetDialogComponent,
+  ClinicalAssetKind,
+} from '../clinical/clinical-asset-dialog.component';
+import { SubscriptionLockComponent } from '../planes/subscription-lock.component';
+import { ClinicApiService } from '../reporting/clinic-api.service';
+import { BillingService } from '../planes/billing.service';
+import { PrescriptionWorkspaceComponent } from './prescription-workspace.component';
+import { PermissionDirective } from '../auth/permission.directive';
+import { API_URLS } from '../config/api-urls';
 import { Component, signal, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  LucideAngularModule, Stethoscope, User, Calendar, MapPin,
-  FileText, Printer, Save, ArrowLeft, ShieldCheck, Pill, Phone, Sparkles, Upload, Image as ImageIcon
+  LucideAngularModule,
+  Camera,
+  FolderOpen,
+  Stethoscope,
+  User,
+  Calendar,
+  MapPin,
+  FileText,
+  Printer,
+  Save,
+  ArrowLeft,
+  ShieldCheck,
+  Pill,
+  Phone,
+  Sparkles,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-angular';
-import * as CryptoJS from 'crypto-js';
 
 @Component({
   selector: 'app-receta-medica',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
-  templateUrl: 'receta-medica.component.html'
+  imports: [
+    SubscriptionLockComponent,
+    PrescriptionWorkspaceComponent,
+    PermissionDirective,
+    CommonModule,
+    ReactiveFormsModule,
+    LucideAngularModule,
+  ],
+  templateUrl: 'receta-medica.component.html',
 })
 export class RecetaMedicaComponent {
+  readonly billing = inject(BillingService);
+  private readonly clinicApi = inject(ClinicApiService);
+  private aiAttempt: { file: File; type: number; id: string } | null = null;
+  private readonly dialogs = inject(MatDialog);
+  openPhysicalTemplate() {
+    this.locked.set(false);
+    this.dialogs.open(PhysicalTemplateDialogComponent, {
+      width: '1220px',
+      maxWidth: '96vw',
+      maxHeight: '92vh',
+      autoFocus: false,
+      disableClose: true,
+      panelClass: 'nexus-asset-dialog',
+      ariaLabel: 'Digitalizar recetario físico',
+    });
+  }
+  openAsset(kind: ClinicalAssetKind) {
+    this.locked.set(false);
+    this.dialogs.open(ClinicalAssetDialogComponent, {
+      data: { kind },
+      width: kind === 'signature' ? '780px' : '1050px',
+      maxWidth: '96vw',
+      maxHeight: '92vh',
+      autoFocus: false,
+      disableClose: true,
+      panelClass: 'nexus-asset-dialog',
+      ariaLabel: kind === 'signature' ? 'Firma digitalizada' : 'Digitalizar logo',
+    });
+  }
+  readonly locked = signal(false);
+  goPlans() {
+    void this.router.navigate(['/planes']);
+  }
+  openUpcoming() {
+    this.locked.set(true);
+  }
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
   readonly icons = {
-    Stethoscope, User, Calendar, MapPin,
-    FileText, Printer, Save, ArrowLeft, ShieldCheck, Pill, Phone, Sparkles, Upload, ImageIcon
+    Camera,
+    FolderOpen,
+    Stethoscope,
+    User,
+    Calendar,
+    MapPin,
+    FileText,
+    Printer,
+    Save,
+    ArrowLeft,
+    ShieldCheck,
+    Pill,
+    Phone,
+    Sparkles,
+    Upload,
+    ImageIcon,
   };
 
   // 🔀 Control de Vistas actualizado
-  currentView = signal<'listado' | 'editor-receta' | 'digitalizador' | 'digitalizador-firma'>('listado');
+  currentView = signal<'listado' | 'editor-receta' | 'digitalizador'>('listado');
 
   recetaForm: FormGroup;
   isLoading = signal(false);
@@ -37,22 +120,7 @@ export class RecetaMedicaComponent {
   generatedAiImageUrl: string | null = null;
 
   // Credenciales y URL de la Cloud Function
-  private readonly GENERATE_BLANK_URL = 'https://generatecoachportrait-fjo7ia7ora-uc.a.run.app';
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
-
-  doctorData = {
-    nombre: 'Dr. Adolfo Angel Ponce Meza',
-    especialidad: 'Traumatología y Ortopedia / Medicina General',
-    cedula: 'CED. PROF. 12345678',
-    consultorio: 'Centro Médico Zapopan',
-    direccion: 'Av. Juan Gil Preciado #1500, Int. 402, Zapopan, Jal.',
-    telefono: '33 1234 5678',
-    correo: 'dr.ponce@nexosalud.com'
-  };
-
-  fechaActual = new Date();
-  folioReceta = 'NX-' + Math.floor(100000 + Math.random() * 900000);
+  private readonly GENERATE_BLANK_URL = API_URLS.GENERATE_BLANK_PRESCRIPTION;
 
   constructor() {
     this.recetaForm = this.fb.group({
@@ -62,11 +130,12 @@ export class RecetaMedicaComponent {
       diagnostico: ['', [Validators.required]],
       medicamentos: ['', [Validators.required]],
       indicaciones: ['', [Validators.required]],
-      proximaCita: ['']
+      proximaCita: [''],
     });
   }
 
-  cambiarVista(vista: 'listado' | 'editor-receta' | 'digitalizador' | 'digitalizador-firma') {
+  cambiarVista(vista: 'listado' | 'editor-receta' | 'digitalizador') {
+    this.locked.set(false);
     this.currentView.set(vista);
     // Limpiar archivos temporales al cambiar de vista si es necesario
     if (vista === 'listado') {
@@ -93,64 +162,36 @@ export class RecetaMedicaComponent {
 
   // Método unificado para consumir la IA enviando typeDocument (1 para receta, 2 para firma)
   async generarDigitalizacionAI(typeDoc: number) {
-    if (!this.selectedFile) return;
-
+    const file = this.selectedFile;
+    if (!file || this.isGeneratingAI()) return;
+    if (!this.billing.allows('ai') || Number(this.billing.state()?.aiCredits || 0) < 1) {
+      alert(
+        'Necesitas una suscripción activa y créditos IA. Cada operación completada consume 1 crédito.',
+      );
+      return;
+    }
     this.isGeneratingAI.set(true);
-    this.cdr.detectChanges();
-
     try {
-      const sessionData = JSON.parse(localStorage.getItem('session') || '{}');
-      const jwtToken = sessionData?.sessionToken || '';
-
-      const reader = new FileReader();
-      reader.readAsDataURL(this.selectedFile);
-      reader.onload = async () => {
-        const base64String = (reader.result as string).split(',')[1];
-
-        const payload = {
-          typeDocument: typeDoc,
-          imageBase64: base64String,
-          mimeType: this.selectedFile?.type || 'image/jpeg'
-        };
-
-        const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(payload), this.ENCRYPTION_KEY).toString();
-
-        const response = await fetch(this.GENERATE_BLANK_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular',
-            'Authorization': `Bearer ${jwtToken}`
-          },
-          body: JSON.stringify({ encryptedData: ciphertext })
-        });
-
-        const jsonRes = await response.json();
-        if (!response.ok) {
-          throw new Error(jsonRes.error || 'Error al procesar la solicitud con IA.');
-        }
-
-        let decryptedResponse;
-        try {
-          const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-          decryptedResponse = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-        } catch (err) {
-          throw new Error('Fallo al desencriptar la respuesta de la IA.');
-        }
-
-        if (decryptedResponse.success && decryptedResponse.imageBase64) {
-          this.generatedAiImageUrl = `data:${decryptedResponse.mimeType};base64,${decryptedResponse.imageBase64}`;
-        } else {
-          throw new Error('La IA no devolvió una imagen válida.');
-        }
-
-        this.isGeneratingAI.set(false);
-        this.cdr.detectChanges();
-      };
+      const source = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('No se pudo leer la imagen.'));
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsDataURL(file);
+      });
+      if (this.aiAttempt?.file !== file || this.aiAttempt?.type !== typeDoc)
+        this.aiAttempt = { file, type: typeDoc, id: crypto.randomUUID() };
+      const response = await this.clinicApi.post(this.GENERATE_BLANK_URL, {
+        requestId: this.aiAttempt.id,
+        typeDocument: typeDoc,
+        imageBase64: source.split(',')[1],
+        mimeType: file.type || 'image/jpeg',
+      });
+      if (!response.imageBase64) throw new Error('La IA no devolvió una imagen válida.');
+      this.generatedAiImageUrl = `data:${response.mimeType};base64,${response.imageBase64}`;
+      await this.billing.refresh();
     } catch (error: any) {
-      console.error('Error en digitalización:', error);
-      alert(error.message || 'Hubo un error al procesar la imagen.');
+      alert(error.message || 'No se pudo completar la digitalización.');
+    } finally {
       this.isGeneratingAI.set(false);
       this.cdr.detectChanges();
     }
@@ -159,84 +200,6 @@ export class RecetaMedicaComponent {
   guardarRecetarioDigitalStorage() {
     alert('¡Plantilla digitalizada guardada y vinculada al expediente con éxito!');
     this.cambiarVista('listado');
-  }
-
-private readonly SIGNED_URL_FUNCTION = 'https://getsigneduploadurl-o7vmreizjq-uc.a.run.app';
-
-  async guardarFirmaConUrlFirmada() {
-    if (!this.selectedFile) return;
-
-    this.isGeneratingAI.set(true);
-    this.cdr.detectChanges();
-
-    try {
-      // 1. Obtener el token JWT de sesión
-      const sessionData = JSON.parse(localStorage.getItem('session') || '{}');
-      const jwtToken = sessionData?.sessionToken || '';
-
-      const payload = {
-        customFileName: 'firma_oficial.png', // O puedes usar `firma_${Date.now()}.png` si prefieres conservar versiones
-        contentType: this.selectedFile.type || 'image/png'
-      };
-
-      // 2. Solicitar la URL firmada a la Cloud Function (con expiración de 10 min)
-      const response = await fetch(this.SIGNED_URL_FUNCTION, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwtToken}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al obtener permiso de subida.');
-      }
-
-      const { uploadUrl, publicUrl } = data;
-
-      // 3. Subir la imagen procesada directamente al bucket usando la URL firmada
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': this.selectedFile.type || 'image/png'
-        },
-        body: this.selectedFile
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Fallo al subir la imagen directamente al bucket de Storage.');
-      }
-
-      // 4. Éxito
-      console.log('Firma guardada en la ruta estructurada. URL pública:', publicUrl);
-      alert('¡Firma electrónica guardada y estructurada correctamente en el bucket!');
-      this.cambiarVista('listado');
-
-    } catch (error: any) {
-      console.error('Error en el proceso:', error);
-      alert(error.message || 'Hubo un error al almacenar la firma.');
-    } finally {
-      this.isGeneratingAI.set(false);
-      this.cdr.detectChanges();
-    }
-  }
-  imprimirReceta() {
-    window.print();
-  }
-
-  guardarReceta() {
-    if (this.recetaForm.invalid) {
-      alert('Por favor complete los campos obligatorios.');
-      return;
-    }
-    this.isLoading.set(true);
-    setTimeout(() => {
-      this.isLoading.set(false);
-      alert('¡Receta médica guardada con éxito!');
-      this.cambiarVista('listado');
-    }, 1200);
   }
 
   volverAlHome() {

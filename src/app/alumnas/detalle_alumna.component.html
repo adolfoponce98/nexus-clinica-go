@@ -8,12 +8,18 @@
   <h2 class="text-4xl font-black uppercase tracking-tighter text-zinc-900">Detalle de Perfil</h2>
 
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
     <div class="lg:col-span-4 space-y-6">
       <div class="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm text-center">
         <div class="relative inline-block mb-6">
-          <img src="https://i.pravatar.cc/300?u=lucia" class="w-32 h-32 rounded-3xl object-cover shadow-xl" alt="Lucía">
-          <span class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-lime-400 text-zinc-900 text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Active</span>
+          <img
+            src="https://i.pravatar.cc/300?u=lucia"
+            class="w-32 h-32 rounded-3xl object-cover shadow-xl"
+            alt="Lucía"
+          />
+          <span
+            class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-lime-400 text-zinc-900 text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg"
+            >Active</span
+          >
         </div>
         <h3 class="text-2xl font-black text-zinc-900 leading-tight">Lucía Fernández</h3>
         <p class="text-sm font-bold text-zinc-400 mb-8">lucia.fer@email.com</p>
@@ -24,7 +30,9 @@
             <p class="text-sm font-black text-zinc-900">Oct 2023</p>
           </div>
           <div>
-            <p class="text-[8px] font-bold text-zinc-300 uppercase tracking-widest mb-1">ID Alumna</p>
+            <p class="text-[8px] font-bold text-zinc-300 uppercase tracking-widest mb-1">
+              ID Alumna
+            </p>
             <p class="text-sm font-black text-zinc-900">#SP-4421</p>
           </div>
         </div>
@@ -39,21 +47,37 @@
 
           <div class="space-y-6">
             <div class="space-y-2">
-              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-500">Tipo de Plan</label>
-              <select class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 px-4 text-xs font-bold outline-none focus:ring-1 focus:ring-rose-500 transition-all appearance-none">
+              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-500"
+                >Tipo de Plan</label
+              >
+              <select
+                class="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 px-4 text-xs font-bold outline-none focus:ring-1 focus:ring-rose-500 transition-all appearance-none"
+              >
                 <option>Membresía Mensual Unlimit</option>
               </select>
             </div>
 
             <div class="space-y-2">
-              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-500">Método de Pago</label>
+              <label class="text-[9px] font-bold uppercase tracking-widest text-zinc-500"
+                >Método de Pago</label
+              >
               <div class="grid grid-cols-2 gap-3">
-                <button class="bg-zinc-900 border border-zinc-800 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all">Efectivo</button>
-                <button class="bg-rose-500/10 border border-rose-500/50 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-rose-500">Tarjeta</button>
+                <button
+                  class="bg-zinc-900 border border-zinc-800 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
+                >
+                  Efectivo
+                </button>
+                <button
+                  class="bg-rose-500/10 border border-rose-500/50 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-rose-500"
+                >
+                  Tarjeta
+                </button>
               </div>
             </div>
 
-            <button class="w-full bg-rose-500 hover:bg-rose-600 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-tighter shadow-lg shadow-rose-500/20 transition-all active:scale-[0.98]">
+            <button
+              class="w-full bg-rose-500 hover:bg-rose-600 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-tighter shadow-lg shadow-rose-500/20 transition-all active:scale-[0.98]"
+            >
               Actualizar Plan
             </button>
           </div>
@@ -64,9 +88,15 @@
     <div class="lg:col-span-8 space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         @for (stat of stats(); track stat.label) {
-          <div class="bg-white p-6 rounded-3xl border border-zinc-100 flex flex-col justify-between h-32">
-            <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">{{ stat.label }}</p>
-            <h4 class="text-4xl font-black" [class.text-rose-500]="stat.highlight">{{ stat.value }}</h4>
+          <div
+            class="bg-white p-6 rounded-3xl border border-zinc-100 flex flex-col justify-between h-32"
+          >
+            <p class="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+              {{ stat.label }}
+            </p>
+            <h4 class="text-4xl font-black" [class.text-rose-500]="stat.highlight">
+              {{ stat.value }}
+            </h4>
           </div>
         }
       </div>
@@ -74,21 +104,34 @@
       <div class="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm">
         <div class="flex justify-between items-center mb-8">
           <h4 class="text-lg font-black uppercase tracking-tighter">Registro de Asistencia</h4>
-          <button class="text-[9px] font-bold text-rose-500 uppercase tracking-widest hover:underline">Ver calendario completo</button>
+          <button
+            class="text-[9px] font-bold text-rose-500 uppercase tracking-widest hover:underline"
+          >
+            Ver calendario completo
+          </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           @for (item of attendance(); track item.date) {
-            <div class="flex items-center gap-4 p-4 rounded-2xl border border-zinc-50 bg-zinc-50/30">
-              <div class="w-12 h-12 rounded-xl bg-white flex flex-col items-center justify-center border border-zinc-100 shadow-sm">
+            <div
+              class="flex items-center gap-4 p-4 rounded-2xl border border-zinc-50 bg-zinc-50/30"
+            >
+              <div
+                class="w-12 h-12 rounded-xl bg-white flex flex-col items-center justify-center border border-zinc-100 shadow-sm"
+              >
                 <span class="text-xs font-black text-rose-500 leading-none">{{ item.date }}</span>
               </div>
-              <div class="flex-1">
+              <div class="min-w-0 flex-1">
                 <p class="text-xs font-black text-zinc-900 leading-tight">{{ item.class }}</p>
-                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">{{ item.instructor }} • {{ item.time }}</p>
+                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">
+                  {{ item.instructor }} • {{ item.time }}
+                </p>
               </div>
-              <lucide-icon [img]="item.attended ? CheckCircle : XCircle"
-                [class]="item.attended ? 'text-cyan-400' : 'text-rose-300'" class="w-5 h-5"></lucide-icon>
+              <lucide-icon
+                [img]="item.attended ? CheckCircle : XCircle"
+                [class]="item.attended ? 'text-cyan-400' : 'text-rose-300'"
+                class="w-5 h-5"
+              ></lucide-icon>
             </div>
           }
         </div>
@@ -97,7 +140,9 @@
       <div class="bg-white p-8 rounded-[32px] border border-zinc-100 shadow-sm">
         <h4 class="text-lg font-black uppercase tracking-tighter mb-8">Historial de Pagos</h4>
         <div class="space-y-6">
-          <div class="grid grid-cols-12 text-[9px] font-bold text-zinc-300 uppercase tracking-widest pb-4 border-b border-zinc-50">
+          <div
+            class="grid grid-cols-12 text-[9px] font-bold text-zinc-300 uppercase tracking-widest pb-4 border-b border-zinc-50"
+          >
             <div class="col-span-3">Fecha</div>
             <div class="col-span-6">Concepto</div>
             <div class="col-span-3 text-right">Monto</div>
@@ -105,13 +150,16 @@
           @for (payment of payments(); track payment.date) {
             <div class="grid grid-cols-12 items-center text-xs group">
               <div class="col-span-3 font-bold text-zinc-400 uppercase">{{ payment.date }}</div>
-              <div class="col-span-6 font-black text-zinc-900 group-hover:text-rose-500 transition-colors">{{ payment.concept }}</div>
+              <div
+                class="col-span-6 font-black text-zinc-900 group-hover:text-rose-500 transition-colors"
+              >
+                {{ payment.concept }}
+              </div>
               <div class="col-span-3 text-right font-black text-rose-500">{{ payment.amount }}</div>
             </div>
           }
         </div>
       </div>
-
     </div>
   </div>
 </div>

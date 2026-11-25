@@ -1,27 +1,63 @@
+import { ClinicaGoBackgroundComponent } from '../shared/clinica-go-background.component';
+import { ThemeService } from '../theme.service';
+import { browserDevice } from '../auth/browser-device';
+import { versionedFetch } from '../auth/sync-cache';
+import { SECURITY_CONFIG } from '../config/security.config';
+import { API_URLS } from '../config/api-urls';
 import { Component, signal, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SPECIALTIES_CATALOG, getSpecialtyName } from './../utils/specialties.constants';
 import {
-  LucideAngularModule, User, Mail, Phone, Lock, Eye, EyeOff,
-  Building2, MapPin, Plus, Trash2, Image as ImageIcon, ArrowLeft, CheckCircle2, ShieldCheck, ArrowRight, RefreshCw
+  LucideAngularModule,
+  User,
+  Mail,
+  Phone,
+  Lock,
+  Eye,
+  EyeOff,
+  Building2,
+  MapPin,
+  Plus,
+  Trash2,
+  Image as ImageIcon,
+  ArrowLeft,
+  CheckCircle2,
+  ShieldCheck,
+  ArrowRight,
+  RefreshCw,
 } from 'lucide-angular';
 import * as CryptoJS from 'crypto-js';
 
 @Component({
   selector: 'app-doctor-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
-  templateUrl: './doctor-register.component.html'
+  imports: [ClinicaGoBackgroundComponent, CommonModule, ReactiveFormsModule, LucideAngularModule],
+  templateUrl: './doctor-register.component.html',
 })
 export class DoctorRegisterComponent implements OnInit, OnDestroy {
+  readonly theme = inject(ThemeService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
   readonly specialtiesCatalog = SPECIALTIES_CATALOG;
   readonly icons = {
-    User, Mail, Phone, Lock, Eye, EyeOff,
-    Building2, MapPin, Plus, Trash2, ImageIcon, ArrowLeft, CheckCircle2, ShieldCheck, ArrowRight, RefreshCw
+    User,
+    Mail,
+    Phone,
+    Lock,
+    Eye,
+    EyeOff,
+    Building2,
+    MapPin,
+    Plus,
+    Trash2,
+    ImageIcon,
+    ArrowLeft,
+    CheckCircle2,
+    ShieldCheck,
+    ArrowRight,
+    RefreshCw,
   };
 
   registerForm: FormGroup;
@@ -45,12 +81,12 @@ export class DoctorRegisterComponent implements OnInit, OnDestroy {
   especialidadesSeleccionadas = signal<string[]>([]);
 
   // Configuración de Seguridad y Endpoints
-  private readonly ENCRYPTION_KEY = 'd12f53caa18869e74ea7ccdd8ccf97618b018254d83aaf0b8037d4a89ebbde5b';
-  private readonly APP_SECRET_HEADER = '0ffd8e9336c08f1d7449509b02dcfabb';
+  private readonly ENCRYPTION_KEY = SECURITY_CONFIG.ENCRYPTION_KEY;
+  private readonly APP_SECRET_HEADER = SECURITY_CONFIG.APP_SECRET_HEADER;
 
-  private readonly URL_SEND_OTP = 'https://sendotp-o7vmreizjq-uc.a.run.app'; // Reemplaza con tu URL de sendOtp desplegada
-  private readonly URL_VALIDATE_OTP = 'https://verifyotp-o7vmreizjq-uc.a.run.app'; // Reemplaza con tu URL de validateOtp desplegada
-  private readonly URL_REGISTER = 'https://registeruser-o7vmreizjq-uc.a.run.app';
+  private readonly URL_SEND_OTP = API_URLS.SENDOTP; // Reemplaza con tu URL de sendOtp desplegada
+  private readonly URL_VALIDATE_OTP = API_URLS.VERIFYOTP; // Reemplaza con tu URL de validateOtp desplegada
+  private readonly URL_REGISTER = API_URLS.REGISTERUSER;
 
   constructor() {
     this.registerForm = this.fb.group({
@@ -68,17 +104,28 @@ export class DoctorRegisterComponent implements OnInit, OnDestroy {
     if (this.timerInterval) clearInterval(this.timerInterval);
   }
 
-  togglePassword() { this.showPassword.update(v => !v); }
-  toggleConfirmPassword() { this.showConfirmPassword.update(v => !v); }
+  togglePassword() {
+    this.showPassword.update((v) => !v);
+  }
+  toggleConfirmPassword() {
+    this.showConfirmPassword.update((v) => !v);
+  }
 
-
-
-
-  get passwordValue(): string { return this.registerForm.get('password')?.value || ''; }
-  get hasMinLength(): boolean { return this.passwordValue.length >= 8; }
-  get hasUppercase(): boolean { return /[A-Z]/.test(this.passwordValue); }
-  get hasNumber(): boolean { return /\d/.test(this.passwordValue); }
-  get hasSpecialChar(): boolean { return /[\W_]/.test(this.passwordValue); }
+  get passwordValue(): string {
+    return this.registerForm.get('password')?.value || '';
+  }
+  get hasMinLength(): boolean {
+    return this.passwordValue.length >= 8;
+  }
+  get hasUppercase(): boolean {
+    return /[A-Z]/.test(this.passwordValue);
+  }
+  get hasNumber(): boolean {
+    return /\d/.test(this.passwordValue);
+  }
+  get hasSpecialChar(): boolean {
+    return /[\W_]/.test(this.passwordValue);
+  }
 
   get passwordStrengthPercentage(): number {
     let score = 0;
@@ -121,7 +168,9 @@ export class DoctorRegisterComponent implements OnInit, OnDestroy {
     const confirmPass = this.registerForm.get('confirmPassword')?.value;
 
     if (!nombre || !correo || !telefono || !pass || this.registerForm.get('correo')?.invalid) {
-      this.errorMessage.set('Por favor completa todos los campos correctamente y verifica tu correo.');
+      this.errorMessage.set(
+        'Por favor completa todos los campos correctamente y verifica tu correo.',
+      );
       return;
     }
 
@@ -138,16 +187,19 @@ export class DoctorRegisterComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
 
     try {
-      const ciphertext = CryptoJS.AES.encrypt(JSON.stringify({ email: correo }), this.ENCRYPTION_KEY).toString();
+      const ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify({ email: correo }),
+        this.ENCRYPTION_KEY,
+      ).toString();
 
-      const response = await fetch(this.URL_SEND_OTP, {
+      const response = await versionedFetch(this.URL_SEND_OTP, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular'
+          'x-client-source': 'angular',
         },
-        body: JSON.stringify({ encryptedData: ciphertext })
+        body: JSON.stringify({ encryptedData: ciphertext }),
       });
 
       const jsonRes = await response.json();
@@ -163,7 +215,6 @@ export class DoctorRegisterComponent implements OnInit, OnDestroy {
       } else {
         throw new Error(resData.error || 'No se pudo enviar el código OTP');
       }
-
     } catch (error: any) {
       this.isLoading.set(false);
       this.errorMessage.set(error.message || 'Error al enviar el código de verificación.');
@@ -223,16 +274,19 @@ export class DoctorRegisterComponent implements OnInit, OnDestroy {
     try {
       // 1️⃣ Validar OTP
       const payloadValidate = { email: correo, otp: code };
-      const cipherValidate = CryptoJS.AES.encrypt(JSON.stringify(payloadValidate), this.ENCRYPTION_KEY).toString();
+      const cipherValidate = CryptoJS.AES.encrypt(
+        JSON.stringify(payloadValidate),
+        this.ENCRYPTION_KEY,
+      ).toString();
 
-      const valResponse = await fetch(this.URL_VALIDATE_OTP, {
+      const valResponse = await versionedFetch(this.URL_VALIDATE_OTP, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular'
+          'x-client-source': 'angular',
         },
-        body: JSON.stringify({ encryptedData: cipherValidate })
+        body: JSON.stringify({ encryptedData: cipherValidate }),
       });
 
       const valJson = await valResponse.json();
@@ -249,19 +303,23 @@ export class DoctorRegisterComponent implements OnInit, OnDestroy {
         email: correo,
         phone: this.registerForm.get('telefono')?.value,
         password: this.registerForm.get('password')?.value,
-        especialidades: this.especialidadesSeleccionadas()
+        device: browserDevice(),
+        especialidades: this.especialidadesSeleccionadas(),
       };
 
-      const cipherRegister = CryptoJS.AES.encrypt(JSON.stringify(payloadRegister), this.ENCRYPTION_KEY).toString();
+      const cipherRegister = CryptoJS.AES.encrypt(
+        JSON.stringify(payloadRegister),
+        this.ENCRYPTION_KEY,
+      ).toString();
 
-      const regResponse = await fetch(this.URL_REGISTER, {
+      const regResponse = await versionedFetch(this.URL_REGISTER, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-app-signature': this.APP_SECRET_HEADER,
-          'x-client-source': 'angular'
+          'x-client-source': 'angular',
         },
-        body: JSON.stringify({ encryptedData: cipherRegister })
+        body: JSON.stringify({ encryptedData: cipherRegister }),
       });
 
       const regJson = await regResponse.json();
@@ -274,7 +332,6 @@ export class DoctorRegisterComponent implements OnInit, OnDestroy {
       } else {
         throw new Error(regResult.error || 'Error al completar el registro en el sistema.');
       }
-
     } catch (error: any) {
       console.error('Error en proceso:', error);
       this.isLoading.set(false);

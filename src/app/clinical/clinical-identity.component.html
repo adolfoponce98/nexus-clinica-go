@@ -1,0 +1,313 @@
+<section class="identity-panel">
+  @if (showHeading) {
+    <header class="identity-heading">
+      <div class="heading-mark"><lucide-icon [img]="icons.BadgeCheck" class="w-6 h-6" /></div>
+      <div>
+        <span class="section-kicker">TU IDENTIDAD PROFESIONAL</span>
+        <h2>{{ mode === 'signature' ? 'Firma digitalizada' : 'Identidad y firma' }}</h2>
+        <p>Los datos con los que te identificas en tus notas clínicas y recetas.</p>
+      </div>
+    </header>
+  }
+  @if (busy() && !loaded()) {
+    <app-clinical-content-skeleton
+      kind="signature"
+      [label]="
+        mode === 'signature' ? 'Cargando tu firma digitalizada…' : 'Cargando tu identidad y firma…'
+      "
+    />
+  }
+  @if (error()) {
+    <div role="alert" class="identity-alert error">
+      <lucide-icon [img]="icons.Info" class="w-4 h-4" />
+      <div>
+        {{ error() }}
+        @if (!loaded()) {
+          <button type="button" (click)="load()" [disabled]="busy()">Volver a cargar</button>
+        }
+      </div>
+    </div>
+  }
+  @if (loaded()) {
+    <div class="identity-grid">
+      @if (mode === 'identity') {
+        <section class="identity-section">
+          <div class="block-heading">
+            <span class="block-icon"><lucide-icon [img]="icons.UserRound" class="w-5 h-5" /></span>
+            <div>
+              <h3>Datos profesionales</h3>
+              <p>Tu información, en un solo lugar.</p>
+            </div>
+          </div>
+          <div class="professional-fields">
+            <label class="full" for="clinical-full-name"
+              >Nombre completo *
+              <div class="profile-input">
+                <lucide-icon [img]="icons.UserRound" class="w-4 h-4" /><input
+                  id="clinical-full-name"
+                  [(ngModel)]="profile.fullName"
+                  (ngModelChange)="saved.set(false)"
+                  [disabled]="disabled"
+                  autocomplete="name"
+                  placeholder="Nombre y apellidos del profesional"
+                /></div
+            ></label>
+            <label for="clinical-profession"
+              >Profesión / título
+              <div class="profile-input">
+                <lucide-icon [img]="icons.Stethoscope" class="w-4 h-4" /><input
+                  id="clinical-profession"
+                  [(ngModel)]="profile.profession"
+                  (ngModelChange)="saved.set(false)"
+                  [disabled]="disabled"
+                  placeholder="Tu título profesional"
+                  maxlength="200"
+                /></div
+            ></label>
+            <label for="clinical-license"
+              >Cédula profesional *
+              <div class="profile-input">
+                <lucide-icon [img]="icons.BadgeCheck" class="w-4 h-4" /><input
+                  id="clinical-license"
+                  [(ngModel)]="profile.professionalLicense"
+                  (ngModelChange)="saved.set(false)"
+                  [disabled]="disabled"
+                  inputmode="numeric"
+                  maxlength="12"
+                  placeholder="Número de cédula"
+                /></div
+            ></label>
+            <label class="full" for="clinical-institution"
+              >Institución que expidió el título
+              <div class="profile-input">
+                <lucide-icon [img]="icons.GraduationCap" class="w-4 h-4" /><input
+                  id="clinical-institution"
+                  [(ngModel)]="profile.educationalInstitution"
+                  (ngModelChange)="saved.set(false)"
+                  [disabled]="disabled"
+                  maxlength="300"
+                  placeholder="Universidad o institución educativa"
+                /></div
+            ></label>
+            <label class="full" for="clinical-specialty"
+              >Especialidad <small>(si aplica)</small>
+              <div class="profile-input">
+                <lucide-icon [img]="icons.Stethoscope" class="w-4 h-4" /><input
+                  id="clinical-specialty"
+                  list="clinical-specialty-options"
+                  [(ngModel)]="profile.specialty"
+                  (ngModelChange)="saved.set(false)"
+                  [disabled]="disabled"
+                  placeholder="Nombre de tu especialidad"
+                  maxlength="200"
+                /></div
+            ></label>
+            <label class="specialty-choice full"
+              ><input
+                type="checkbox"
+                [(ngModel)]="profile.specialtyCredentialApplies"
+                (ngModelChange)="saved.set(false)"
+                [disabled]="disabled"
+              /><span>Cuento con cédula de especialidad registrada.</span></label
+            >
+            @if (profile.specialtyCredentialApplies || profile.specialtyLicense) {
+              <label class="full" for="clinical-specialty-license"
+                >Cédula de especialidad
+                <div class="profile-input">
+                  <lucide-icon [img]="icons.BadgeCheck" class="w-4 h-4" /><input
+                    id="clinical-specialty-license"
+                    [(ngModel)]="profile.specialtyLicense"
+                    (ngModelChange)="saved.set(false)"
+                    [disabled]="disabled"
+                    inputmode="numeric"
+                    maxlength="12"
+                    placeholder="Número de cédula de especialidad"
+                  /></div
+              ></label>
+            }
+          </div>
+        </section>
+      }
+      <section class="identity-section signature-section">
+        <div class="block-heading">
+          <span class="block-icon signature-mark"
+            ><lucide-icon [img]="icons.PenLine" class="w-5 h-5"
+          /></span>
+          <div>
+            <h3>Firma digitalizada</h3>
+            <p>Tu sello personal en cada documento.</p>
+          </div>
+          @if (hasSignature && !drawing()) {
+            <span class="signature-status" [class.saved]="signatureIsSaved">{{
+              signatureIsSaved ? 'Guardada' : 'Sin guardar'
+            }}</span>
+          }
+        </div>
+        <input
+          #signatureFile
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          (change)="upload($event)"
+          [disabled]="disabled"
+          class="signature-file-input"
+          aria-label="Subir archivo de firma"
+        />
+        @if (drawing()) {
+          <div class="drawing-panel">
+            <app-signature-pad
+              label="Dibuja tu firma"
+              [value]="drawingSignature"
+              (valueChange)="drawingSignature = $event"
+              [disabled]="disabled"
+            />
+            <div class="drawing-actions">
+              <button
+                type="button"
+                class="secondary-button"
+                (click)="drawing.set(false)"
+                [disabled]="busy()"
+              >
+                Cancelar</button
+              ><button
+                type="button"
+                class="primary-button"
+                (click)="useDrawing()"
+                [disabled]="!drawingSignature || disabled"
+              >
+                Usar esta firma
+              </button>
+            </div>
+          </div>
+        } @else if (hasSignature) {
+          <div class="signature-preview">
+            <span>VISTA PREVIA</span
+            ><img [src]="profile.signatureImage" alt="Vista previa de tu firma digitalizada" />
+            <div class="preview-footer">
+              <lucide-icon [img]="icons.CheckCircle2" class="w-4 h-4" /><small>{{
+                signatureIsSaved
+                  ? 'Esta firma está vinculada a tu identidad.'
+                  : 'Guarda los cambios para utilizar esta firma.'
+              }}</small>
+            </div>
+          </div>
+          @if (fileName()) {
+            <p class="signature-filename">{{ fileName() }}</p>
+          }
+          <div class="signature-actions">
+            <button
+              type="button"
+              class="secondary-button"
+              (click)="signatureFile.click()"
+              [disabled]="disabled"
+            >
+              <lucide-icon [img]="icons.Upload" class="w-4 h-4" />Cambiar archivo</button
+            ><button
+              type="button"
+              class="ai-button"
+              disabled
+              title="Próximamente: mejorar firma y quitar fondo con IA"
+            >
+              <lucide-icon [img]="icons.Sparkles" class="w-4 h-4" /><span>Mejorar con IA</span
+              ><small>Próximamente</small>
+            </button>
+          </div>
+          <button type="button" class="draw-link" (click)="startDrawing()" [disabled]="disabled">
+            Prefiero dibujar una nueva firma
+          </button>
+        } @else {
+          <div class="signature-empty">
+            <span class="upload-mark"><lucide-icon [img]="icons.ImagePlus" class="w-8 h-8" /></span>
+            <h4>Agrega tu firma</h4>
+            <p>Sube una imagen clara de tu firma autógrafa para utilizarla en tus documentos.</p>
+            <button
+              type="button"
+              class="primary-button"
+              (click)="signatureFile.click()"
+              [disabled]="disabled"
+            >
+              <lucide-icon [img]="icons.Upload" class="w-4 h-4" />Subir archivo de firma</button
+            ><small>PNG, JPG o WebP · Hasta 5 MB</small>
+          </div>
+          <button type="button" class="draw-link" (click)="startDrawing()" [disabled]="disabled">
+            <lucide-icon [img]="icons.PenLine" class="w-4 h-4" />O dibuja tu firma en pantalla
+          </button>
+        }
+        @if (imageBusy()) {
+          <p class="image-loading" role="status">
+            <span class="identity-spinner"></span>Preparando vista previa…
+          </p>
+        }
+        <div class="signature-info">
+          <lucide-icon [img]="icons.Info" class="w-4 h-4" />
+          <p>
+            La carga conserva el fondo de tu imagen. La mejora con IA estará disponible más
+            adelante.
+          </p>
+        </div>
+      </section>
+    </div>
+    @if (mode === 'identity' && canManageBranding) {
+      <app-prescription-branding />
+    }
+    <div class="identity-consent">
+      <span class="consent-icon"><lucide-icon [img]="icons.ShieldCheck" class="w-5 h-5" /></span>
+      <div>
+        <label
+          ><input
+            type="checkbox"
+            [(ngModel)]="profile.signatureAcknowledged"
+            (ngModelChange)="saved.set(false)"
+            [disabled]="disabled"
+          /><span
+            >Reconozco esta imagen como mi firma digitalizada y autorizo su uso en las notas y
+            recetas que confirme con mi sesión.</span
+          ></label
+        >
+        <p>
+          Es una representación digitalizada de tu firma; no equivale a una firma electrónica
+          avanzada certificada.
+        </p>
+      </div>
+    </div>
+    <footer class="identity-footer">
+      <div>
+        @if (saved()) {
+          <span role="status" class="saved-message"
+            ><lucide-icon [img]="icons.CheckCircle2" class="w-4 h-4" />{{
+              mode === 'signature' ? 'Firma digitalizada guardada' : 'Identidad y firma guardadas'
+            }}</span
+          >
+        } @else {
+          <p>Los cambios se aplicarán a tus próximos documentos.</p>
+        }
+        @if (profile.updatedAt) {
+          <small>Última actualización: {{ profile.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+        }
+      </div>
+      <button
+        type="button"
+        class="primary-button save-identity"
+        (click)="save()"
+        [disabled]="disabled || !profile.signatureAcknowledged || !hasSignature"
+      >
+        @if (saving()) {
+          <span class="identity-spinner light"></span>
+        } @else {
+          <lucide-icon [img]="icons.Save" class="w-4 h-4" />
+        }
+        {{
+          saving()
+            ? 'Guardando…'
+            : mode === 'signature'
+              ? 'Guardar firma'
+              : 'Guardar identidad y firma'
+        }}
+      </button>
+    </footer>
+  }
+</section>
+<datalist id="clinical-specialty-options">
+  @for (specialty of specialtyOptions; track specialty.code) {
+    <option [value]="specialty.name"></option>
+  }
+</datalist>

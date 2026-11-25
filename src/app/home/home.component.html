@@ -1,152 +1,266 @@
-<div class="min-h-screen font-sans p-6 sm:p-8 space-y-8" style="background-color: var(--bg-primary); color: var(--text-main);">
-
+<div
+  class="min-h-screen font-sans p-6 sm:p-8 space-y-8"
+  style="background-color: var(--bg-primary); color: var(--text-main)"
+>
+  @if (loadError()) {
+    <div role="alert" class="p-4 border border-rose-500/30 rounded-xl text-xs text-rose-500">
+      <p>{{ loadError() }}</p>
+      <button type="button" (click)="cargarDatosHome()" class="underline mt-2">Reintentar</button>
+    </div>
+  }
   <!-- ENCABEZADO -->
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
     <div>
-      <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted);">Panel de control</p>
-      <h1 class="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2" style="color: var(--text-main);">
-      Hola Doctor-a {{ userData?.fullName || 'Dra. Marcela Silva' }}<span>👋</span>
+      <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted)">
+        Panel de control
+      </p>
+      <h1
+        class="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2"
+        style="color: var(--text-main)"
+      >
+        Hola Doctor-a {{ userData?.fullName || 'Bienvenido' }}<span>👋</span>
       </h1>
-      <p class="text-xs mt-0.5" style="color: var(--text-muted);">Aquí tienes un resumen de tu día y de tu práctica.</p>
+      <p class="text-xs mt-0.5" style="color: var(--text-muted)">
+        Aquí tienes un resumen de tu día y de tu práctica.
+      </p>
     </div>
 
-    <div class="flex items-center gap-3 px-4 py-2.5 rounded-2xl shadow-lg" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
+    <div
+      class="flex items-center gap-3 px-4 py-2.5 rounded-2xl shadow-lg"
+      style="background-color: var(--bg-secondary); border: 1px solid var(--border-color)"
+    >
       <lucide-icon [img]="icons.Calendar" class="w-4 h-4 text-blue-500"></lucide-icon>
-      <span class="text-xs font-bold" style="color: var(--text-main);">{{ currentDateText }}</span>
+      <span class="text-xs font-bold" style="color: var(--text-main)">{{ currentDateText }}</span>
     </div>
   </div>
 
   <!-- GRID PRINCIPAL DE CONTENIDO -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
     <!-- COLUMNA IZQUIERDA Y CENTRAL -->
     <div class="lg:col-span-2 space-y-8">
-
       <!-- FILA 1: MÉTRICAS SUPERIORES (4 CARDS) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-
         <!-- Card 1: Citas de hoy -->
-        <div class="p-5 rounded-3xl shadow-xl flex flex-col justify-between transition-all" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
-          <div class="flex justify-between items-start">
-            <div class="w-10 h-10 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-2xl flex items-center justify-center">
-              <lucide-icon [img]="icons.Calendar" class="w-5 h-5"></lucide-icon>
+        @if (appointmentsLoading()) {
+          <app-section-skeleton kind="metric" label="Cargando indicador…" />
+        } @else {
+          <div
+            class="p-5 rounded-3xl shadow-xl flex flex-col justify-between transition-all"
+            style="background-color: var(--bg-secondary); border: 1px solid var(--border-color)"
+          >
+            <div class="flex justify-between items-start">
+              <div
+                class="w-10 h-10 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-2xl flex items-center justify-center"
+              >
+                <lucide-icon [img]="icons.Calendar" class="w-5 h-5"></lucide-icon>
+              </div>
+              <lucide-icon
+                [img]="icons.ChevronRight"
+                class="w-4 h-4"
+                style="color: var(--text-muted)"
+              ></lucide-icon>
             </div>
-            <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
+            <div class="my-4">
+              <p
+                class="text-[10px] font-bold uppercase tracking-wider"
+                style="color: var(--text-muted)"
+              >
+                Citas de hoy
+              </p>
+              <h3 class="text-3xl font-black mt-1" style="color: var(--text-main)">
+                {{ todayAppointmentsCount }}
+              </h3>
+              <p class="text-[10px] mt-1" style="color: var(--text-muted)">
+                {{ todayAppointmentsSubText }}
+              </p>
+            </div>
           </div>
-          <div class="my-4">
-            <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--text-muted);">Citas de hoy</p>
-            <h3 class="text-3xl font-black mt-1" style="color: var(--text-main);">{{ todayAppointmentsCount }}</h3>
-            <p class="text-[10px] mt-1" style="color: var(--text-muted);">{{ todayAppointmentsSubText }}</p>
-          </div>
-        </div>
+        }
 
         <!-- Card 2: Pacientes activos -->
-        <div class="p-5 rounded-3xl shadow-xl flex flex-col justify-between transition-all" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
-          <div class="flex justify-between items-start">
-            <div class="w-10 h-10 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-2xl flex items-center justify-center">
-              <lucide-icon [img]="icons.Users" class="w-5 h-5"></lucide-icon>
+        @if (patientsLoading()) {
+          <app-section-skeleton kind="metric" label="Cargando indicador…" />
+        } @else {
+          <div
+            class="p-5 rounded-3xl shadow-xl flex flex-col justify-between transition-all"
+            style="background-color: var(--bg-secondary); border: 1px solid var(--border-color)"
+          >
+            <div class="flex justify-between items-start">
+              <div
+                class="w-10 h-10 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-2xl flex items-center justify-center"
+              >
+                <lucide-icon [img]="icons.Users" class="w-5 h-5"></lucide-icon>
+              </div>
+              <lucide-icon
+                [img]="icons.ChevronRight"
+                class="w-4 h-4"
+                style="color: var(--text-muted)"
+              ></lucide-icon>
             </div>
-            <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
+            <div class="my-4">
+              <p
+                class="text-[10px] font-bold uppercase tracking-wider"
+                style="color: var(--text-muted)"
+              >
+                Pacientes activos
+              </p>
+              <h3 class="text-3xl font-black mt-1" style="color: var(--text-main)">
+                {{ totalActivePatientsCount }}
+              </h3>
+            </div>
           </div>
-          <div class="my-4">
-            <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--text-muted);">Pacientes activos</p>
-            <h3 class="text-3xl font-black mt-1" style="color: var(--text-main);">{{ totalActivePatientsCount }}</h3>
-            <p class="text-[10px] text-emerald-500 font-bold mt-1">+12% vs. mes anterior</p>
-          </div>
-        </div>
+        }
 
         <!-- Card 3: Canceladas en el mes -->
-        <div class="p-5 rounded-3xl shadow-xl flex flex-col justify-between transition-all" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
-          <div class="flex justify-between items-start">
-            <div class="w-10 h-10 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-2xl flex items-center justify-center">
-              <lucide-icon [img]="icons.AlertCircle" class="w-5 h-5"></lucide-icon>
+        @if (appointmentsLoading()) {
+          <app-section-skeleton kind="metric" label="Cargando indicador…" />
+        } @else {
+          <div
+            class="p-5 rounded-3xl shadow-xl flex flex-col justify-between transition-all"
+            style="background-color: var(--bg-secondary); border: 1px solid var(--border-color)"
+          >
+            <div class="flex justify-between items-start">
+              <div
+                class="w-10 h-10 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-2xl flex items-center justify-center"
+              >
+                <lucide-icon [img]="icons.AlertCircle" class="w-5 h-5"></lucide-icon>
+              </div>
+              <lucide-icon
+                [img]="icons.ChevronRight"
+                class="w-4 h-4"
+                style="color: var(--text-muted)"
+              ></lucide-icon>
             </div>
-            <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
+            <div class="my-4">
+              <p
+                class="text-[10px] font-bold uppercase tracking-wider"
+                style="color: var(--text-muted)"
+              >
+                Canceladas en el mes
+              </p>
+              <h3 class="text-3xl font-black mt-1" style="color: var(--text-main)">
+                {{ canceledThisMonthCount }}
+              </h3>
+              <p class="text-[10px] mt-1" style="color: var(--text-muted)">
+                Estatus 2 (Canceladas)
+              </p>
+            </div>
           </div>
-          <div class="my-4">
-            <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--text-muted);">Canceladas en el mes</p>
-            <h3 class="text-3xl font-black mt-1" style="color: var(--text-main);">{{ canceledThisMonthCount }}</h3>
-            <p class="text-[10px] mt-1" style="color: var(--text-muted);">Estatus 2 (Canceladas)</p>
-          </div>
-        </div>
+        }
 
         <!-- Card 4: Citas sin confirmar en el mes -->
-        <div class="p-5 rounded-3xl shadow-xl flex flex-col justify-between transition-all" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
-          <div class="flex justify-between items-start">
-            <div class="w-10 h-10 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-2xl flex items-center justify-center">
-              <lucide-icon [img]="icons.Clock" class="w-5 h-5"></lucide-icon>
+        @if (appointmentsLoading()) {
+          <app-section-skeleton kind="metric" label="Cargando indicador…" />
+        } @else {
+          <div
+            class="p-5 rounded-3xl shadow-xl flex flex-col justify-between transition-all"
+            style="background-color: var(--bg-secondary); border: 1px solid var(--border-color)"
+          >
+            <div class="flex justify-between items-start">
+              <div
+                class="w-10 h-10 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-2xl flex items-center justify-center"
+              >
+                <lucide-icon [img]="icons.Clock" class="w-5 h-5"></lucide-icon>
+              </div>
+              <lucide-icon
+                [img]="icons.ChevronRight"
+                class="w-4 h-4"
+                style="color: var(--text-muted)"
+              ></lucide-icon>
             </div>
-            <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4" style="color: var(--text-muted);"></lucide-icon>
+            <div class="my-4">
+              <p
+                class="text-[10px] font-bold uppercase tracking-wider"
+                style="color: var(--text-muted)"
+              >
+                Sin confirmar en el mes
+              </p>
+              <h3 class="text-3xl font-black mt-1" style="color: var(--text-main)">
+                {{ unconfirmedThisMonthCount }}
+              </h3>
+              <p class="text-[10px] mt-1" style="color: var(--text-muted)">
+                Estatus 0 (Pendientes)
+              </p>
+            </div>
           </div>
-          <div class="my-4">
-            <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--text-muted);">Sin confirmar en el mes</p>
-            <h3 class="text-3xl font-black mt-1" style="color: var(--text-main);">{{ unconfirmedThisMonthCount }}</h3>
-            <p class="text-[10px] mt-1" style="color: var(--text-muted);">Estatus 0 (Pendientes)</p>
-          </div>
-        </div>
-
+        }
       </div>
 
-      <!-- FILA 2: GRÁFICAS MODULARIZADAS -->
-      <div class="grid grid-cols-1 gap-6">
-        <app-patient-evolution [data]="patientEvolutionDataMap()" />
-      </div>
-      <div class="grid grid-cols-1 gap-6">
-        <app-appointment-evolution [appointments]="cachedAppointmentsSignal()" />
-      </div>
-
-      <!-- FILA 3: ÚLTIMOS PACIENTES & ACCIONES RÁPIDAS -->
-      <div class="grid grid-cols-1 gap-6">
-        <app-specialty-chart [data]="specialtyData" />
-      </div>
-
+      <!-- Se conserva cada gráfica; el bloqueo es una capa visual y no consulta métricas premium. -->
+      @if (contextLoading() || metricsLoading() || billingPending) {
+        <app-section-skeleton kind="chart" label="Cargando gráfica…" />
+      } @else {
+        <app-subscription-lock
+          [locked]="!billing.allows('charts')"
+          title="La evolución de tus pacientes, a un vistazo"
+          description="Consulta las tendencias de tu práctica y toma decisiones con información clara."
+        >
+          <app-patient-evolution [data]="patientEvolutionDataMap()" />
+        </app-subscription-lock>
+      }
+      @if (contextLoading() || appointmentsLoading() || billingPending) {
+        <app-section-skeleton kind="chart" label="Cargando gráfica…" />
+      } @else {
+        <app-subscription-lock
+          [locked]="!billing.allows('charts')"
+          title="Conoce el ritmo de tu agenda"
+          description="Explora la evolución y el estado de tus citas con una suscripción activa."
+        >
+          <app-appointment-evolution [appointments]="cachedAppointmentsSignal()" />
+        </app-subscription-lock>
+      }
+      @if (contextLoading() || appointmentsLoading() || billingPending) {
+        <app-section-skeleton kind="chart" label="Cargando gráfica…" />
+      } @else {
+        <app-subscription-lock
+          [locked]="!billing.allows('charts')"
+          title="Una mirada más completa a tu consulta"
+          description="Accede al análisis de motivos de consulta y descubre las tendencias de atención."
+        >
+          <app-specialty-chart [data]="specialtyData" />
+        </app-subscription-lock>
+      }
     </div>
 
     <!-- COLUMNA DERECHA -->
     <div class="space-y-6">
-      <app-upcoming-appointments [appointments]="upcomingAppointments" />
-      <app-recent-patients [patients]="recentPatients" />
-      <app-reminders [reports]="reportsList" />
+      @if (permissions.can('calendar')) {
+        @if (contextLoading() || appointmentsLoading()) {
+          <app-section-skeleton kind="list" label="Cargando citas…" />
+        } @else {
+          <app-upcoming-appointments
+            [appointments]="upcomingAppointments"
+            (viewAllClicked)="showAllAppointments()"
+          />
+        }
+      }
+      @if (permissions.can('calendar')) {
+        @if (contextLoading() || appointmentsLoading()) {
+          <app-section-skeleton kind="list" label="Cargando citas…" />
+        } @else {
+          <app-recent-patients
+            [patients]="recentPatients"
+            (viewAllClicked)="showAllRecentPatients()"
+          />
+        }
+      }
+      @if (permissions.can('reports')) {
+        @if (contextLoading() || billingPending) {
+          <app-section-skeleton kind="list" label="Cargando reportes…" />
+        } @else {
+          <app-subscription-lock
+            [locked]="!billing.allows('reports')"
+            title="Tus reportes, listos cuando los necesitas"
+            description="Genera reportes de pacientes, citas, consultorios y servicios en PDF o Excel."
+          >
+            <app-reminders [reports]="reportsList" (reportSelected)="openReport($event)" />
+          </app-subscription-lock>
+        }
+      }
     </div>
-
   </div>
 </div>
 
-<!-- 🌟 MODAL / POPUP DE ESTADO DE PAGO (ÉXITO O CANCELACIÓN) -->
-@if (showPaymentModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-    <div class="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl space-y-4 text-center relative">
-
-      <!-- Botón X para cerrar -->
-      <button (click)="closePaymentModal()" class="absolute top-4 right-4 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer">
-        <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
-      </button>
-
-      <!-- Icono Dinámico según estado -->
-      @if (paymentStatusType() === 'success') {
-        <div class="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
-          <lucide-icon [img]="icons.CheckCircle2" class="w-8 h-8"></lucide-icon>
-        </div>
-      } @else {
-        <div class="w-14 h-14 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-inner">
-          <lucide-icon [img]="icons.AlertCircle" class="w-8 h-8"></lucide-icon>
-        </div>
-      }
-
-      <!-- Títulos y Textos -->
-      <div class="space-y-1">
-        <h3 class="text-lg font-black text-[var(--text-main)]">{{ paymentTitle() }}</h3>
-        <p class="text-xs text-[var(--text-muted)] leading-relaxed">{{ paymentMessage() }}</p>
-      </div>
-
-      <!-- Botón de aceptación -->
-      <button (click)="closePaymentModal()"
-              class="w-full py-3 rounded-2xl text-white font-bold text-xs hover:opacity-90 transition-all shadow-md cursor-pointer mt-2"
-              [class.bg-emerald-600]="paymentStatusType() === 'success'"
-              [class.bg-amber-600]="paymentStatusType() === 'canceled'">
-        Aceptar
-      </button>
-
-    </div>
-  </div>
+@if (!contextLoading() && !appointmentsLoading()) {
+  <app-current-appointment />
 }

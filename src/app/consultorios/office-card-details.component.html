@@ -1,0 +1,119 @@
+<div class="office-information">
+  <header class="office-header-row">
+    <div class="office-name-group">
+      <span class="office-avatar">
+        @if (office.logoUrl || office.logo) {
+          <img [src]="office.logoUrl || office.logo" [alt]="'Logo de ' + office.name" />
+        } @else {
+          <lucide-icon [img]="icons.Building2" [size]="23" />
+        }
+      </span>
+      <div>
+        <h2>{{ office.name }}</h2>
+        <span class="office-active"><i></i>Activo</span>
+      </div>
+    </div>
+    <section class="office-identity">
+      <h3><lucide-icon [img]="icons.Building2" [size]="14" />Información general</h3>
+      <dl>
+        @for (row of identity; track row.label) {
+          <div>
+            <dt>{{ row.label }}</dt>
+            <dd>{{ row.value }}</dd>
+          </div>
+        } @empty {
+          <p class="unspecified">No especificada</p>
+        }
+      </dl>
+    </section>
+    <div class="location-code">
+      <lucide-icon [img]="icons.KeyRound" [size]="14" />
+      <div>
+        <span>Código</span><strong>{{ office.codigoConsultorio || 'Sin asignar' }}</strong>
+      </div>
+    </div>
+    <div class="compact-address">
+      <lucide-icon [img]="icons.MapPin" [size]="16" />
+      <div>
+        <strong>Domicilio</strong>
+        <p>{{ fullAddress || 'Sin domicilio registrado' }}</p>
+        @if (text(office.directions)) {
+          <small>{{ office.directions }}</small>
+        }
+      </div>
+    </div>
+  </header>
+  <div class="office-summary-row">
+    <section>
+      <h3><lucide-icon [img]="icons.Phone" [size]="15" />Contacto</h3>
+      @if (contact.length) {
+        <dl>
+          @for (row of contact; track row.label) {
+            <div>
+              <dt>{{ row.label }}</dt>
+              <dd>{{ row.value }}</dd>
+            </div>
+          }
+        </dl>
+      } @else {
+        <p class="unspecified">Sin datos de contacto registrados</p>
+      }
+    </section>
+    <section class="hours">
+      <h3><lucide-icon [img]="icons.Clock" [size]="15" />Horario de atención</h3>
+      @let hours = schedule;
+      @if (hours.error) {
+        <p class="unspecified">
+          El horario guardado necesita revisión. Abre el detalle para actualizarlo.
+        </p>
+      } @else {
+        @for (group of hours.groups; track group.key) {
+          <div class="schedule-row" [class.closed]="group.closed">
+            <div>
+              <strong>{{ group.days.join(', ') }}</strong
+              ><span>{{ group.hours }}</span>
+            </div>
+            @if (group.pauses) {
+              <small
+                ><lucide-icon [img]="icons.Utensils" [size]="12" />Comida / pausas:
+                {{ group.pauses }}</small
+              >
+            }
+          </div>
+        }
+        <p class="schedule-note">
+          {{ hours.default ? 'Horario predeterminado · ' : '' }}{{ hours.zone }}
+        </p>
+      }
+    </section>
+    <section>
+      <h3><lucide-icon [img]="icons.Accessibility" [size]="15" />Accesibilidad</h3>
+      <ul class="accessibility">
+        @for (item of accessibility; track item.label) {
+          <li [class.available]="item.enabled">
+            <span>{{ item.label }}</span
+            ><small>{{ item.value }}</small>
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+  @if (services.length) {
+    <section>
+      <h3>
+        <lucide-icon [img]="icons.FileText" [size]="15" />Servicios registrados
+        <small>{{ services.length }}</small>
+      </h3>
+      <ul class="services">
+        @for (service of services; track $index) {
+          <li>
+            <span>{{ service.name }}</span>
+            @if (price(service.price)) {
+              <strong>{{ price(service.price) }}</strong>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+  }
+</div>

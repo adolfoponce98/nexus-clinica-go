@@ -8,8 +8,75 @@
     ],
     "rewrites": [
       {
+        "source": "/resenas/**",
+        "function": {
+          "functionId": "googleReviewRedirect",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/api/auth/login",
+        "function": {
+          "functionId": "loginUser",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/api/auth/employee-login",
+        "function": {
+          "functionId": "loginEmployes",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/api/auth/refresh",
+        "function": {
+          "functionId": "refreshToken",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/api/auth/logout",
+        "function": {
+          "functionId": "logoutSession",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/api/auth/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "private, no-store"
+          }
+        ]
+      },
+      {
+        "source": "/autogestion/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "private, no-store"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          },
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow, noarchive"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
+          }
+        ]
       }
     ]
   }

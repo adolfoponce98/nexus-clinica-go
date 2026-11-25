@@ -1,0 +1,287 @@
+<div class="practice-overlay" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+  <section role="dialog" aria-modal="true" aria-labelledby="practice-title" class="practice-dialog">
+    <header class="practice-header">
+      <span class="practice-emblem"><lucide-icon [img]="icons.GraduationCap" [size]="24" /></span>
+      <div>
+        <span class="eyebrow">APRENDE HACIENDO</span>
+        <h2 id="practice-title">Practica tu agenda</h2>
+        <p>Un recorrido guiado, sin afectar tu consultorio.</p>
+      </div>
+      <span class="demo-badge"
+        ><lucide-icon [img]="icons.ShieldCheck" [size]="15" />Datos ficticios</span
+      ><button
+        type="button"
+        class="icon-button"
+        (click)="close()"
+        aria-label="Salir de la práctica"
+      >
+        <lucide-icon [img]="icons.X" [size]="19" />
+      </button>
+    </header>
+    <div class="practice-progress" aria-label="Progreso de la práctica">
+      @for (
+        label of ['Agendar una cita', 'Consultar el detalle', 'Cancelar la cita'];
+        track label;
+        let i = $index
+      ) {
+        <div [class.active]="step === i + 1" [class.done]="step > i + 1">
+          <span>
+            @if (step > i + 1) {
+              <lucide-icon [img]="icons.CheckCircle2" [size]="15" />
+            } @else {
+              {{ i + 1 }}
+            }</span
+          ><strong>{{ label }}</strong>
+        </div>
+      }
+    </div>
+    <div #practiceBody class="practice-body">
+      @if (stage === 'intro') {
+        <section class="welcome">
+          <span class="welcome-art"
+            ><lucide-icon [img]="icons.CalendarDays" [size]="55" /><i
+              ><lucide-icon [img]="icons.CheckCircle2" [size]="25" /></i></span
+          ><span class="eyebrow">TU PRIMERA CITA, PASO A PASO</span>
+          <h3>Conoce tu calendario con confianza</h3>
+          <p>
+            Practica cómo elegir un horario, registrar a un paciente, revisar su cita y cancelarla.
+            Todo ocurre en una agenda de ejemplo.
+          </p>
+          <div class="welcome-features">
+            <span><lucide-icon [img]="icons.User" [size]="19" />Pacientes de prueba</span
+            ><span><lucide-icon [img]="icons.Stethoscope" [size]="19" />Servicios ficticios</span
+            ><span
+              ><lucide-icon [img]="icons.ShieldCheck" [size]="19" />Sin datos ni métricas
+              reales</span
+            >
+          </div>
+          <button type="button" class="primary" (click)="begin()">
+            Comenzar práctica<lucide-icon [img]="icons.ArrowRight" [size]="17" /></button
+          ><small>Puedes salir cuando quieras y repetirla desde el botón «Practicar agenda».</small>
+        </section>
+      }
+      @if (stage === 'calendar' || stage === 'saved') {
+        <div class="guide" role="status">
+          <span
+            ><lucide-icon
+              [img]="stage === 'calendar' ? icons.CalendarDays : icons.CheckCircle2"
+              [size]="21"
+          /></span>
+          <div>
+            <h3>
+              {{
+                stage === 'calendar'
+                  ? '1. Elige dónde agendar'
+                  : '2. Abre la cita que acabas de crear'
+              }}
+            </h3>
+            <p>
+              {{
+                stage === 'calendar'
+                  ? view === 'month'
+                    ? 'Selecciona un día. Después podrás elegir un horario libre en el diálogo.'
+                    : 'Toca un horario libre del calendario para comenzar a agendar.'
+                  : 'Tu cita de prueba aparece en azul. Haz clic sobre ella para consultar sus detalles.'
+              }}
+            </p>
+          </div>
+        </div>
+        <section class="replica-calendar">
+          <header class="calendar-header">
+            <div>
+              <lucide-icon [img]="icons.CalendarDays" [size]="23" />
+              <div>
+                <h3>Junio de 2030</h3>
+                <small>Consultorio de práctica · agenda ficticia</small>
+              </div>
+            </div>
+            <div class="view-switch">
+              @for (v of views; track v.id) {
+                <button
+                  type="button"
+                  [class.selected]="view === v.id"
+                  (click)="view = v.id"
+                  [attr.aria-pressed]="view === v.id"
+                >
+                  {{ v.label }}
+                </button>
+              }
+            </div>
+          </header>
+          @if (view === 'month') {
+            <div class="month-grid">
+              @for (d of weekdays; track d) {
+                <strong class="weekday">{{ d }}</strong>
+              }
+              @for (day of days; track $index) {
+                <div class="month-day" [class.empty-day]="!day">
+                  @if (day) {
+                    <button
+                      type="button"
+                      class="day-pick"
+                      [attr.data-coach]="day === 17 ? 'calendar-slot' : null"
+                      (click)="selectSlot(day)"
+                      [disabled]="stage !== 'calendar'"
+                      [attr.aria-label]="'Seleccionar día ' + day"
+                    >
+                      <strong>{{ day }}</strong
+                      ><span>Cita +</span>
+                    </button>
+                    @if (day === 17) {
+                      <div class="sample-appointment">
+                        10:00 · Sofía Ejemplo<small>Cita de muestra</small>
+                      </div>
+                    }
+                    @if (appointment?.date === day) {
+                      <button
+                        type="button"
+                        class="created-appointment"
+                        data-coach="appointment"
+                        (click)="openDetail()"
+                      >
+                        <strong>{{ appointment!.time }} · {{ appointment!.name }}</strong
+                        ><small>{{ appointment!.reason }}</small
+                        ><span>Ver detalle →</span>
+                      </button>
+                    } @else if (day !== 17) {
+                      <span class="no-appointments">Sin citas</span>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="time-scroll">
+              <div class="time-grid" [class.day-view]="view === 'day'">
+                <div class="time-heading sticky-hour">Hora</div>
+                @for (day of view === 'day' ? [date] : week; track day) {
+                  <strong class="time-heading">{{ dateLabel(day) }}</strong>
+                }
+                @for (hour of hours; track hour) {
+                  <span class="hour-label sticky-hour">{{ hour }}</span>
+                  @for (day of view === 'day' ? [date] : week; track day) {
+                    <div class="time-cell">
+                      @if (
+                        appointment?.date === day &&
+                        appointment?.time?.slice(0, 2) === hour.slice(0, 2)
+                      ) {
+                        <button
+                          type="button"
+                          class="created-appointment"
+                          data-coach="appointment"
+                          (click)="openDetail()"
+                        >
+                          <strong>{{ appointment!.time }} · {{ appointment!.name }}</strong
+                          ><small>{{ appointment!.reason }}</small
+                          ><span>Ver detalle →</span>
+                        </button>
+                      } @else if (day === 17 && hour === '10:00') {
+                        <div class="sample-appointment">
+                          Sofía Ejemplo<small>10:00 – 11:00</small>
+                        </div>
+                      } @else {
+                        <button
+                          type="button"
+                          class="empty-slot"
+                          [attr.data-coach]="
+                            day === date && hour === '11:00' ? 'calendar-slot' : null
+                          "
+                          (click)="selectSlot(day, hour)"
+                          [disabled]="stage !== 'calendar' || !available(day, hour)"
+                          [attr.aria-label]="'Seleccionar ' + dateLabel(day) + ' ' + hour"
+                        >
+                          <span>+ Agendar</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </section>
+      }
+      @if (stage === 'booking' || stage === 'detail' || stage === 'cancel') {
+        <div class="guide" role="status">
+          <span
+            ><lucide-icon [img]="stage === 'booking' ? icons.User : icons.CalendarDays" [size]="21"
+          /></span>
+          <div>
+            <h3>
+              {{
+                stage === 'booking'
+                  ? 'Completa tu cita de prueba'
+                  : 'Revisa los detalles y practica la cancelación'
+              }}
+            </h3>
+            <p>
+              {{
+                stage === 'booking'
+                  ? 'Haz clic en el nombre para ver los pacientes de ejemplo, o escribe uno manualmente. El campo de motivo también muestra sugerencias al enfocarlo o escribir.'
+                  : 'Esta es la misma vista de detalles que aparece en tu agenda. Pulsa «Cancelar Cita» para practicar el siguiente paso.'
+              }}
+            </p>
+          </div>
+        </div>
+        <app-calendar-practice-dialogs [p]="this" />
+      }
+      @if (stage === 'finished') {
+        <section class="welcome completion" role="status">
+          <span class="welcome-art"><lucide-icon [img]="icons.PartyPopper" [size]="53" /></span
+          ><span class="eyebrow">PRÁCTICA COMPLETADA</span>
+          <h3>¡Lo lograste!</h3>
+          <p>
+            Ya aprendiste a generar una cita, consultar su detalle y cancelarla. Ahora puedes
+            aplicar estos pasos en tu agenda.
+          </p>
+          <div class="completion-list">
+            @for (
+              label of [
+                'Elegiste el horario y registraste una cita',
+                'Consultaste los datos del paciente y la cita',
+                'Cancelaste la cita y liberaste el horario',
+              ];
+              track label
+            ) {
+              <span><lucide-icon [img]="icons.CheckCircle2" [size]="18" />{{ label }}</span>
+            }
+          </div>
+          <div class="cancelled-example">
+            <span>CITA DE PRUEBA CANCELADA</span
+            ><strong>{{ appointment?.name }} · {{ time }}</strong>
+            <p>
+              El horario {{ time }} – {{ endTime }} vuelve a estar disponible. No se cambió ninguna
+              cita real.
+            </p>
+          </div>
+          <p class="repeat-hint">
+            Repite esta demo cuando quieras desde «Practicar agenda», en la parte superior derecha
+            del calendario.
+          </p>
+          <div class="completion-actions">
+            <button type="button" class="secondary" (click)="reset()">
+              <lucide-icon [img]="icons.RotateCcw" [size]="16" />Repetir práctica</button
+            ><button type="button" class="primary" (click)="close()">
+              Volver a mi calendario<lucide-icon [img]="icons.ArrowRight" [size]="16" />
+            </button>
+          </div>
+        </section>
+      }
+    </div>
+    <footer class="practice-disclaimer">
+      <lucide-icon [img]="icons.ShieldCheck" [size]="15" />Modo práctica: información ficticia, sin
+      consultas a servicios ni cambios en tus datos.<button type="button" (click)="close()">
+        Salir de la práctica
+      </button>
+    </footer>
+    <app-practice-coach
+      [target]="coach.target"
+      [fallback]="coach.fallback"
+      [title]="coach.title"
+      [description]="coach.description"
+      [nextLabel]="coach.nextLabel"
+      [canContinue]="coach.canContinue"
+      (continued)="continueGuide()"
+    />
+  </section>
+</div>

@@ -1,0 +1,40 @@
+> Building...
+√ Building...
+Initial chunk files                                                 | Names                                                            |  Raw size
+spec-app-expediente-shared-followup-followup-workspace.component.js | spec-app-expediente-shared-followup-followup-workspace.component | 742.22 kB | 
+chunk-3H63BUGM.js                                                   | -                                                                | 218.97 kB | 
+styles.css                                                          | styles                                                           | 163.50 kB | 
+chunk-FDD6HADL.js                                                   | -                                                                | 109.98 kB | 
+chunk-JBWBLPNK.js                                                   | -                                                                |   5.19 kB | 
+spec-app-clinical-clinical-document-view.component.js               | spec-app-clinical-clinical-document-view.component               |   2.57 kB | 
+spec-app-clinical-clinical-note-workflow.component.js               | spec-app-clinical-clinical-note-workflow.component               |   1.51 kB | 
+init-testbed.js                                                     | init-testbed                                                     |   1.21 kB | 
+vitest-mock-patch.js                                                | vitest-mock-patch                                                | 969 bytes | 
+
+                                                                    | Initial total                                                    |   1.25 MB
+
+Application bundle generation complete. [8.519 seconds] - 2026-11-22T06:14:13.168Z
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:102:167:
+      102 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:44:57:
+      44 │ ...trationLinkComponent,PatientIntakeComponent,PermissionDirective...
+         ╵                         ~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+ RUN  v4.1.2 D:/GitHub/nexus-admin-nexo-salud
+
+
+ Test Files  3 passed (3)
+      Tests  15 passed (15)
+   Start at  00:14:13
+   Duration  3.10s (transform 741ms, setup 1.15s, import 1.43s, tests 867ms, environment 3.55s)
+

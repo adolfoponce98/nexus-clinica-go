@@ -1,226 +1,266 @@
-<div class="space-y-6 animate-in fade-in duration-300">
-
-  <!-- CABECERA PRINCIPAL -->
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border px-6 py-5 rounded-3xl shadow-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+<div class="office-page">
+  <app-plan-usage module="offices" />
+  <header class="office-header">
     <div>
-      <div class="flex items-center gap-2">
-        <span class="px-2.5 py-0.5 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">Configuración Profesional</span>
-        <span class="text-xs" style="color: var(--text-muted);">Gestión de espacios: <strong class="text-emerald-500">Activos</strong></span>
-      </div>
-      <h1 class="text-2xl font-black tracking-tight mt-1" style="color: var(--text-main);">Gestión de Consultorios Físicos</h1>
-      <p class="text-xs mt-0.5" style="color: var(--text-muted);">Administra tus centros de trabajo, direcciones, accesibilidad y detalles de cada consultorio.</p>
+      <span class="eyebrow">TUS ESPACIOS DE ATENCIÓN</span>
+      <h1>Consultorios</h1>
+      <p>Administra la información y el horario de los espacios donde atiendes a tus pacientes.</p>
     </div>
-  </div>
-
-  <!-- CARD CONTENEDORA GENERAL -->
-  <div class="border p-6 sm:p-8 rounded-3xl shadow-xl space-y-6" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-
-    <!-- SI ESTAMOS DANDO DE ALTA O EDITANDO / VIENDO DETALLE -->
-    @if (selectedConsultorio()) {
-      <div class="space-y-6">
-        <div class="flex justify-between items-center border-b pb-4" style="border-color: var(--border-color);">
-          <button (click)="regresarAListado()" class="flex items-center gap-2 text-xs font-bold text-blue-500 hover:underline cursor-pointer">
-            <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4"></lucide-icon>
-            Regresar a consultorios
-          </button>
-          <span class="text-xs px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full font-bold">
-            {{ isEditingMode ? 'Modo Edición / Registro' : 'Vista de Detalle (Sólo Lectura)' }}
-          </span>
-        </div>
-
-        <!-- FORMULARIO / DETALLE -->
-        <div class="border p-6 rounded-3xl space-y-6 relative shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-
-          <div class="flex justify-between items-center border-b pb-3" style="border-color: var(--border-color);">
-            <h4 class="text-xs font-black uppercase tracking-wider text-blue-500 flex items-center gap-2">
-              <lucide-icon [img]="icons.Building2" class="w-4 h-4"></lucide-icon>
-              Consultorio: {{ selectedConsultorio()?.name || 'Nuevo Consultorio' }}
-            </h4>
-          </div>
-
-          <!-- Datos Generales -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="space-y-1.5">
-              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Nombre del consultorio</label>
-              <input [(ngModel)]="selectedConsultorio()!.name" [disabled]="!isEditingMode" type="text" placeholder="Ej. Clínica Médica Sur" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-
-            <div class="space-y-1.5">
-              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Ciudad *</label>
-              <input [(ngModel)]="selectedConsultorio()!.city" [disabled]="!isEditingMode" type="text" placeholder="Ej. Zapopan, Jalisco" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-
-            <div class="space-y-1.5">
-              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Calle y número *</label>
-              <input [(ngModel)]="selectedConsultorio()!.address" [disabled]="!isEditingMode" type="text" placeholder="Ej. Av. Patria #450" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-
-            <div class="space-y-1.5">
-              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Código postal *</label>
-              <input [(ngModel)]="selectedConsultorio()!.postalCode" [disabled]="!isEditingMode" type="text" placeholder="Ej. 45030" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-
-            <div class="space-y-1.5 sm:col-span-2">
-              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Información adicional (opcional)</label>
-              <input [(ngModel)]="selectedConsultorio()!.additionalInfo" [disabled]="!isEditingMode" type="text" placeholder="Ej. Consultorio 302, Torre B" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-
-            <div class="space-y-1.5">
-              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Sitio web</label>
-              <input [(ngModel)]="selectedConsultorio()!.website" [disabled]="!isEditingMode" type="text" placeholder="https://miweb.com" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-
-            <div class="space-y-1.5">
-              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Teléfono principal</label>
-              <input [(ngModel)]="selectedConsultorio()!.phoneMain" [disabled]="!isEditingMode" type="text" placeholder="Ej. 33 1234 5678" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-
-            <div class="space-y-1.5">
-              <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Teléfono secundario</label>
-              <input [(ngModel)]="selectedConsultorio()!.phoneSecondary" [disabled]="!isEditingMode" type="text" placeholder="Ej. 33 8765 4321" class="w-full border rounded-2xl px-4 py-3 text-xs outline-none focus:border-blue-500 shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-          </div>
-
-          <!-- Accesibilidad -->
-          <div class="space-y-2 pt-2">
-            <label class="text-[11px] font-black uppercase tracking-wider block" style="color: var(--text-main);">Accesibilidad para pacientes</label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                <input [(ngModel)]="selectedConsultorio()!.accessibility.wheelchair" [disabled]="!isEditingMode" type="checkbox" class="accent-blue-600 w-4 h-4">
-                <span>Con silla de ruedas o muletas</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                <input [(ngModel)]="selectedConsultorio()!.accessibility.pregnantOrKids" [disabled]="!isEditingMode" type="checkbox" class="accent-blue-600 w-4 h-4">
-                <span>Mujeres embarazadas o padres con niños pequeños</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                <input [(ngModel)]="selectedConsultorio()!.accessibility.visualDisability" [disabled]="!isEditingMode" type="checkbox" class="accent-blue-600 w-4 h-4">
-                <span>Con discapacidad visual</span>
-              </label>
-              <label class="flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                <input [(ngModel)]="selectedConsultorio()!.accessibility.hearingDisability" [disabled]="!isEditingMode" type="checkbox" class="accent-blue-600 w-4 h-4">
-                <span>Con discapacidad auditiva</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Indicaciones -->
-          <div class="space-y-1.5">
-            <label class="text-[11px] font-bold uppercase" style="color: var(--text-muted);">Indicaciones para llegar</label>
-            <textarea rows="3" [(ngModel)]="selectedConsultorio()!.directions" [disabled]="!isEditingMode" placeholder="Cómo acceder al edificio..." class="w-full border rounded-2xl p-4 text-xs outline-none resize-none shadow-inner" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
-          </div>
-
-          <!-- Botón de Guardar si está en modo edición -->
-          @if (isEditingMode) {
-            <div class="flex justify-end pt-4">
-              <button (click)="guardarConsultorioIndividual()" class="flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg cursor-pointer">
-                <lucide-icon [img]="icons.Save" class="w-4 h-4"></lucide-icon> Guardar Consultorio
-              </button>
-            </div>
-          }
-
-        </div>
-      </div>
-    } @else {
-
-      <!-- VISTA PRINCIPAL: LISTADO -->
-      <div class="space-y-6">
-        <div class="border-b pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4" style="border-color: var(--border-color);">
+    @if (!selectedConsultorio()) {
+      <button
+        type="button"
+        class="primary"
+        (click)="addConsultorio()"
+        appPermission="consultorios:write"
+        [appPermissionDisabled]="busy()"
+      >
+        <lucide-icon [img]="icons.Plus" [size]="16" />Nuevo consultorio
+      </button>
+    }
+  </header>
+  @if (loadError()) {
+    <aside class="error-box" role="alert">
+      {{ loadError() }}<button type="button" (click)="cargarConsultorios()">Reintentar</button>
+    </aside>
+  }
+  @if (selectedConsultorio(); as office) {
+    <div class="edit-toolbar">
+      <button type="button" class="back-button" (click)="regresarAListado()" [disabled]="busy()">
+        <lucide-icon [img]="icons.ArrowLeft" [size]="16" />Regresar a consultorios</button
+      ><span>{{
+        isEditingMode
+          ? office.id
+            ? 'Editar consultorio'
+            : 'Nuevo consultorio'
+          : 'Detalle del consultorio'
+      }}</span>
+    </div>
+    <div class="office-form">
+      <section class="office-panel">
+        <div class="panel-title">
+          <span class="section-icon"><lucide-icon [img]="icons.Building2" [size]="21" /></span>
           <div>
-            <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--text-main);">Edición de Consultorios Físicos</h3>
-            <p class="text-xs mt-0.5" style="color: var(--text-muted);">Visualiza, busca y administra tus centros de trabajo.</p>
+            <h2>Datos del consultorio</h2>
+            <p>Identifica tu espacio y comparte sus datos de contacto.</p>
           </div>
-          <button (click)="addConsultorio()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md cursor-pointer">
-            <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
-            Agregar Otro Consultorio
-          </button>
         </div>
-
-        <!-- Buscador -->
-        <div class="relative">
-          <lucide-icon [img]="icons.Search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400"></lucide-icon>
-          <input [(ngModel)]="searchQuery" type="text" placeholder="Buscar consultorio por nombre o ciudad..." class="w-full border rounded-2xl py-3 pl-11 pr-4 text-xs outline-none shadow-inner" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
-        </div>
-
-        <!-- LOADER DE CARGA -->
-        @if (isLoading()) {
-          <div class="text-center py-20 space-y-3">
-            <lucide-icon [img]="icons.Loader2" class="w-8 h-8 mx-auto text-blue-500 animate-spin"></lucide-icon>
-            <p class="text-xs font-bold text-zinc-400">Cargando tus consultorios...</p>
+        @if (office.codigoConsultorio) {
+          <div class="office-code">
+            <lucide-icon [img]="icons.KeyRound" [size]="15" />Código del consultorio
+            <strong>{{ office.codigoConsultorio }}</strong>
           </div>
-        } @else {
-
-          <!-- EMPTY STATE REDISEÑADO -->
-          @if (filteredConsultorios().length === 0) {
-            <div class="text-center py-16 px-6 space-y-4 border border-dashed rounded-3xl shadow-sm" style="border-color: var(--border-color); background-color: var(--bg-secondary);">
-              <div class="w-16 h-16 mx-auto rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                <lucide-icon [img]="icons.Building2" class="w-8 h-8"></lucide-icon>
-              </div>
-              <div class="space-y-1">
-                <h4 class="text-sm font-black tracking-wide" style="color: var(--text-main);">No se encontraron consultorios</h4>
-                <p class="text-xs max-w-sm mx-auto" style="color: var(--text-muted);">Aún no tienes centros de trabajo registrados o no coinciden con tu búsqueda actual. Da de alta tu primer consultorio para comenzar.</p>
-              </div>
-              <button (click)="addConsultorio()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md cursor-pointer">
-                <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
-                Registrar mi primer consultorio
-              </button>
-            </div>
-          } @else {
-
-            <!-- LISTADO DE CONSULTORIOS -->
-            <div class="space-y-3">
-              @for (c of filteredConsultorios(); track c.id; let idx = $index) {
-                <div class="border p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm transition-all hover:border-blue-500/50" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-
-                  <div class="space-y-1">
-                    <h4 class="text-xs font-black uppercase tracking-wider text-blue-400 flex items-center gap-2">
-                      <lucide-icon [img]="icons.Building2" class="w-4 h-4"></lucide-icon>
-                      Consultorio #{{ idx + 1 }}: {{ c.name || 'Sin Nombre' }}
-                    </h4>
-                    <p class="text-[11px] text-zinc-400 flex items-center gap-1">
-                      <lucide-icon [img]="icons.MapPin" class="w-3 h-3"></lucide-icon> {{ c.address || 'Sin dirección' }}, {{ c.city || 'Sin ciudad' }}
-                    </p>
-
-                    <div class="flex flex-wrap items-center gap-4 pt-1 text-[10px] text-zinc-400 font-bold">
-                      <span class="flex items-center gap-1"><lucide-icon [img]="icons.Users" class="w-3 h-3 text-emerald-400"></lucide-icon> {{ c.totalPatients }} Pacientes</span>
-                      <span class="flex items-center gap-1"><lucide-icon [img]="icons.Stethoscope" class="w-3 h-3 text-blue-400"></lucide-icon> {{ c.totalDoctors }} Médicos</span>
-
-                      <!-- INDICADOR DE NIP DE SUCURSAL (Asignado automáticamente por backend) -->
-                      @if (c.codigoConsultorio && c.codigoConsultorio.trim() !== '') {
-                        <span class="flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-600 text-amber-50
-                         border-amber-500/20">
-                          <lucide-icon [img]="icons.KeyRound" class="w-3 h-3"></lucide-icon> NIP: {{ c.codigoConsultorio }}
-                        </span>
-                      } @else {
-                        <span class="flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-500/10 text-zinc-400 border border-zinc-500/20">
-                          <lucide-icon [img]="icons.KeyRound" class="w-3 h-3"></lucide-icon> No tiene asignado NIP
-                        </span>
-                      }
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-2">
-                    <button (click)="verDetalle(c, idx)" class="px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded-xl text-xs font-bold hover:bg-zinc-700 cursor-pointer flex items-center gap-1">
-                      <lucide-icon [img]="icons.Eye" class="w-3.5 h-3.5"></lucide-icon> Ver Detalle
-                    </button>
-                    <button (click)="editarConsultorio(c, idx)" class="px-3 py-1.5 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold hover:bg-blue-600/30 cursor-pointer flex items-center gap-1">
-                      <lucide-icon [img]="icons.Edit3" class="w-3.5 h-3.5"></lucide-icon> Editar
-                    </button>
-                    <button (click)="eliminarConsultorio(c.id)" class="p-2 bg-rose-500/10 text-rose-400 rounded-xl hover:bg-rose-500/20 cursor-pointer">
-                      <lucide-icon [img]="icons.Trash2" class="w-4 h-4"></lucide-icon>
-                    </button>
-                  </div>
-
-                </div>
-              }
-            </div>
-
-          }
         }
-
+        <div class="office-fields">
+          @for (field of fields; track field.key) {
+            <div class="office-field">
+              <label [for]="'office-' + field.key"
+                >{{ field.label }}
+                @if (field.required) {
+                  <span class="required">*</span>
+                }
+              </label>
+              <div class="office-input">
+                <lucide-icon [img]="field.icon" [size]="16" /><input
+                  [id]="'office-' + field.key"
+                  [(ngModel)]="office[field.key]"
+                  [placeholder]="field.placeholder"
+                  appPermission="consultorios:write"
+                  [appPermissionDisabled]="!canEdit || busy()"
+                />
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+      <app-office-hours-editor
+        [value]="office.officeHours"
+        (valueChange)="office.officeHours = $event"
+        [disabled]="!canEdit || busy()"
+      />
+      <section class="office-panel">
+        <div class="panel-title">
+          <span class="section-icon"><lucide-icon [img]="icons.Accessibility" [size]="21" /></span>
+          <div>
+            <h2>Accesibilidad e indicaciones</h2>
+            <p>Ayuda a tus pacientes a llegar y encontrar una atención accesible.</p>
+          </div>
+        </div>
+        <div class="accessibility-grid">
+          @for (option of accessibilityOptions; track option.key) {
+            <label
+              ><input
+                type="checkbox"
+                [(ngModel)]="office.accessibility[option.key]"
+                appPermission="consultorios:write"
+                [appPermissionDisabled]="!canEdit || busy()"
+              /><span>{{ option.label }}</span></label
+            >
+          }
+        </div>
+        <label class="directions-label" for="office-directions"
+          >Indicaciones para llegar<textarea
+            id="office-directions"
+            [(ngModel)]="office.directions"
+            rows="3"
+            placeholder="Piso, referencia o indicaciones para acceder al edificio"
+            appPermission="consultorios:write"
+            [appPermissionDisabled]="!canEdit || busy()"
+          ></textarea>
+        </label>
+      </section>
+      @if (isEditingMode) {
+        <footer class="office-actions">
+          <p>
+            <lucide-icon [img]="icons.ShieldCheck" [size]="15" />El horario se usará para validar
+            las citas del calendario.
+          </p>
+          <button
+            type="button"
+            class="primary"
+            (click)="guardarConsultorioIndividual()"
+            appPermission="consultorios:write"
+            [appPermissionDisabled]="busy()"
+          >
+            @if (busy()) {
+              <lucide-icon [img]="icons.Loader2" [size]="16" class="spin" />
+            } @else {
+              <lucide-icon [img]="icons.Save" [size]="16" />
+            }
+            {{ busy() ? 'Guardando…' : 'Guardar consultorio' }}
+          </button>
+        </footer>
+      }
+    </div>
+  } @else {
+    <div class="list-toolbar">
+      <div class="office-search">
+        <lucide-icon [img]="icons.Search" [size]="17" /><input
+          [(ngModel)]="searchQuery"
+          placeholder="Buscar por nombre o ciudad"
+          aria-label="Buscar consultorios"
+        />
+      </div>
+      <span>{{ consultorios().length }} consultorios activos</span>
+    </div>
+    @if (isLoading()) {
+      <app-directory-skeleton kind="offices" label="Cargando consultorios…" />
+    } @else {
+      <div class="offices-grid">
+        @for (office of filteredConsultorios(); track office.id) {
+          <article class="office-panel office-card">
+            <app-office-card-details [office]="office" />
+            <footer class="card-actions">
+              <button type="button" class="secondary" (click)="verDetalle(office)">
+                <lucide-icon [img]="icons.Eye" [size]="15" />Ver detalle</button
+              ><button
+                type="button"
+                class="icon-button"
+                aria-label="Editar consultorio"
+                (click)="editarConsultorio(office)"
+                appPermission="consultorios:write"
+              >
+                <lucide-icon [img]="icons.Edit3" [size]="17" /></button
+              ><button
+                type="button"
+                class="icon-button danger"
+                aria-label="Eliminar consultorio"
+                title="Eliminar consultorio"
+                (click)="eliminarConsultorio(office.id)"
+                appPermission="consultorios:delete"
+              >
+                <lucide-icon [img]="icons.Trash2" [size]="17" />
+              </button>
+            </footer>
+          </article>
+        } @empty {
+          <section class="office-panel empty-state">
+            <lucide-icon [img]="icons.Building2" [size]="35" />
+            <h2>
+              {{
+                searchQuery
+                  ? 'No encontramos coincidencias'
+                  : 'Tu próximo espacio de atención empieza aquí'
+              }}
+            </h2>
+            <p>
+              {{
+                searchQuery
+                  ? 'Prueba con otro nombre o ciudad.'
+                  : 'Agrega un consultorio y configura su horario en un solo paso.'
+              }}
+            </p>
+            @if (!searchQuery) {
+              <button
+                type="button"
+                class="primary"
+                (click)="addConsultorio()"
+                appPermission="consultorios:write"
+                [appPermissionDisabled]="!billing.canCreate('offices')"
+              >
+                <lucide-icon [img]="icons.Plus" [size]="16" />Crear consultorio
+              </button>
+            }
+          </section>
+        }
       </div>
     }
-
-  </div>
-
+  }
 </div>
+<dialog
+  #disableDialog
+  class="office-dialog"
+  aria-labelledby="disable-office-title"
+  (cancel)="busy() && $event.preventDefault()"
+>
+  <header class="dialog-top">
+    <span class="warning-icon"><lucide-icon [img]="icons.TriangleAlert" [size]="24" /></span
+    ><button
+      type="button"
+      class="icon-button"
+      aria-label="Cerrar"
+      (click)="closeDisable()"
+      [disabled]="busy()"
+    >
+      <lucide-icon [img]="icons.X" [size]="18" />
+    </button>
+  </header>
+  <span class="eyebrow">CONFIRMAR ELIMINACIÓN</span>
+  <h2 id="disable-office-title">¿Deshabilitar este consultorio?</h2>
+  <p>
+    Vas a retirar <strong>{{ disableTarget()?.name }}</strong> de tus consultorios activos.
+  </p>
+  <div class="warning-copy">
+    <lucide-icon [img]="icons.Users" [size]="20" />
+    <p>
+      Los pacientes, expedientes y citas relacionados se conservarán, pero podrían dejar de estar
+      disponibles desde las vistas habituales al no poder seleccionar este consultorio.
+    </p>
+  </div>
+  <p>
+    No se borrará su información clínica. El consultorio dejará de aparecer en los selectores y no
+    permitirá nuevas citas ni registros.
+  </p>
+  @if (operationError()) {
+    <p class="error-box" role="alert">{{ operationError() }}</p>
+  }
+  <footer class="dialog-actions">
+    <button type="button" class="secondary" (click)="closeDisable()" [disabled]="busy()">
+      Conservar consultorio</button
+    ><button type="button" class="danger-primary" (click)="confirmDisable()" [disabled]="busy()">
+      @if (busy()) {
+        <lucide-icon [img]="icons.Loader2" [size]="15" class="spin" />
+      }
+      {{ busy() ? 'Deshabilitando…' : 'Sí, deshabilitar' }}
+    </button>
+  </footer>
+</dialog>
+<dialog
+  #feedbackDialog
+  class="office-dialog feedback-dialog"
+  aria-labelledby="office-feedback-title"
+>
+  <span class="section-icon"><lucide-icon [img]="icons.Building2" [size]="22" /></span>
+  <h2 id="office-feedback-title">Información del consultorio</h2>
+  <p>{{ feedback() }}</p>
+  <button type="button" class="primary" (click)="closeFeedback()">Entendido</button>
+</dialog>

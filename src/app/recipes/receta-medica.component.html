@@ -1,287 +1,333 @@
-<div class="min-h-screen font-sans p-4 sm:p-8 flex flex-col items-center transition-colors duration-300" style="background-color: var(--bg-primary); color: var(--text-main);">
-
+<div
+  class="min-h-screen font-sans p-4 sm:p-8 flex flex-col items-center transition-colors duration-300"
+  style="background-color: var(--bg-primary); color: var(--text-main)"
+>
+  @if (locked() && billing.allows('ai')) {
+    <section
+      class="w-full max-w-4xl p-5 border rounded-3xl mb-6 bg-[var(--bg-secondary)] border-[var(--border-color)]"
+    >
+      <h2 class="font-black">Herramienta próximamente disponible</h2>
+      <p class="text-xs text-[var(--text-muted)] my-2">
+        Esta herramienta aún no está vinculada a un flujo.
+      </p>
+      <button (click)="locked.set(false)" class="text-xs font-bold text-blue-500">Cerrar</button>
+    </section>
+  }
+  @if (currentView() !== 'listado' && !billing.allows('ai')) {
+    <button
+      type="button"
+      (click)="cambiarVista('listado')"
+      class="self-start flex items-center gap-2 border rounded-2xl p-3 mb-5 text-xs font-bold border-[var(--border-color)]"
+    >
+      <lucide-icon [img]="icons.ArrowLeft" [size]="16" />Regresar al listado
+    </button>
+  }
   <!-- ================= VISTA 1: LISTADO DE RECETAS Y FORMATOS CLÍNICOS ================= -->
   @if (currentView() === 'listado') {
     <header class="w-full max-w-4xl flex justify-between items-center mb-8">
-      <button (click)="volverAlHome()" class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-lg" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
+      <button
+        (click)="volverAlHome()"
+        class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-lg"
+        style="
+          background-color: var(--bg-secondary);
+          border-color: var(--border-color);
+          color: var(--text-main);
+        "
+      >
         <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-blue-500"></lucide-icon>
         Regresar al Panel
       </button>
-
-      <button (click)="cambiarVista('digitalizador')" class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-black uppercase tracking-wider shadow-xl transition-all hover:scale-105 cursor-pointer">
-        <lucide-icon [img]="icons.Sparkles" class="w-4 h-4 text-white"></lucide-icon>
-        Cargar Recetario a Digitalizar
-      </button>
     </header>
 
-    <main class="w-full max-w-4xl space-y-6">
-      <div class="border rounded-[2.5rem] p-8 shadow-2xl backdrop-blur-xl" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-        <h2 class="text-lg font-black uppercase tracking-tight mb-2">Recetas y Formatos Clínicos</h2>
-        <p class="text-xs text-blue-500 font-semibold mb-6">Selecciona un formato o receta para visualizar, imprimir o editar.</p>
+    <app-subscription-lock
+      class="w-full max-w-4xl"
+      [locked]="locked() && !billing.allows('ai')"
+      title="Nexus IA para tu práctica"
+      description="Activa tu suscripción para acceder a las herramientas inteligentes de Clínica Go."
+      ><main class="w-full space-y-6">
+        <div
+          class="border rounded-[2.5rem] p-8 shadow-2xl backdrop-blur-xl"
+          style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+        >
+          <h2 class="text-lg font-black uppercase tracking-tight mb-2">
+            Recetas y Formatos Clínicos
+          </h2>
+          <p class="text-xs text-blue-500 font-semibold mb-6">
+            Plantillas de recetas, firma digitalizada y herramientas para convertir documentos de
+            papel en información digital.
+          </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Tarjeta Receta Estándar -->
-          <div (click)="cambiarVista('editor-receta')" class="border rounded-2xl p-6 cursor-pointer transition-all hover:border-blue-500 hover:shadow-xl group" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-            <div class="flex items-center gap-4 mb-3">
-              <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                <lucide-icon [img]="icons.FileText" class="w-6 h-6"></lucide-icon>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              type="button"
+              (click)="cambiarVista('editor-receta')"
+              class="border rounded-2xl p-6 text-left cursor-pointer transition-all hover:border-blue-500 hover:shadow-xl group focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-4"
+              style="background-color: var(--bg-primary); border-color: var(--border-color)"
+            >
+              <div class="flex items-center gap-4 mb-3">
+                <div
+                  class="w-12 h-12 shrink-0 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform"
+                >
+                  <lucide-icon [img]="icons.FileText" class="w-6 h-6"></lucide-icon>
+                </div>
+                <div>
+                  <h3 class="text-sm font-black">Receta Médica</h3>
+                  <p class="text-[10px]" style="color: var(--text-muted)">
+                    10 diseños · Configuración por consultorio
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 class="text-sm font-black">Receta Médica Oficial</h3>
-                <p class="text-[10px]" style="color: var(--text-muted);">Folio activo: {{ folioReceta }}</p>
-              </div>
-            </div>
-            <p class="text-xs" style="color: var(--text-muted);">Formato interactivo para prescripción de medicamentos y diagnóstico.</p>
-          </div>
+              <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                Explora las plantillas y elige el diseño predeterminado de las recetas de tu
+                consultorio.
+              </p>
+            </button>
 
-          <!-- Tarjeta Generar Firma Electrónica (NUEVA) -->
-          <div (click)="cambiarVista('digitalizador-firma')" class="border rounded-2xl p-6 cursor-pointer transition-all hover:border-emerald-500 hover:shadow-xl group" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-            <div class="flex items-center gap-4 mb-3">
-              <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-                <lucide-icon [img]="icons.ShieldCheck" class="w-6 h-6"></lucide-icon>
+            <article
+              role="button"
+              tabindex="0"
+              (click)="openPhysicalTemplate()"
+              (keydown.enter)="openPhysicalTemplate()"
+              (keydown.space)="$event.preventDefault(); openPhysicalTemplate()"
+              class="border rounded-2xl p-6 cursor-pointer"
+              aria-labelledby="digitalizar-recetario-title"
+              style="background-color: var(--bg-primary); border-color: var(--border-color)"
+            >
+              <div class="flex items-center gap-4 mb-3">
+                <div
+                  class="w-12 h-12 shrink-0 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-500"
+                >
+                  <lucide-icon [img]="icons.Camera" class="w-6 h-6"></lucide-icon>
+                </div>
+                <div>
+                  <h3 id="digitalizar-recetario-title" class="text-sm font-black">
+                    Cargar Recetario a Digitalizar
+                  </h3>
+                  <p class="text-[10px]" style="color: var(--text-muted)">
+                    Del papel a tu plantilla digital
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 class="text-sm font-black">Firma Electrónica IA</h3>
-                <p class="text-[10px]" style="color: var(--text-muted);">Vectorización digital</p>
-              </div>
-            </div>
-            <p class="text-xs" style="color: var(--text-muted);">Sube y optimiza la firma autógrafa del doctor mediante Inteligencia Artificial.</p>
-          </div>
+              <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                Toma una foto del recetario que utiliza el doctor para digitalizar su formato y
+                conservar su diseño.
+              </p>
+            </article>
 
-          <!-- Tarjeta Formato Expediente / Historial PDF -->
-          <div class="border rounded-2xl p-6 cursor-pointer transition-all hover:border-purple-500 hover:shadow-xl group opacity-75" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-            <div class="flex items-center gap-4 mb-3">
-              <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
-                <lucide-icon [img]="icons.Stethoscope" class="w-6 h-6"></lucide-icon>
+            <button
+              type="button"
+              (click)="openAsset('signature')"
+              class="border rounded-2xl p-6 text-left cursor-pointer transition-all hover:border-emerald-500 hover:shadow-xl group focus-visible:outline-2 focus-visible:outline-emerald-500 focus-visible:outline-offset-4"
+              style="background-color: var(--bg-primary); border-color: var(--border-color)"
+            >
+              <div class="flex items-center gap-4 mb-3">
+                <div
+                  class="w-12 h-12 shrink-0 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform"
+                >
+                  <lucide-icon [img]="icons.ShieldCheck" class="w-6 h-6"></lucide-icon>
+                </div>
+                <div>
+                  <h3 class="text-sm font-black">Firma Digitalizada</h3>
+                  <p class="text-[10px]" style="color: var(--text-muted)">
+                    Captura de firma autógrafa
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 class="text-sm font-black">Historial Clínico NOM-004</h3>
-                <p class="text-[10px]" style="color: var(--text-muted);">Formato PDF Estándar</p>
+              <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                Digitaliza la firma autógrafa del doctor a partir de una imagen.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              (click)="openAsset('logo')"
+              class="border rounded-2xl p-6 text-left cursor-pointer transition-all hover:border-indigo-500 hover:shadow-xl group focus-visible:outline-2 focus-visible:outline-indigo-500 focus-visible:outline-offset-4"
+              style="background-color: var(--bg-primary); border-color: var(--border-color)"
+            >
+              <div class="flex items-center gap-4 mb-3">
+                <div
+                  class="w-12 h-12 shrink-0 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform"
+                >
+                  <lucide-icon [img]="icons.ImageIcon" class="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 class="text-sm font-black">Digitalizar Logo</h3>
+                  <p class="text-[10px]" style="color: var(--text-muted)">
+                    Identidad del doctor o consultorio
+                  </p>
+                </div>
               </div>
-            </div>
-            <p class="text-xs" style="color: var(--text-muted);">Resumen de notas de evolución, antecedentes y signos vitales.</p>
+              <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                Sube tu logo, quita el fondo con IA y guárdalo para utilizarlo en tus recetas.
+              </p>
+            </button>
+
+            <article
+              role="button"
+              tabindex="0"
+              (click)="openUpcoming()"
+              (keydown.enter)="openUpcoming()"
+              (keydown.space)="$event.preventDefault(); openUpcoming()"
+              class="border rounded-2xl p-6 cursor-pointer"
+              aria-labelledby="importar-expediente-title"
+              style="background-color: var(--bg-primary); border-color: var(--border-color)"
+            >
+              <div class="flex items-center gap-4 mb-3">
+                <div
+                  class="w-12 h-12 shrink-0 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500"
+                >
+                  <lucide-icon [img]="icons.FolderOpen" class="w-6 h-6"></lucide-icon>
+                </div>
+                <div>
+                  <h3 id="importar-expediente-title" class="text-sm font-black">
+                    Importar Expediente Físico
+                  </h3>
+                  <p class="text-[10px]" style="color: var(--text-muted)">
+                    Expedientes de papel a pacientes digitales
+                  </p>
+                </div>
+              </div>
+              <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                Fotografía un expediente de papel para convertir su información en el registro de un
+                paciente nuevo.
+              </p>
+            </article>
           </div>
         </div>
-      </div>
-    </main>
+      </main></app-subscription-lock
+    >
   }
 
-  <!-- ================= VISTA 2: EDITOR DE RECETA MÉDICA ================= -->
   @if (currentView() === 'editor-receta') {
-    <header class="w-full max-w-4xl flex justify-between items-center mb-6 print:hidden">
-      <button (click)="cambiarVista('listado')" class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-lg" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
-        <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-blue-500"></lucide-icon>
-        Regresar al Listado
-      </button>
-
-      <div class="flex gap-3">
-        <button (click)="imprimirReceta()" class="flex items-center gap-2 px-5 py-2.5 rounded-2xl border text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
-          <lucide-icon [img]="icons.Printer" class="w-4 h-4 text-blue-500"></lucide-icon>
-          Imprimir / PDF
-        </button>
-
-        <button (click)="guardarReceta()" [disabled]="isLoading()" class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-black uppercase tracking-wider shadow-xl cursor-pointer">
-          <lucide-icon [img]="icons.Save" class="w-4 h-4 text-white"></lucide-icon>
-          @if (!isLoading()) { Guardar en Expediente } @else { Guardando... }
-        </button>
-      </div>
-    </header>
-
-    <main class="w-full max-w-4xl backdrop-blur-2xl border rounded-[2.5rem] shadow-2xl p-8 sm:p-12 relative overflow-hidden flex flex-col justify-between min-h-[850px]" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
-      <form [formGroup]="recetaForm" class="space-y-8 flex-1 flex flex-col justify-between">
-        <div class="space-y-8">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 border-b pb-6" style="border-color: var(--border-color);">
-            <div class="flex items-center gap-4">
-              <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 shadow-inner">
-                <lucide-icon [img]="icons.Stethoscope" class="w-7 h-7"></lucide-icon>
-              </div>
-              <div>
-                <h1 class="text-xl font-black uppercase tracking-tight flex items-center gap-2">NEXO <span class="font-light" style="color: var(--text-muted);">SALUD</span></h1>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-blue-500">Prescripción Médica Oficial</p>
-              </div>
-            </div>
-            <div class="text-left sm:text-right space-y-1">
-              <h2 class="text-sm font-black">{{ doctorData.nombre }}</h2>
-              <p class="text-xs font-bold text-blue-500">{{ doctorData.especialidad }}</p>
-              <p class="text-[11px] font-medium" style="color: var(--text-muted);">{{ doctorData.cedula }}</p>
-            </div>
-          </div>
-
-          <div class="flex justify-between items-center border px-6 py-3.5 rounded-2xl text-xs font-bold" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-            <span>Folio: <strong class="text-blue-500">{{ folioReceta }}</strong></span>
-            <span>Fecha: {{ fechaActual | date:'dd/MM/yyyy' }}</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4">
-            <div class="sm:col-span-7 space-y-1">
-              <label class="text-[10px] uppercase font-bold" style="color: var(--text-muted);">Nombre Completo del Paciente</label>
-              <input type="text" formControlName="pacienteNombre" placeholder="Ej. María González" class="w-full border rounded-2xl py-3 px-4 text-xs outline-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-            <div class="sm:col-span-2 space-y-1">
-              <label class="text-[10px] uppercase font-bold" style="color: var(--text-muted);">Edad</label>
-              <input type="text" formControlName="pacienteEdad" placeholder="Ej. 34 años" class="w-full border rounded-2xl py-3 px-4 text-xs outline-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-            <div class="sm:col-span-3 space-y-1">
-              <label class="text-[10px] uppercase font-bold" style="color: var(--text-muted);">Peso</label>
-              <input type="text" formControlName="pacientePeso" placeholder="Ej. 68 kg" class="w-full border rounded-2xl py-3 px-4 text-xs outline-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-[10px] uppercase font-black tracking-widest text-purple-400 block">Diagnóstico Clínico</label>
-            <input type="text" formControlName="diagnostico" placeholder="Ej. Esguince cervical" class="w-full border rounded-2xl py-3.5 px-4 text-xs outline-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);">
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label class="text-[10px] uppercase font-bold" style="color: var(--text-muted);">Medicamentos</label>
-              <textarea formControlName="medicamentos" rows="4" class="w-full border rounded-2xl p-4 text-xs outline-none resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
-            </div>
-            <div class="space-y-1">
-              <label class="text-[10px] uppercase font-bold" style="color: var(--text-muted);">Indicaciones</label>
-              <textarea formControlName="indicaciones" rows="4" class="w-full border rounded-2xl p-4 text-xs outline-none resize-none" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-main);"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="pt-8 border-t flex justify-between items-center text-[10px]" style="border-color: var(--border-color); color: var(--text-muted);">
-          <p>Consultorio: <strong>{{ doctorData.telefono }}</strong></p>
-          <div class="w-48 text-center border-t pt-1" style="border-color: var(--border-color);">
-            <p class="font-black uppercase text-[11px]" style="color: var(--text-main);">{{ doctorData.nombre }}</p>
-          </div>
-        </div>
-      </form>
-    </main>
+    <app-subscription-lock
+      class="w-full"
+      [locked]="!billing.allows('ai')"
+      title="Diseña tus recetas con Clínica Go"
+      description="Elige y personaliza tus plantillas con una suscripción activa."
+      ><app-prescription-workspace class="w-full" (close)="cambiarVista('listado')"
+    /></app-subscription-lock>
   }
 
   <!-- ================= VISTA 3: DIGITALIZADOR DE RECETARIO CON IA ================= -->
   @if (currentView() === 'digitalizador') {
-    <header class="w-full max-w-4xl flex justify-between items-center mb-6">
-      <button (click)="cambiarVista('listado')" class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-lg" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
-        <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-blue-500"></lucide-icon>
-        Regresar al Listado
-      </button>
-    </header>
+    <app-subscription-lock
+      class="w-full max-w-4xl"
+      [locked]="!billing.allows('ai')"
+      title="Digitaliza con Nexus IA"
+      description="Activa una suscripción y utiliza tus créditos para transformar documentos en segundos."
+    >
+      <header class="w-full max-w-4xl flex justify-between items-center mb-6">
+        <button
+          (click)="cambiarVista('listado')"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-lg"
+          style="
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-main);
+          "
+        >
+          <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-blue-500"></lucide-icon>
+          Regresar al Listado
+        </button>
+      </header>
 
-    <main class="w-full max-w-4xl backdrop-blur-2xl border rounded-[2.5rem] shadow-2xl p-8 sm:p-12 relative flex flex-col items-center gap-8" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="text-center space-y-2">
-        <h2 class="text-xl font-black uppercase tracking-tight">Digitalización Inteligente de Recetarios</h2>
-        <p class="text-xs" style="color: var(--text-muted);">Sube la foto de tu recetario físico para que Gemini genere la plantilla digital limpia.</p>
-      </div>
+      <main
+        class="w-full max-w-4xl backdrop-blur-2xl border rounded-[2.5rem] shadow-2xl p-8 sm:p-12 relative flex flex-col items-center gap-8"
+        style="background-color: var(--bg-secondary); border-color: var(--border-color)"
+      >
+        <div class="text-center space-y-2">
+          <h2 class="text-xl font-black uppercase tracking-tight">
+            Digitalización Inteligente de Recetarios
+          </h2>
+          <p class="text-xs" style="color: var(--text-muted)">
+            Sube la foto de tu recetario físico para que Gemini genere la plantilla digital limpia.
+          </p>
+        </div>
 
-      @if (!localPreviewUrl) {
-        <label class="w-full h-64 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-blue-500 transition-all" style="border-color: var(--border-color); background-color: var(--bg-primary);">
-          <div class="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-            <lucide-icon [img]="icons.Upload" class="w-8 h-8"></lucide-icon>
-          </div>
-          <div class="text-center">
-            <p class="text-xs font-bold">Haz clic aquí para seleccionar una imagen</p>
-            <p class="text-[10px]" style="color: var(--text-muted);">Formatos compatibles: PNG, JPG, JPEG</p>
-          </div>
-          <input type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden">
-        </label>
-      }
-
-      @if (localPreviewUrl) {
-        <div class="relative w-full max-w-lg h-[450px] rounded-3xl overflow-hidden border shadow-2xl flex items-center justify-center bg-black/5" style="border-color: var(--border-color);">
-          <img [src]="generatedAiImageUrl || localPreviewUrl"
-               [class.blur-sm]="isGeneratingAI()"
-               [class.scale-105]="isGeneratingAI()"
-               class="w-full h-full object-contain transition-all duration-700">
-
-          @if (isGeneratingAI()) {
-            <div class="absolute inset-0 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center gap-4 text-white">
-              <div class="relative flex items-center justify-center">
-                <div class="w-16 h-16 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
-                <div class="absolute w-8 h-8 rounded-full bg-indigo-500 animate-ping opacity-75"></div>
-              </div>
-              <p class="text-xs font-black tracking-widest uppercase animate-pulse">Gemini IA generando plantilla limpia...</p>
+        @if (!localPreviewUrl) {
+          <label
+            class="w-full h-64 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-blue-500 transition-all"
+            style="border-color: var(--border-color); background-color: var(--bg-primary)"
+          >
+            <div
+              class="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500"
+            >
+              <lucide-icon [img]="icons.Upload" class="w-8 h-8"></lucide-icon>
             </div>
-          }
-        </div>
-      }
+            <div class="text-center">
+              <p class="text-xs font-bold">Haz clic aquí para seleccionar una imagen</p>
+              <p class="text-[10px]" style="color: var(--text-muted)">
+                Formatos compatibles: PNG, JPG, JPEG
+              </p>
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              class="hidden"
+              appPermission="nexusI:write"
+            />
+          </label>
+        }
 
-      @if (localPreviewUrl && !isGeneratingAI()) {
-        <div class="flex flex-wrap items-center justify-center gap-4">
-          <button (click)="generarDigitalizacionAI(1)" class="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-black uppercase tracking-wider shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <lucide-icon [img]="icons.Sparkles" class="w-4 h-4"></lucide-icon>
-            Generar Digitalización
-          </button>
+        @if (localPreviewUrl) {
+          <div
+            class="relative w-full max-w-lg h-[450px] rounded-3xl overflow-hidden border shadow-2xl flex items-center justify-center bg-black/5"
+            style="border-color: var(--border-color)"
+          >
+            <img
+              [src]="generatedAiImageUrl || localPreviewUrl"
+              [class.blur-sm]="isGeneratingAI()"
+              [class.scale-105]="isGeneratingAI()"
+              class="w-full h-full object-contain transition-all duration-700"
+            />
 
-          @if (generatedAiImageUrl) {
-            <button (click)="guardarRecetarioDigitalStorage()" class="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider shadow-xl transition-all cursor-pointer">
-              <lucide-icon [img]="icons.Save" class="w-4 h-4"></lucide-icon>
-              Guardar en Storage
+            @if (isGeneratingAI()) {
+              <div
+                class="absolute inset-0 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center gap-4 text-white"
+              >
+                <div class="relative flex items-center justify-center">
+                  <div
+                    class="w-16 h-16 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"
+                  ></div>
+                  <div
+                    class="absolute w-8 h-8 rounded-full bg-indigo-500 animate-ping opacity-75"
+                  ></div>
+                </div>
+                <p class="text-xs font-black tracking-widest uppercase animate-pulse">
+                  Gemini IA generando plantilla limpia...
+                </p>
+              </div>
+            }
+          </div>
+        }
+
+        @if (localPreviewUrl && !isGeneratingAI()) {
+          <div class="flex flex-wrap items-center justify-center gap-4">
+            <button
+              (click)="generarDigitalizacionAI(1)"
+              class="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-gradient text-white text-xs font-black uppercase tracking-wider shadow-xl hover:scale-105 transition-all cursor-pointer"
+              appPermission="nexusI:write"
+            >
+              <lucide-icon [img]="icons.Sparkles" class="w-4 h-4"></lucide-icon>
+              Generar Digitalización
             </button>
-          }
-        </div>
-      }
-    </main>
+
+            @if (generatedAiImageUrl) {
+              <button
+                (click)="guardarRecetarioDigitalStorage()"
+                class="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider shadow-xl transition-all cursor-pointer"
+                appPermission="nexusI:write"
+              >
+                <lucide-icon [img]="icons.Save" class="w-4 h-4"></lucide-icon>
+                Guardar en Storage
+              </button>
+            }
+          </div>
+        }
+      </main>
+    </app-subscription-lock>
   }
 
   <!-- ================= VISTA 4: DIGITALIZADOR DE FIRMA ELECTRÓNICA (NUEVA) ================= -->
-  @if (currentView() === 'digitalizador-firma') {
-    <header class="w-full max-w-4xl flex justify-between items-center mb-6">
-      <button (click)="cambiarVista('listado')" class="flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer shadow-lg" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-main);">
-        <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 text-emerald-500"></lucide-icon>
-        Regresar al Listado
-      </button>
-    </header>
-
-    <main class="w-full max-w-4xl backdrop-blur-2xl border rounded-[2.5rem] shadow-2xl p-8 sm:p-12 relative flex flex-col items-center gap-8" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-      <div class="text-center space-y-2">
-        <h2 class="text-xl font-black uppercase tracking-tight">Generación de Firma Electrónica con IA</h2>
-        <p class="text-xs" style="color: var(--text-muted);">Sube la foto de tu firma autógrafa para vectorizarla y limpiarla digitalmente.</p>
-      </div>
-
-      @if (!localPreviewUrl) {
-        <label class="w-full h-64 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-emerald-500 transition-all" style="border-color: var(--border-color); background-color: var(--bg-primary);">
-          <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-            <lucide-icon [img]="icons.Upload" class="w-8 h-8"></lucide-icon>
-          </div>
-          <div class="text-center">
-            <p class="text-xs font-bold">Haz clic aquí para seleccionar la imagen de tu firma</p>
-            <p class="text-[10px]" style="color: var(--text-muted);">Formatos compatibles: PNG, JPG, JPEG</p>
-          </div>
-          <input type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden">
-        </label>
-      }
-
-      @if (localPreviewUrl) {
-        <div class="relative w-full max-w-md h-[300px] rounded-3xl overflow-hidden border shadow-2xl flex items-center justify-center bg-white/5" style="border-color: var(--border-color);">
-          <img [src]="generatedAiImageUrl || localPreviewUrl"
-               [class.blur-sm]="isGeneratingAI()"
-               [class.scale-105]="isGeneratingAI()"
-               class="w-full h-full object-contain transition-all duration-700">
-
-          @if (isGeneratingAI()) {
-            <div class="absolute inset-0 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center gap-4 text-white">
-              <div class="relative flex items-center justify-center">
-                <div class="w-16 h-16 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
-                <div class="absolute w-8 h-8 rounded-full bg-teal-500 animate-ping opacity-75"></div>
-              </div>
-              <p class="text-xs font-black tracking-widest uppercase animate-pulse">Nexus IA vectorizando firma...</p>
-            </div>
-          }
-        </div>
-      }
-
-      @if (localPreviewUrl && !isGeneratingAI()) {
-        <div class="flex flex-wrap items-center justify-center gap-4">
-          <button (click)="generarDigitalizacionAI(2)" class="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-black uppercase tracking-wider shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <lucide-icon [img]="icons.Sparkles" class="w-4 h-4"></lucide-icon>
-            Generar Firma Digitalizada con IA
-          </button>
-
-          @if (generatedAiImageUrl) {
-            <button (click)="guardarFirmaConUrlFirmada()" class="flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider shadow-xl transition-all cursor-pointer">
-              <lucide-icon [img]="icons.Save" class="w-4 h-4"></lucide-icon>
-              Guardar Firma en Expediente
-            </button>
-          }
-        </div>
-      }
-    </main>
-  }
 </div>

@@ -1,6 +1,13 @@
+import { PermissionDirective } from '../../auth/permission.directive';
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule,FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   LucideAngularModule,
@@ -16,14 +23,20 @@ import {
   MapPin,
   Save,
   X,
-  Check
+  Check,
 } from 'lucide-angular';
 
 @Component({
   selector: 'app-patient-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule,FormsModule],
-  templateUrl: 'patient-register.component.html'
+  imports: [
+    PermissionDirective,
+    CommonModule,
+    ReactiveFormsModule,
+    LucideAngularModule,
+    FormsModule,
+  ],
+  templateUrl: 'patient-register.component.html',
 })
 export class PatientRegisterComponent {
   private fb = inject(FormBuilder);
@@ -42,7 +55,7 @@ export class PatientRegisterComponent {
     MapPin,
     Save,
     X,
-    Check
+    Check,
   };
 
   registerForm: FormGroup;
@@ -51,12 +64,27 @@ export class PatientRegisterComponent {
   tiposSangre = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
 
   religionesList = [
-    'Católica', 'Cristiana / Evangélica', 'Judaica', 'Islamismo',
-    'Budismo', 'Hinduismo', 'Testigo de Jehová', 'Mormona',
-    'Sin Religión / Agnóstico', 'Ateo', 'Otra'
+    'Católica',
+    'Cristiana / Evangélica',
+    'Judaica',
+    'Islamismo',
+    'Budismo',
+    'Hinduismo',
+    'Testigo de Jehová',
+    'Mormona',
+    'Sin Religión / Agnóstico',
+    'Ateo',
+    'Otra',
   ];
 
-  sexosList = ['Masculino', 'Femenino', 'No binario', 'Género fluido', 'Prefiero no decirlo', 'Otro'];
+  sexosList = [
+    'Masculino',
+    'Femenino',
+    'No binario',
+    'Género fluido',
+    'Prefiero no decirlo',
+    'Otro',
+  ];
 
   // Estados interactivos para campos especiales
   alergiasList = signal<string[]>([]);
@@ -82,7 +110,7 @@ export class PatientRegisterComponent {
       correo: ['', [Validators.required, Validators.email]],
       calleNumero: ['', [Validators.required]],
       coloniaCiudad: ['', [Validators.required]],
-      codigoPostal: ['', [Validators.required]]
+      codigoPostal: ['', [Validators.required]],
     });
   }
 
@@ -94,12 +122,12 @@ export class PatientRegisterComponent {
   onAlergiaInput(event: any) {
     const val: string = event.target.value;
     // Si el usuario presiona coma, espacio o enter, procesamos la alergia
-    if (val.includes(',') || val.includes(' ') && val.trim().length > 1) {
+    if (val.includes(',') || (val.includes(' ') && val.trim().length > 1)) {
       const parts = val.split(/[\s,]+/);
-      parts.forEach(p => {
+      parts.forEach((p) => {
         const limpia = p.trim();
         if (limpia.length > 0 && !this.alergiasList().includes(limpia)) {
-          this.alergiasList.update(list => [...list, limpia]);
+          this.alergiasList.update((list) => [...list, limpia]);
         }
       });
       this.tempAlergiaInput = '';
@@ -112,13 +140,13 @@ export class PatientRegisterComponent {
   agregarAlergiaManual() {
     const val = this.tempAlergiaInput.trim();
     if (val && !this.alergiasList().includes(val)) {
-      this.alergiasList.update(list => [...list, val]);
+      this.alergiasList.update((list) => [...list, val]);
       this.tempAlergiaInput = '';
     }
   }
 
   removerAlergia(alergia: string) {
-    this.alergiasList.update(list => list.filter(item => item !== alergia));
+    this.alergiasList.update((list) => list.filter((item) => item !== alergia));
   }
 
   // --- LÓGICA DE FECHA DE NACIMIENTO (Autosalto numérico) ---
@@ -162,9 +190,7 @@ export class PatientRegisterComponent {
     const query = event.target.value.toLowerCase();
     this.religionSearch = query;
     this.registerForm.patchValue({ religion: query });
-    this.filteredReligions.set(
-      this.religionesList.filter(r => r.toLowerCase().includes(query))
-    );
+    this.filteredReligions.set(this.religionesList.filter((r) => r.toLowerCase().includes(query)));
     this.showReligionDropdown = true;
   }
 
@@ -192,7 +218,7 @@ export class PatientRegisterComponent {
     const payload = {
       ...this.registerForm.value,
       fechaNacimiento: `${this.diaNac}/${this.mesNac}/${this.anioNac}`,
-      alergias: this.alergiasList()
+      alergias: this.alergiasList(),
     };
 
     console.log('Guardando nuevo paciente:', payload);

@@ -1,0 +1,50 @@
+> Building...
+√ Building...
+Initial chunk files | Names         |  Raw size
+main.js             | main          |   5.94 MB | 
+styles.css          | styles        | 174.84 kB | 
+chunk-VL5VAURS.js   | -             |   3.01 kB | 
+
+                    | Initial total |   6.12 MB
+
+Lazy chunk files    | Names         |  Raw size
+chunk-FTI6GQYR.js   | jspdf-es-min  | 644.82 kB | 
+chunk-WLMCMWGZ.js   | html2canvas   | 399.43 kB | 
+chunk-SVJ7YBZZ.js   | index-es      | 368.83 kB | 
+chunk-O2DSMAQL.js   | purify-es     |  67.42 kB | 
+chunk-DSQ3CQMT.js   | -             |  61.93 kB | 
+chunk-KKEJ5DEO.js   | browser       |   1.39 kB | 
+chunk-7YWLATDR.js   | -             | 459 bytes | 
+
+Application bundle generation complete. [9.069 seconds] - 2026-11-20T20:57:35.166Z
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:36:4:
+      36 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:101:167:
+      101 │ ...AngularModule, HttpClientModule,FormsModule,FloatingChatComponent
+          ╵                                                ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:14:80:
+      14 │ ...ule, FormsModule, LucideAngularModule, Advanced3DViewerComponent],
+         ╵                                           ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterOutlet is not used within the template of LayoutComponent [plugin angular-compiler]
+
+    src/app/sidemenu/layout.component.ts:23:12:
+      23 │   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngu...
+         ╵             ~~~~~~~~~~~~
+
+
+Output location: D:\GitHub\nexus-admin-nexo-salud\dist\beast-admin-angular
+
