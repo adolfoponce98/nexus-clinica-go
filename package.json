@@ -6,7 +6,13 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "start:dev": "ng serve --configuration development",
+    "start:prod": "ng serve --configuration production",
+    "build:dev": "ng build --configuration development",
+    "build:prod": "ng build --configuration production",
+    "deploy:dev": "npm run build:dev && firebase deploy --only hosting --project clinq-go-dev",
+    "deploy:prod": "npm run build:prod && firebase deploy --only hosting --project clinq-go"
   },
   "private": true,
   "packageManager": "npm@9.8.1",

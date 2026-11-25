@@ -138,3 +138,32 @@ describe('Shared and specialty follow-up data', () => {
     expect(ageYears('2000-11-20', new Date('2026-11-19T12:00:00Z'))).toBe(25);
   });
 });
+
+describe('Dictation fills unrecorded clinical values', () => {
+  it('replaces registration placeholders and whitespace, preserving actual negatives and measurements', () => {
+    const merged = mergeExtracted(
+      {
+        chiefComplaint: 'Sin definir',
+        treatment: 'No registrado',
+        evolution: '  ',
+        vitals: { weight: 0, heightCm: null },
+        denied: false,
+        history: 'Niega alergias',
+      },
+      {
+        chiefComplaint: 'Dolor de rodilla',
+        treatment: 'Reposo relativo',
+        evolution: 'Tres días',
+        vitals: { weight: 70, heightCm: 170 },
+        denied: true,
+        history: 'Otra información',
+      },
+    );
+    expect(merged.chiefComplaint).toBe('Dolor de rodilla');
+    expect(merged.treatment).toBe('Reposo relativo');
+    expect(merged.evolution).toBe('Tres días');
+    expect(merged.vitals).toEqual({ weight: 0, heightCm: 170 });
+    expect(merged.denied).toBe(false);
+    expect(merged.history).toBe('Niega alergias');
+  });
+});

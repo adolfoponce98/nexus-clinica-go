@@ -168,10 +168,22 @@ export const scaleScore = (answers: any, count: number) =>
   answers.every((n) => Number.isInteger(n) && n >= 0 && n <= 3)
     ? answers.reduce((a, b) => a + b, 0)
     : null;
+export function isUnrecorded(value: any): boolean {
+  if (value === undefined || value === null) return true;
+  if (typeof value !== 'string') return false;
+  const text = value
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+  return ['', '-', 'no registrado', 'sin registrar', 'sin definir', 'no especificado'].includes(
+    text,
+  );
+}
 export function mergeExtracted(current: any, patch: any, replace = false): any {
   const out = structuredClone(current);
   for (const [key, value] of Object.entries(patch || {})) {
-    if (value === null || value === undefined || value === '') continue;
+    if (isUnrecorded(value)) continue;
     if (Array.isArray(value)) {
       if (replace || !out[key]?.length || out[key].every((v: any) => v === null || v === ''))
         out[key] = structuredClone(value);
@@ -181,8 +193,7 @@ export function mergeExtracted(current: any, patch: any, replace = false): any {
       )
         out[key] = out[key].map((v: any, i: number) => (v === null ? (value[i] ?? null) : v));
     } else if (typeof value === 'object') out[key] = mergeExtracted(out[key] || {}, value, replace);
-    else if (replace || out[key] === undefined || out[key] === null || out[key] === '')
-      out[key] = value;
+    else if (replace || isUnrecorded(out[key])) out[key] = value;
   }
   return out;
 }

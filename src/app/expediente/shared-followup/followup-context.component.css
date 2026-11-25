@@ -1,17 +1,18 @@
 :host {
   display: block;
-  margin: 20px 0;
+  margin: 14px 0 16px;
 }
 .history-grid {
   display: grid;
   grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1.6fr);
-  gap: 16px;
+  gap: 12px;
+  align-items: start;
 }
 .history-card {
   border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 18px;
-  background: var(--bg-card, #fff);
-  padding: 20px;
+  border-radius: 16px;
+  background: var(--bg-secondary, #fff);
+  padding: 14px 16px;
   min-width: 0;
 }
 .history-card header {
@@ -22,7 +23,7 @@
 .history-card header lucide-icon {
   color: #458ac8;
   background: #3b82f610;
-  padding: 10px;
+  padding: 8px;
   border-radius: 12px;
   box-sizing: content-box;
   width: 20px;
@@ -38,7 +39,7 @@ h2 {
   font-size: 13px;
   font-weight: 750;
   margin: 4px 0;
-  color: var(--text-primary, #1e293b);
+  color: var(--text-main, #1e293b);
 }
 p,
 dd {
@@ -46,7 +47,7 @@ dd {
   line-height: 1.7;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  color: var(--text-primary, #334155);
+  color: var(--text-main, #334155);
 }
 .muted,
 dt {
@@ -63,8 +64,8 @@ dt {
 dl {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 13px 20px;
-  margin: 18px 0 0;
+  gap: 10px 16px;
+  margin: 14px 0 0;
 }
 dt {
   font-size: 10px;
@@ -76,11 +77,11 @@ dd {
 .consultation-tabs {
   display: flex;
   gap: 8px;
-  margin-top: 20px;
+  margin-top: 12px;
   padding: 6px;
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 16px;
-  background: var(--bg-card, #fff);
+  background: var(--bg-secondary, #fff);
 }
 button {
   display: flex;
@@ -91,15 +92,15 @@ button {
   border: 1px solid transparent;
   border-radius: 11px;
   background: transparent;
-  padding: 13px;
+  padding: 10px 13px;
   color: var(--text-muted, #64748b);
   cursor: pointer;
   text-align: left;
 }
 button.active {
-  background: #3b82f610;
-  border-color: #3b82f630;
-  color: #458ac8;
+  background: linear-gradient(110deg, #3862d110, #338c8e12);
+  border-color: #338c8e40;
+  color: var(--text-main, #1e293b);
 }
 button:focus-visible {
   outline: 2px solid #458ac8;
@@ -140,5 +141,60 @@ button small {
   }
   .history-card {
     padding: 16px;
+  }
+}
+
+.history-card.critical p {
+  margin: 9px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.history-disclosure summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text-main, #1e293b);
+}
+.history-disclosure summary::-webkit-details-marker {
+  display: none;
+}
+.history-disclosure summary > span {
+  flex: 1;
+  min-width: 0;
+}
+.history-disclosure summary > lucide-icon:first-child {
+  color: #338c8e;
+  padding: 8px;
+  border-radius: 10px;
+  background: #338c8e10;
+  flex-shrink: 0;
+}
+.history-disclosure summary strong {
+  display: block;
+  font-size: 12px;
+  margin: 4px 0;
+}
+.history-count {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted, #64748b);
+}
+.history-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.history-disclosure[open] .history-chevron {
+  transform: rotate(180deg);
+}
+.history-disclosure summary:focus-visible {
+  outline: 2px solid #338c8e;
+  outline-offset: 5px;
+  border-radius: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .history-chevron {
+    transition: none;
   }
 }

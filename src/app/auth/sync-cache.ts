@@ -129,6 +129,15 @@ export async function versionedFetch(url: string, options: RequestInit = {}): Pr
       if (data.success) window.dispatchEvent(new Event('clinic-billing-refresh'));
     } catch {}
   }
+  if (response.ok) {
+    try {
+      publishLocalMutation(
+        url,
+        await response.clone().json(),
+        typeof options.body === 'string' ? JSON.parse(options.body) : null,
+      );
+    } catch {}
+  }
   if (!response.ok || !request.key || typeof response.clone !== 'function') return response;
   const body = finishSync(request, await response.clone().json());
   const headers = new Headers(response.headers);
@@ -146,4 +155,28 @@ export function clearSyncCache(): void {
     const key = localStorage.key(i);
     if (key?.startsWith('cliniq-sync:')) localStorage.removeItem(key);
   }
+}
+
+export function publishLocalMutation(url: string, envelope: any, body: any): void {
+  const name = new URL(url, window.location.origin).hostname.split('-')[0].toLowerCase();
+  const type =
+    name === 'registernewpatient'
+      ? 'patients'
+      : [
+            'saveappointment',
+            'modifyordeleteappointment',
+            'recordappointmentvisit',
+            'linkappointmentpatient',
+          ].includes(name)
+        ? 'appointments'
+        : null;
+  if (!type) return;
+  const data = envelope?.encryptedData ? decode(envelope) : envelope;
+  if (!data?.success) return;
+  const payload = body?.encryptedData ? decode(body) : body;
+  window.dispatchEvent(
+    new CustomEvent('clinic-local-mutation', {
+      detail: { type, data, office: payload?.idConsultorio },
+    }),
+  );
 }

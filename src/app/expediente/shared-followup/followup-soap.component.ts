@@ -8,7 +8,8 @@ import { bmi } from './followup-utils';
   standalone: true,
   imports: [LucideAngularModule, FormsModule, FollowupInputComponent],
   templateUrl: './followup-soap.component.html',
-  styleUrl: './followup-ui.css',
+  styleUrls: ['./followup-ui.css', './followup-soap-layout.css'],
+  host: { '[class.consultation-soap]': "section === 'consultation'" },
 })
 export class FollowupSoapComponent {
   readonly icons = { MessageSquare, HeartPulse, Pill };

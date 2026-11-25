@@ -1,3 +1,4 @@
+import { SyncGatewayService } from '../../auth/sync-gateway.service';
 import { TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 import { AuthService } from '../../auth/auth.service';
@@ -34,6 +35,18 @@ function setup() {
         },
       },
       { provide: ClinicApiService, useValue: api },
+      {
+        provide: SyncGatewayService,
+        useValue: {
+          peek: () => null,
+          updates: new Subject(),
+          accept: () => {},
+          load: () =>
+            api
+              .post(API_URLS.GET_GOOGLE_REVIEW_SETTINGS, { idConsultorio: api.branchId() })
+              .then((data: any) => ({ resources: { reviews: data } })),
+        },
+      },
     ],
   });
   const fixture = TestBed.createComponent(GoogleReviewSettingsComponent);
@@ -50,10 +63,12 @@ describe('Google review invitation settings', () => {
   it('loads per office and saves the switch preference without claiming messages are being sent', async () => {
     const { fixture, c, api } = setup();
     await fixture.whenStable();
+    await vi.waitFor(() => expect(c.loaded()).toBe(true));
     fixture.detectChanges();
     const toggle = fixture.nativeElement.querySelector('[role=switch]') as HTMLInputElement;
     toggle.click();
     await fixture.whenStable();
+    await vi.waitFor(() => expect(c.loaded()).toBe(true));
     fixture.detectChanges();
     expect(api.post).toHaveBeenCalledWith(API_URLS.SAVE_GOOGLE_REVIEW_SETTINGS, {
       idConsultorio: 'a',
@@ -68,6 +83,7 @@ describe('Google review invitation settings', () => {
   it('shows a loader while saving and rolls back the preference when persistence fails', async () => {
     const { fixture, c, api } = setup();
     await fixture.whenStable();
+    await vi.waitFor(() => expect(c.loaded()).toBe(true));
     let reject!: (error: Error) => void;
     api.post.mockImplementationOnce(() => new Promise((_resolve, fail) => (reject = fail)));
     c.enabled = true;
@@ -82,11 +98,13 @@ describe('Google review invitation settings', () => {
   it('clears the previous office preference when switching offices', async () => {
     const { fixture, c, setOffice, branch, api } = setup();
     await fixture.whenStable();
+    await vi.waitFor(() => expect(c.loaded()).toBe(true));
     c.enabled = true;
     await c.save();
     setOffice('b');
     branch.next();
     await fixture.whenStable();
+    await vi.waitFor(() => expect(c.loaded()).toBe(true));
     expect(c.enabled).toBe(false);
     expect(c.notice()).toBe('');
     expect(api.post).toHaveBeenLastCalledWith(API_URLS.GET_GOOGLE_REVIEW_SETTINGS, {
@@ -96,6 +114,7 @@ describe('Google review invitation settings', () => {
   it('shows the generated office-specific public review link after saving', async () => {
     const { c, fixture, api } = setup();
     await fixture.whenStable();
+    await vi.waitFor(() => expect(c.loaded()).toBe(true));
     api.post.mockResolvedValueOnce({
       settings: {
         enabled: true,

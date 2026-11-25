@@ -25,10 +25,17 @@ describe('MainLayout local notifications', () => {
     // jsdom does not implement viewport media queries.
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
-      value: () => ({
+      value: (query: string) => ({
         matches: true,
+        media: query,
+        onchange: null,
         addEventListener() {},
         removeEventListener() {},
+        addListener() {},
+        removeListener() {},
+        dispatchEvent() {
+          return true;
+        },
       }),
     });
     TestBed.configureTestingModule({
@@ -136,14 +143,12 @@ describe('MainLayout local notifications', () => {
     cache.save(context, [{ ...item, isRead: true }]);
     component.toggleNotifications();
     component.fetchNotifications(true);
-    http
-      .expectOne(API_URLS.GETNOTIFICATIONS)
-      .flush({
-        encryptedData: CryptoJS.AES.encrypt(
-          JSON.stringify({ success: true, notifications: [item, { id: 'n2' }] }),
-          SECURITY_CONFIG.ENCRYPTION_KEY,
-        ).toString(),
-      });
+    http.expectOne(API_URLS.GETNOTIFICATIONS).flush({
+      encryptedData: CryptoJS.AES.encrypt(
+        JSON.stringify({ success: true, notifications: [item, { id: 'n2' }] }),
+        SECURITY_CONFIG.ENCRYPTION_KEY,
+      ).toString(),
+    });
     expect(component.unreadNotificationsCount).toBe(1);
     component.markAllNotificationsRead();
     expect(cache.read(context)?.every((n) => n.isRead)).toBe(true);

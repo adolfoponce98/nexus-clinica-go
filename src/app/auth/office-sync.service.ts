@@ -1,3 +1,4 @@
+import { SyncGatewayService, SyncResource } from './sync-gateway.service';
 import { patientSummary } from '../patient/patient-summary';
 import { PermissionService } from './permission.service';
 import { inject, Injectable, NgZone } from '@angular/core';
@@ -31,6 +32,8 @@ type OfficePush = Partial<
 >;
 @Injectable({ providedIn: 'root' })
 export class OfficeSyncService {
+  private readonly gateway = inject(SyncGatewayService);
+  private applyingBatch = false;
   private readonly permissions = inject(PermissionService);
   private readonly auth = inject(AuthService);
   private readonly tokens = inject(TokenInterceptorService);
@@ -75,9 +78,16 @@ export class OfficeSyncService {
     if (!data.success) throw new Error(data.error || 'No se pudo completar la operación');
     return data;
   }
+  constructor() {
+    this.gateway.updates.subscribe(({ type, data, office, local }) => {
+      if (local && (type === 'patients' || type === 'appointments' || type === 'notifications'))
+        this.applyResource(type, data, office);
+    });
+  }
   start() {
     if (this.heartbeat) return;
     this.branchSubscription = this.auth.branchChanged$.subscribe(() => {
+      if (this.applyingBatch) return;
       void Promise.allSettled(
         ['patients', 'appointments', 'notifications'].map((type) => this.refresh(type, false)),
       );
@@ -144,10 +154,10 @@ export class OfficeSyncService {
     return undefined;
   }
   ensureResource(type: 'patients' | 'appointments'): Promise<void> {
-    const pending = this.pendingResource(type);
-    if (pending) return pending;
     if (type === 'patients' ? this.auth.hasCachedPatients() : this.auth.hasCachedAppointments())
       return Promise.resolve();
+    const pending = this.pendingResource(type);
+    if (pending) return pending;
     return this.refresh(type, false);
   }
   reconcile(): Promise<void> {
@@ -159,12 +169,76 @@ export class OfficeSyncService {
     return this.reconciling;
   }
   private async reconcileNow() {
-    // Resolve real office context before resource reads. Presence failures must not block authorized data.
-    await Promise.allSettled([this.check(), this.refresh('offices', false)]);
-    if (!this.auth.isLoggedIn()) return;
-    await Promise.allSettled(
-      ['patients', 'appointments', 'notifications'].map((type) => this.refresh(type, false)),
-    );
+    const resources: SyncResource[] = ['offices', 'billing'];
+    if (this.permissions.can('patients')) resources.push('patients');
+    if (this.permissions.can('calendar')) resources.push('appointments', 'notifications');
+    if (this.permissions.can('config')) resources.push('profile');
+    for (const type of ['calendar', 'reviews'] as SyncResource[])
+      if (this.gateway.peek(type)) resources.push(type);
+    const result = await this.gateway.load(resources, false, true);
+    const current = this.auth.getSession();
+    if (
+      result.authorization &&
+      current &&
+      Object.entries(result.authorization).some(
+        ([key, value]) => JSON.stringify(current[key]) !== JSON.stringify(value),
+      )
+    )
+      this.auth.saveSession({ ...current, ...result.authorization });
+    this.applyingBatch = true;
+    try {
+      for (const type of [
+        'offices',
+        'patients',
+        'appointments',
+        'notifications',
+        'profile',
+      ] as SyncResource[])
+        if (result.resources[type])
+          this.applyResource(type, result.resources[type], result.idConsultorio);
+    } finally {
+      this.applyingBatch = false;
+    }
+  }
+  private applyResource(type: SyncResource, data: any, office: string) {
+    if (data.unavailable) return;
+    if (data.fromCache && ['patients', 'appointments', 'notifications'].includes(type)) return;
+    const active = this.auth.getSucursal()?.idConsultorio || this.auth.getSucursal()?.id;
+    if (!['offices', 'profile', 'billing'].includes(type) && office !== active) return;
+    if (
+      type === 'offices' &&
+      JSON.stringify(this.auth.getAllBranches()) !== JSON.stringify(data.consultorios)
+    )
+      this.auth.saveAllBranches(data.consultorios);
+    if (
+      type === 'patients' &&
+      (!data.lastUpdated || this.auth.getLastSyncDatePatients() !== data.lastUpdated)
+    )
+      this.auth.saveCachedPatients(data.patients.map(patientSummary), data.lastUpdated);
+    if (
+      type === 'appointments' &&
+      (!data.lastUpdated || this.auth.getLastSyncDateAppointments() !== data.lastUpdated)
+    )
+      this.auth.saveCachedAppointments(data.appointments, true, data.lastUpdated);
+    if (type === 'notifications') {
+      const context = { user: this.auth.getSession()?.email, branch: office };
+      this.notifications.save(
+        context,
+        this.notifications.merge(this.notifications.read(context) || [], data.notifications),
+      );
+    }
+    if (type === 'profile' && !this.auth.getSession()?.idDoctor) {
+      const session = this.auth.getSession();
+      if (
+        session &&
+        data.profile &&
+        Object.entries(data.profile).some(
+          ([key, value]) => JSON.stringify(session[key]) !== JSON.stringify(value),
+        )
+      )
+        this.auth.saveSession({ ...session, ...data.profile });
+    }
+    this.updates.next(type);
   }
   async register(token: string) {
     this.auth.saveFcmToken(token);
@@ -202,14 +276,28 @@ export class OfficeSyncService {
         }
         return;
       }
-      if (data.type === 'appointments' && data.originDeviceId === browserDevice().id) return;
+      const resource = data.type as SyncResource;
+      const localVersion = Date.parse(this.gateway.version(resource));
+      if (Number(data.version) > 0 && localVersion >= Number(data.version)) return;
+      if (
+        data.type === 'appointments' &&
+        data.originDeviceId === browserDevice().id &&
+        !data.version
+      )
+        return;
       this.ui.show(
         title || data.title || 'Clínica Go',
         body || data.body || 'Hay nueva información disponible.',
         data,
       );
       const office = this.auth.getSucursal()?.idConsultorio || this.auth.getSucursal()?.id;
-      if (data.type === 'offices' || data.idConsultorio === office)
+      if (['calendar', 'reviews'].includes(data.type || '') && data.idConsultorio !== office)
+        this.gateway.invalidate(data.type as SyncResource, data.idConsultorio);
+      if (
+        data.type === 'offices' ||
+        ['profile', 'billing'].includes(data.type || '') ||
+        data.idConsultorio === office
+      )
         void this.refresh(data.type || '').catch(() => {});
     });
   }
@@ -243,6 +331,10 @@ export class OfficeSyncService {
       appointments: API_URLS.SYNCFOLLOWINGAPPOINTMENTS,
       offices: API_URLS.GETDOCTORSOFFICE,
       notifications: API_URLS.GETNOTIFICATIONS,
+      profile: API_URLS.SYNC_CLINIC_DATA,
+      billing: API_URLS.SYNC_CLINIC_DATA,
+      calendar: API_URLS.SYNC_CLINIC_DATA,
+      reviews: API_URLS.SYNC_CLINIC_DATA,
     };
     const module = (
       {
@@ -250,6 +342,9 @@ export class OfficeSyncService {
         appointments: 'calendar',
         notifications: 'calendar',
         followUps: 'followUps',
+        profile: 'config',
+        calendar: 'calendar',
+        reviews: 'config',
       } as Record<string, string>
     )[type];
     if (module && !this.permissions.can(module)) return;
@@ -257,27 +352,14 @@ export class OfficeSyncService {
       this.updates.next(type);
       return;
     }
-    const data = await this.call(urls[type], type === 'offices' ? {} : { idConsultorio: office });
+    const result = await this.gateway.load([type as SyncResource]);
     if (
       this.auth.getSession()?.email !== session.email ||
       this.auth.getSession()?.idDoctor !== session.idDoctor ||
       this.auth.getSession()?.sessionId !== session.sessionId
     )
       return;
-    const active = this.auth.getSucursal()?.idConsultorio || this.auth.getSucursal()?.id;
-    if (type !== 'offices' && active !== office) return;
-    if (type === 'patients')
-      this.auth.saveCachedPatients(data.patients.map(patientSummary), data.lastUpdated);
-    if (type === 'appointments')
-      this.auth.saveCachedAppointments(data.appointments, true, data.lastUpdated);
-    if (type === 'offices') this.auth.saveAllBranches(data.consultorios);
-    if (type === 'notifications') {
-      const context = { user: session.email, branch: office };
-      this.notifications.save(
-        context,
-        this.notifications.merge(this.notifications.read(context) || [], data.notifications),
-      );
-    }
-    this.updates.next(type);
+    const data = result.resources[type];
+    if (data) this.applyResource(type as SyncResource, data, result.idConsultorio || office);
   }
 }

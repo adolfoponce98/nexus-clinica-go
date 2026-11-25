@@ -15,7 +15,22 @@ function setup(type: typeof ClinicsComponent, post: any) {
         provide: BillingService,
         useValue: { refresh: vi.fn(async () => {}), canCreate: () => true },
       },
-      { provide: OfficeSyncService, useValue: { updates: new Subject<string>() } },
+      {
+        provide: OfficeSyncService,
+        useValue: {
+          updates: new Subject<string>(),
+          ensureOfficeContext: async () => {
+            if (!TestBed.inject(AuthService).getAllBranches().length) {
+              const data = await post(API_URLS.GETDOCTORSOFFICE, {});
+              TestBed.inject(AuthService).saveAllBranches(data.consultorios);
+            }
+          },
+          refresh: async () => {
+            const data = await post(API_URLS.GETDOCTORSOFFICE, {});
+            TestBed.inject(AuthService).saveAllBranches(data.consultorios);
+          },
+        },
+      },
     ],
   });
   const auth = TestBed.inject(AuthService);
@@ -80,5 +95,43 @@ describe('Clinic disabling confirmation', () => {
     expect(component.consultorios()).toEqual([]);
     expect(auth.getAllBranches()).toEqual([]);
     expect(component.disableTarget()).toBeNull();
+  });
+});
+
+describe('WhatsApp appointment reminder configuration', () => {
+  beforeEach(() => localStorage.clear());
+  it('loads safe defaults for an existing office without mutating its cached data', () => {
+    const { component } = setup(ClinicsComponent, vi.fn());
+    const office = { id: 'one', name: 'Centro' };
+    component.editarConsultorio(office);
+    expect(component.selectedConsultorio().appointmentReminders).toEqual({
+      enabled: true,
+      daysBefore: 1,
+      sendTime: '08:00',
+      timeZone: 'America/Mexico_City',
+    });
+    expect(office).not.toHaveProperty('appointmentReminders');
+  });
+  it('saves required reminders with the selected lead time and office time zone through the existing office endpoint', async () => {
+    const post = vi.fn(async () => ({ success: true, consultorios: [] }));
+    const { component } = setup(ClinicsComponent, post);
+    component.editarConsultorio({
+      id: 'one',
+      name: 'Centro',
+      appointmentReminders: { enabled: false, daysBefore: 3, timeZone: 'America/Tijuana' },
+    });
+    await component.guardarConsultorioIndividual();
+    expect(post).toHaveBeenCalledWith(
+      API_URLS.SAVEORUPDATECONSULTORIO,
+      expect.objectContaining({
+        idConsultorio: 'one',
+        appointmentReminders: {
+          enabled: true,
+          daysBefore: 3,
+          sendTime: '08:00',
+          timeZone: 'America/Tijuana',
+        },
+      }),
+    );
   });
 });

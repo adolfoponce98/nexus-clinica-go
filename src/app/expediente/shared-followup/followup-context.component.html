@@ -10,23 +10,31 @@
     <p>{{ allergies }}</p>
     <p class="muted">{{ criticalHistory }}</p>
   </section>
-  <section class="history-card">
-    <header>
+  <details class="history-card history-disclosure">
+    <summary>
       <lucide-icon [img]="icons.History" />
-      <div>
-        <small>SOLO CONSULTA</small>
-        <h2>Información de historia clínica inicial</h2>
-      </div>
-    </header>
+      <span
+        ><small>ANTECEDENTES DEL EXPEDIENTE</small
+        ><strong>Información de historia clínica inicial</strong>
+        <span class="history-count">{{
+          historyEntries.length
+            ? historyEntries.length + ' apartados registrados · Ver antecedentes'
+            : 'Sin antecedentes registrados'
+        }}</span>
+      </span>
+      <lucide-icon class="history-chevron" [img]="icons.ChevronDown" [size]="16" />
+    </summary>
     <dl>
-      @for (field of fields; track field.key) {
+      @for (field of historyEntries; track field.key) {
         <div>
           <dt>{{ field.label }}</dt>
-          <dd>{{ history[field.key] || 'Sin información registrada' }}</dd>
+          <dd>{{ field.value }}</dd>
         </div>
+      } @empty {
+        <p class="muted">No hay antecedentes registrados en la historia inicial.</p>
       }
     </dl>
-  </section>
+  </details>
 </div>
 <nav class="consultation-tabs" aria-label="Secciones de la consulta">
   @for (tab of tabs; track tab.id) {

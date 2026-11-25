@@ -140,6 +140,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
   showSuccessModal = false;
   isSaving = false;
   isAdvancedModal = false;
+  isReassigningAppointment = false;
   targetDate = '';
   targetHour = '09:00';
   selectedDurationMinutes: number = 60;
@@ -262,9 +263,11 @@ export class CalendarComponent implements OnInit, OnDestroy {
   }
 
   canSaveBookingTime(): boolean {
-    return this.canBookSlot(
-      this.targetDate,
-      this.isAdvancedModal ? this.selectedModalHour : this.targetHour,
+    const time = this.isAdvancedModal ? this.selectedModalHour : this.targetHour;
+    return (
+      this.canBookSlot(this.targetDate, time) &&
+      (!this.isAdvancedModal ||
+        this.availableTimeSlots.some((slot) => slot.time === time && slot.available))
     );
   }
 
@@ -394,6 +397,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
     if (!this.canBookDay(dateStr) || (hour !== undefined && !this.canBookSlot(dateStr, hour)))
       return;
     this.bookingTimeError.set('');
+    this.isReassigningAppointment = false;
     this.targetDate = dateStr;
     this.selectedDurationMinutes = 60;
     this.reasonUnknown = false;
@@ -498,7 +502,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
   async loadAppointments(force = false) {
     const serial = ++this.loadSerial,
       session = this.authService.getSession();
-    this.isLoading = true;
+    this.isLoading = !this.authService.hasCachedAppointments();
     this.loadError.set('');
     this.cdr.detectChanges();
     try {
@@ -570,6 +574,10 @@ export class CalendarComponent implements OnInit, OnDestroy {
       );
       return;
     }
+    if (!this.bookingSlotAvailable(this.targetDate, timeToUse)) {
+      this.bookingTimeError.set('El horario ya no está disponible. Selecciona otro horario libre.');
+      return;
+    }
     this.bookingTimeError.set('');
     this.patientForm.reason = this.reasonUnknown ? 'Sin definir' : this.patientForm.reason.trim();
     if (!this.patientForm.reason) {
@@ -624,6 +632,8 @@ export class CalendarComponent implements OnInit, OnDestroy {
         if (!this.canBookSlot(newAppointmentData.date, newAppointmentData.time)) {
           throw new Error('El horario elegido ya pasó. Selecciona un horario futuro.');
         }
+        if (!this.bookingSlotAvailable(newAppointmentData.date, newAppointmentData.time))
+          throw new Error('El horario ya no está disponible. Selecciona otro horario libre.');
         const fetchRes = await versionedFetch(this.SAVE_APPOINTMENT_URL, {
           method: 'POST',
           headers: {
@@ -664,19 +674,44 @@ export class CalendarComponent implements OnInit, OnDestroy {
 
   reassignAppointment() {
     const appointment = this.selectedAppointment();
-    if (!appointment) return;
-
-    // 1. Cerrar el modal de detalle actual
+    if (
+      !appointment ||
+      Number(appointment.status) !== 2 ||
+      !this.permissions.can('calendar', 'write')
+    )
+      return;
+    let date = appointment.date;
+    if (!this.canBookDay(date)) {
+      const candidate = parseLocalDate(localDateKey())!;
+      date = '';
+      for (let i = 0; i < 366; i++) {
+        const day = localDateKey(candidate);
+        if (this.canBookDay(day)) {
+          date = day;
+          break;
+        }
+        candidate.setDate(candidate.getDate() + 1);
+      }
+    }
+    if (!date) {
+      this.loadError.set(
+        'No hay días de atención disponibles. Revisa los horarios del consultorio.',
+      );
+      this.closeAppointmentDetailModal();
+      return;
+    }
     this.closeAppointmentDetailModal();
-
-    // 2. Abrir el modal de creación utilizando la misma fecha y hora de la cita cancelada
-    // Usamos openAppointmentModal pasando la fecha y la hora (formato de 12 o 24 horas según maneje tu grilla)
-    if (this.canBookSlot(appointment.date, appointment.time))
-      this.openAppointmentModal(appointment.date, appointment.time);
-    else this.openAppointmentModal(localDateKey());
-
-    // Opcional: Si quieres conservar el motivo de la consulta anterior para el nuevo paciente
+    // Do not pass a fixed hour: reassignment always requires a fresh available-slot selection.
+    this.openAppointmentModal(date);
+    this.isReassigningAppointment = true;
     this.patientForm.reason = appointment.reason || '';
+  }
+
+  private bookingSlotAvailable(date: string, time: string): boolean {
+    if (!this.canBookSlot(date, time)) return false;
+    this.generateTimeSlots();
+    const normalized = normalizedTime(time);
+    return this.availableTimeSlots.some((slot) => slot.time === normalized && slot.available);
   }
   // Modal para las Vistas Semanal y Diaria (con selector de hora fija)
   openSlotAppointmentModal(dateStr: string, hour: string) {
@@ -703,7 +738,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
     const signalApps = this.appointmentsList() || [];
 
     const allAppsMap = new Map();
-    [...cachedApps, ...signalApps].forEach((app) => {
+    [...signalApps, ...cachedApps].forEach((app) => {
       const key = app.syncId || `${app.date}-${app.time}-${app.patientName}`;
       allAppsMap.set(key, app);
     });

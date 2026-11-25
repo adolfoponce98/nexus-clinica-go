@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "clinq-go"
+    "default": "clinq-go",
+    "dev": "clinq-go-dev",
+    "prod": "clinq-go"
   }
 }

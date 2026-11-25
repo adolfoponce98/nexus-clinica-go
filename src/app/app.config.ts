@@ -12,7 +12,7 @@ import { environment } from '../environments/environment';
 
 // Inicializar Firebase globalmente
 const firebaseApp = initializeApp(environment.firebaseConfig);
-const db = getFirestore(firebaseApp);
+const db = getFirestore(firebaseApp, environment.firestoreDatabaseId);
 const messaging = getMessaging(firebaseApp);
 
 export const appConfig: ApplicationConfig = {

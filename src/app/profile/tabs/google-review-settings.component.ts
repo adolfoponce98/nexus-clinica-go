@@ -1,3 +1,4 @@
+import { SyncGatewayService } from '../../auth/sync-gateway.service';
 import { GoogleReviewGuideComponent } from './google-review-guide.component';
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -38,6 +39,7 @@ export class GoogleReviewSettingsComponent implements OnInit, OnDestroy {
     CheckCircle2,
     CircleAlert,
   };
+  private gateway = inject(SyncGatewayService);
   private auth = inject(AuthService);
   private api = inject(ClinicApiService);
   loading = signal(true);
@@ -52,6 +54,31 @@ export class GoogleReviewSettingsComponent implements OnInit, OnDestroy {
   private savedEnabled = false;
   private sequence = 0;
   private branch?: Subscription;
+  private updates?: Subscription;
+  private savedUrl = '';
+  private savedDelay = 30;
+  constructor() {
+    this.updates = this.gateway.updates.subscribe(({ type, data, office }) => {
+      if (
+        type === 'reviews' &&
+        office === this.api.branchId() &&
+        !this.loading() &&
+        !this.saving() &&
+        this.reviewUrl === this.savedUrl &&
+        this.delayMinutes === this.savedDelay &&
+        this.enabled === this.savedEnabled
+      )
+        this.applySettings(data.settings);
+    });
+  }
+  private applySettings(settings: any) {
+    this.loaded.set(true);
+    this.enabled = this.savedEnabled = settings.enabled;
+    this.reviewUrl = this.savedUrl = settings.reviewUrl;
+    this.reviewLink = settings.reviewLink || '';
+    this.delayMinutes = this.savedDelay = settings.delayMinutes;
+  }
+
   readonly delays = [
     { value: 0, label: 'Al cerrar la primera consulta' },
     { value: 15, label: '15 minutos después' },
@@ -85,16 +112,11 @@ export class GoogleReviewSettingsComponent implements OnInit, OnDestroy {
     try {
       if (!this.owner || !this.api.branchId())
         throw new Error('Selecciona un consultorio para configurar las invitaciones.');
-      const response = await this.api.post(API_URLS.GET_GOOGLE_REVIEW_SETTINGS, {
-        idConsultorio: this.api.branchId(),
-      });
+      const response =
+        this.gateway.peek('reviews') || (await this.gateway.load(['reviews'])).resources.reviews;
       if (sequence !== this.sequence) return;
       this.loaded.set(true);
-      this.enabled = response.settings.enabled;
-      this.savedEnabled = this.enabled;
-      this.reviewUrl = response.settings.reviewUrl;
-      this.reviewLink = response.settings.reviewLink || '';
-      this.delayMinutes = response.settings.delayMinutes;
+      this.applySettings(response.settings);
     } catch (e: any) {
       if (sequence === this.sequence) this.error.set(e.message);
     } finally {
@@ -116,11 +138,8 @@ export class GoogleReviewSettingsComponent implements OnInit, OnDestroy {
         delayMinutes: Number(this.delayMinutes),
       });
       if (sequence !== this.sequence) return;
-      this.enabled = response.settings.enabled;
-      this.savedEnabled = this.enabled;
-      this.reviewUrl = response.settings.reviewUrl;
-      this.reviewLink = response.settings.reviewLink || '';
-      this.delayMinutes = response.settings.delayMinutes;
+      this.gateway.accept('reviews', { settings: response.settings, version: '' });
+      this.applySettings(response.settings);
       this.notice.set(
         this.enabled
           ? 'Preferencia activada y guardada. El envío queda pendiente de integrar la plantilla aprobada.'
@@ -147,5 +166,6 @@ export class GoogleReviewSettingsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.sequence++;
     this.branch?.unsubscribe();
+    this.updates?.unsubscribe();
   }
 }

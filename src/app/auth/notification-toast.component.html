@@ -1,0 +1,26 @@
+<div class="notification-region" role="status" aria-live="polite" aria-atomic="true">
+  @for (notification of notifications; track notification) {
+    <article class="notification-toast" [style.--toast-lifetime]="notificationUi.durationMs + 'ms'">
+      <span class="notification-icon"
+        ><lucide-icon [img]="icon(notification.data?.type)" [size]="21" aria-hidden="true"
+      /></span>
+      <div class="notification-content">
+        <div class="notification-meta">
+          <span>{{ category(notification.data?.type) }}</span
+          ><small>Ahora</small>
+        </div>
+        <h3>{{ notification.title }}</h3>
+        <p>{{ notification.body }}</p>
+      </div>
+      <button
+        type="button"
+        class="notification-close"
+        (click)="notificationUi.dismiss()"
+        aria-label="Cerrar notificación"
+      >
+        <lucide-icon [img]="icons.X" [size]="16" />
+      </button>
+      <div class="notification-progress" aria-hidden="true"><span></span></div>
+    </article>
+  }
+</div>

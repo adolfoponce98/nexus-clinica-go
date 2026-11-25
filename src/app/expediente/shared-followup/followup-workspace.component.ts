@@ -59,6 +59,7 @@ import {
   encodeContextId,
   emptySpecialty,
   mergeExtracted,
+  isUnrecorded,
   legacySpecialtyData,
 } from './followup-utils';
 @Component({
@@ -810,6 +811,8 @@ export class FollowupWorkspaceComponent implements OnInit, OnDestroy {
     this.stopSpeech();
     this.aiBusy.set(true);
     this.error.set('');
+    this.proposal.set(null);
+    this.replaceWithAi = false;
     const sequence = this.loadSequence;
     try {
       this.assertOffice();
@@ -827,27 +830,46 @@ export class FollowupWorkspaceComponent implements OnInit, OnDestroy {
         requestId: this.aiAttempt.id,
       });
       void this.billing.refresh();
-      if (sequence === this.loadSequence && !this.destroyed) this.proposal.set(result.data);
+      if (sequence === this.loadSequence && !this.destroyed) {
+        this.assertOffice();
+        if (
+          !result.data ||
+          typeof result.data.summaryText !== 'string' ||
+          !result.data.summaryText.trim()
+        )
+          throw new Error('La IA no devolvió un resumen clínico válido. Intenta nuevamente.');
+        if (result.data.specialtyCode && result.data.specialtyCode !== this.code)
+          throw new Error('La interpretación no corresponde a la especialidad de esta consulta.');
+        this.proposal.set(result.data);
+        this.applyProposal(true);
+      }
     } catch (e: any) {
       if (sequence === this.loadSequence && !this.destroyed) this.error.set(e.message);
     } finally {
       if (sequence === this.loadSequence) this.aiBusy.set(false);
     }
   }
-  applyProposal() {
+  applyProposal(automatic = false) {
     if (!this.proposal() || this.disabled) return;
-    this.core = mergeExtracted(this.core, this.proposal().clinicalCore, this.replaceWithAi);
+    this.core = mergeExtracted(
+      this.core,
+      this.proposal().clinicalCore,
+      !automatic && this.replaceWithAi,
+    );
     this.specialtyData = mergeExtracted(
       this.specialtyData,
       this.proposal().specialtyData,
-      this.replaceWithAi,
+      !automatic && this.replaceWithAi,
     );
-    if (this.proposal().summaryText && (this.replaceWithAi || !this.medicalSummary.trim()))
+    if (
+      this.proposal().summaryText &&
+      (automatic || this.replaceWithAi || isUnrecorded(this.medicalSummary))
+    )
       this.medicalSummary = this.proposal().summaryText;
-    this.proposal.set(null);
+    if (!automatic) this.proposal.set(null);
     this.changed();
     this.notice.set(
-      'Información del dictado aplicada. Revisa los campos antes de guardar o firmar.',
+      'Resumen generado y campos del dictado completados. Revisa todas las pestañas antes de guardar o firmar.',
     );
   }
   ngOnDestroy() {

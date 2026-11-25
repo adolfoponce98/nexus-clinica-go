@@ -334,3 +334,39 @@ dd {
     grid-template-columns: 1fr;
   }
 }
+
+.reminder-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, #338c8e 20%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, #338c8e 5%, transparent);
+  color: var(--text-main);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.reminder-summary > span {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+.reminder-summary lucide-icon {
+  color: #338c8e;
+  flex-shrink: 0;
+}
+.reminder-title {
+  font-weight: 750;
+}
+.reminder-summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+.reminder-default {
+  margin-left: auto;
+}

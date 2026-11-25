@@ -1,3 +1,4 @@
+import { OfficeSyncService } from '../../auth/office-sync.service';
 import { DirectorySkeletonComponent } from '../../shared/directory-skeleton.component';
 import { CreationAccessService } from '../../planes/creation-access.service';
 import { PlanUsageComponent } from '../../planes/plan-usage.component';
@@ -76,6 +77,7 @@ export interface Paciente {
   templateUrl: 'lista-pacientes.component.html',
 })
 export class ListaPacientesComponent implements OnInit {
+  private readonly officeSync = inject(OfficeSyncService);
   readonly billing = inject(BillingService);
   private readonly creationAccess = inject(CreationAccessService);
 
@@ -183,55 +185,17 @@ export class ListaPacientesComponent implements OnInit {
   }
 
   async cargarPacientes(consultorioId: string) {
-    const serial = ++this.loadSerial,
-      session = this.authService.getSession();
+    const serial = ++this.loadSerial;
     this.loadError.set('');
     this.pacientes.set(this.authService.getCachedPatients());
     if (!consultorioId || !this.permissions.can('patients', 'read')) {
       this.isLoading.set(false);
       return;
     }
-    this.isLoading.set(true);
+    this.isLoading.set(!this.authService.hasCachedPatients());
     try {
-      const response = await this.tokenInterceptor.executeWithAuth((token) => {
-        const encryptedData = CryptoJS.AES.encrypt(
-          JSON.stringify({ idConsultorio: consultorioId }),
-          this.ENCRYPTION_KEY,
-        ).toString();
-        return versionedFetch(this.GET_PATIENTS_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ encryptedData }),
-        });
-      });
-      const envelope = await response.json(),
-        data = envelope.encryptedData
-          ? JSON.parse(
-              CryptoJS.AES.decrypt(envelope.encryptedData, this.ENCRYPTION_KEY).toString(
-                CryptoJS.enc.Utf8,
-              ),
-            )
-          : envelope;
-      if (serial !== this.loadSerial) return;
-      const branch = this.authService.getSucursal(),
-        current = this.authService.getSession();
-      if (
-        (branch?.idConsultorio || branch?.id) !== consultorioId ||
-        current?.email !== session?.email ||
-        current?.idDoctor !== session?.idDoctor ||
-        current?.sessionId !== session?.sessionId
-      )
-        return;
-      if (!response.ok || !data.success || !Array.isArray(data.patients))
-        throw new Error(data.error || 'No se pudieron cargar los pacientes.');
-      const list = data.patients.map(patientSummary);
-      this.pacientes.set(list);
-      this.authService.saveCachedPatients(list, data.lastUpdated);
+      await this.officeSync.ensureResource('patients');
+      if (serial === this.loadSerial) this.pacientes.set(this.authService.getCachedPatients());
     } catch (error) {
       if (serial === this.loadSerial)
         this.loadError.set(
@@ -241,7 +205,6 @@ export class ListaPacientesComponent implements OnInit {
       if (serial === this.loadSerial) this.isLoading.set(false);
     }
   }
-
   // 📂 Métodos para la Importación de Expedientes con IA
   abrirModalImportar() {
     this.selectedImportFile.set(null);

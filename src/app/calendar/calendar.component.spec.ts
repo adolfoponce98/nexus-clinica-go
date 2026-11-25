@@ -261,4 +261,68 @@ describe('Calendar future appointment selection', () => {
     expect(payload.appointmentData.reason).toBe('Sin definir');
     expect(payload.appointmentData.serviceId).toBeUndefined();
   });
+  it('opens reassignment with editable date and a new available-slot selection even when the cancelled time is still future', () => {
+    const cancelled = {
+      date: '2026-11-18',
+      time: '09:00',
+      endTime: '10:00',
+      status: 2,
+      syncId: 'cancelled',
+      reason: 'Revisión',
+    };
+    TestBed.inject(AuthService).saveCachedAppointments(
+      [
+        cancelled,
+        { date: '2026-11-19', time: '10:00', endTime: '11:00', status: 0, syncId: 'busy' },
+      ],
+      true,
+    );
+    component.openAppointmentDetail(cancelled);
+    component.reassignAppointment();
+    expect(component.showAppointmentModal).toBe(true);
+    expect(component.isAdvancedModal).toBe(true);
+    expect(component.isReassigningAppointment).toBe(true);
+    expect(component.selectedModalHour).toBe('');
+    component.selectModalHour('09:00');
+    expect(component.selectedModalHour).toBe('09:00');
+    component.targetDate = '2026-11-19';
+    component.generateTimeSlots();
+    component.selectModalHour('10:00');
+    expect(component.selectedModalHour).not.toBe('10:00');
+    component.selectModalHour('12:00');
+    expect(component.selectedModalHour).toBe('12:00');
+    expect(component.canSaveBookingTime()).toBe(true);
+    component.openAppointmentModal('2026-11-20');
+    expect(component.isReassigningAppointment).toBe(false);
+  });
+  it('rejects a selected slot if another booking now overlaps its duration', async () => {
+    component.openAppointmentModal('2026-11-18');
+    component.selectModalHour('09:00');
+    component.patientForm = { name: 'Ana', phone: '3312345678', email: '', reason: 'Revisión' };
+    TestBed.inject(AuthService).saveCachedAppointments(
+      [{ date: '2026-11-18', time: '09:30', endTime: '10:30', status: 0, syncId: 'new' }],
+      true,
+    );
+    await component.saveAppointment();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(component.bookingTimeError()).toContain('ya no está disponible');
+    expect(component.selectedModalHour).toBe('');
+  });
+  it('checks availability again if another booking arrives while authenticating', async () => {
+    component.openAppointmentModal('2026-11-18');
+    component.selectModalHour('09:00');
+    component.patientForm = { name: 'Ana', phone: '3312345678', email: '', reason: 'Revisión' };
+    tokens.executeWithAuth.mockImplementation(
+      async (call: (token: string) => Promise<Response>) => {
+        TestBed.inject(AuthService).saveCachedAppointments(
+          [{ date: '2026-11-18', time: '09:30', endTime: '10:30', status: 1, syncId: 'new' }],
+          true,
+        );
+        return call('test-token');
+      },
+    );
+    await component.saveAppointment();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('ya no está disponible'));
+  });
 });

@@ -79,6 +79,66 @@
       />
       <section class="office-panel">
         <div class="panel-title">
+          <span class="section-icon"><lucide-icon [img]="icons.Phone" [size]="21" /></span>
+          <div>
+            <h2>WhatsApp de citas</h2>
+            <p>
+              El aviso de cita creada se envía al agendar. Programa aquí la solicitud de
+              confirmación.
+            </p>
+          </div>
+        </div>
+        <div class="reminder-notice">
+          <lucide-icon [img]="icons.Clock" [size]="18" />
+          <span
+            >Los recordatorios comienzan a enviarse a las <strong>8:00 a. m.</strong> de la zona del
+            consultorio. Las citas del mismo día solo reciben el aviso inicial.</span
+          >
+        </div>
+        @if (office.appointmentReminders; as reminders) {
+          <div class="office-fields">
+            <div class="office-field">
+              <label for="reminder-days">Anticipación del recordatorio</label>
+              <div class="office-input">
+                <lucide-icon [img]="icons.Clock" [size]="16" />
+                <select
+                  id="reminder-days"
+                  [(ngModel)]="reminders.daysBefore"
+                  appPermission="consultorios:write"
+                  [appPermissionDisabled]="!canEdit || busy()"
+                >
+                  <option [ngValue]="1">1 día antes</option>
+                  <option [ngValue]="2">2 días antes</option>
+                  <option [ngValue]="3">3 días antes</option>
+                </select>
+              </div>
+            </div>
+            <div class="office-field">
+              <label for="reminder-zone">Zona horaria del consultorio</label>
+              <div class="office-input">
+                <lucide-icon [img]="icons.Globe" [size]="16" />
+                <select
+                  id="reminder-zone"
+                  [(ngModel)]="reminders.timeZone"
+                  appPermission="consultorios:write"
+                  [appPermissionDisabled]="!canEdit || busy()"
+                >
+                  @for (zone of reminderZones; track zone.value) {
+                    <option [value]="zone.value">{{ zone.label }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          </div>
+        }
+        <p class="reminder-help">
+          La anticipación se aplica a citas nuevas o reprogramadas. Si ya pasó la fecha prevista del
+          recordatorio, se prepara para envío al agendar. Completa el teléfono principal para que el
+          paciente pueda contactar al consultorio.
+        </p>
+      </section>
+      <section class="office-panel">
+        <div class="panel-title">
           <span class="section-icon"><lucide-icon [img]="icons.Accessibility" [size]="21" /></span>
           <div>
             <h2>Accesibilidad e indicaciones</h2>

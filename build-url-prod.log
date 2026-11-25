@@ -1,0 +1,310 @@
+
+> beast-admin-angular@0.0.0 build:prod
+> ng build --configuration production --output-path dist/environment-check/production
+
+> Building...
+√ Building...
+Initial chunk files | Names                         |  Raw size | Estimated transfer size
+main-DWYUEO6T.js    | main                          |   1.89 MB |               366.70 kB
+chunk-WI5QTGRZ.js   | -                             | 273.40 kB |                62.16 kB
+chunk-2YH5QJTG.js   | -                             | 212.48 kB |                61.07 kB
+chunk-GYWHBAM2.js   | -                             | 152.28 kB |                42.09 kB
+styles-4BZGZNKW.css | styles                        | 131.64 kB |                15.38 kB
+chunk-2BLIVION.js   | -                             |  52.03 kB |                10.15 kB
+chunk-2YS6LCVE.js   | -                             |  44.18 kB |                11.74 kB
+chunk-Q2HLJOMR.js   | -                             |  20.16 kB |                 5.99 kB
+chunk-Y3FPH3WU.js   | -                             |  10.78 kB |                 3.62 kB
+chunk-PF6Z4DSQ.js   | -                             |   5.70 kB |                 2.26 kB
+chunk-K35IA5QC.js   | -                             |   4.66 kB |                 1.81 kB
+chunk-U7WIFK7T.js   | -                             |   1.81 kB |               784 bytes
+chunk-HZ6M6AS2.js   | -                             |   1.32 kB |               570 bytes
+chunk-MB254I3P.js   | -                             | 611 bytes |               611 bytes
+
+                    | Initial total                 |   2.80 MB |               584.95 kB
+
+Lazy chunk files    | Names                         |  Raw size | Estimated transfer size
+chunk-5X7W3YE7.js   | model-viewer                  |   1.06 MB |               248.26 kB
+chunk-PMPR2MQW.js   | jspdf-es-min                  | 404.63 kB |               109.95 kB
+chunk-55EBCRVJ.js   | html2canvas                   | 202.84 kB |                38.52 kB
+chunk-FYVMWFRO.js   | index-es                      | 159.05 kB |                46.98 kB
+chunk-NCYMLJHS.js   | pricing-catalog-component     |  32.53 kB |                 7.89 kB
+chunk-TMMPQVQO.js   | -                             |  31.76 kB |                10.86 kB
+chunk-CS32H5XL.js   | public-registration-component |  30.15 kB |                 8.51 kB
+chunk-5HUN2MPW.js   | purify-es                     |  28.46 kB |                 9.85 kB
+chunk-7CKGVYMJ.js   | -                             |  19.54 kB |                 5.37 kB
+chunk-RGXWKZIL.js   | notifications-page-component  |  15.30 kB |                 4.29 kB
+chunk-CVD45F4J.js   | password-recovery-component   |  14.50 kB |                 4.14 kB
+chunk-DM7IYEFI.js   | payment-result-component      |  12.42 kB |                 3.38 kB
+chunk-2SSIW7KM.js   | privacy-notice-component      |  10.21 kB |                 2.97 kB
+chunk-62LGIFSN.js   | browser                       | 900 bytes |               900 bytes
+chunk-FK6H3RFT.js   | -                             | 272 bytes |               272 bytes
+
+Application bundle generation complete. [19.640 seconds] - 2026-11-25T23:52:56.066Z
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:620:39:
+      620 │ ... Cobrado: {{ appointment?.amountPaid ?? 0 | currency: 'MXN' : ...
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:631:26:
+      631 │         @if (appointment?.finalCost !== null && appointment?.fina...
+          ╵                           ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:631:61:
+      631 │ ...nt?.finalCost !== null && appointment?.finalCost !== undefined) {
+          ╵                                           ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:633:33:
+      633 │ ... } @else if (appointment?.quotedCost !== null && appointment?....
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:633:69:
+      633 │ ...?.quotedCost !== null && appointment?.quotedCost !== undefined) {
+          ╵                                          ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:66:4:
+      66 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:120:4:
+      120 │     FloatingChatComponent,
+          ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:70:4:
+      70 │     PatientIntakeComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:30:4:
+      30 │     Advanced3DViewerComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterOutlet is not used within the template of LayoutComponent [plugin angular-compiler]
+
+    src/app/sidemenu/layout.component.ts:23:12:
+      23 │   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngu...
+         ╵             ~~~~~~~~~~~~
+
+
+▲ [WARNING] src/app/planes/billing.css exceeded maximum budget. Budget 6.00 kB was not met by 460 bytes with a total of 6.46 kB.
+
+
+▲ [WARNING] src/app/clinical/change-password.component.css exceeded maximum budget. Budget 6.00 kB was not met by 2.69 kB with a total of 8.69 kB.
+
+
+▲ [WARNING] src/app/profile/tabs/connected-devices.component.css exceeded maximum budget. Budget 6.00 kB was not met by 1.60 kB with a total of 7.60 kB.
+
+
+▲ [WARNING] src/app/calendar/onboarding/calendar-onboarding.component.css exceeded maximum budget. Budget 6.00 kB was not met by 1.87 kB with a total of 7.87 kB.
+
+
+▲ [WARNING] src/app/main/main-layout.component.css exceeded maximum budget. Budget 6.00 kB was not met by 2.08 kB with a total of 8.08 kB.
+
+
+▲ [WARNING] src/app/calendar/google-calendar-connection.component.css exceeded maximum budget. Budget 6.00 kB was not met by 710 bytes with a total of 6.71 kB.
+
+
+▲ [WARNING] src/app/expediente/baseFormPersonaldentification/patient-identification.component.css exceeded maximum budget. Budget 6.00 kB was not met by 851 bytes with a total of 6.85 kB.
+
+
+▲ [WARNING] src/app/recipes/prescription-composer.component.css exceeded maximum budget. Budget 6.00 kB was not met by 2.62 kB with a total of 8.62 kB.
+
+
+▲ [WARNING] src/app/recipes/prescription-document.component.css exceeded maximum budget. Budget 6.00 kB was not met by 884 bytes with a total of 6.88 kB.
+
+
+▲ [WARNING] src/app/expediente/shared-followup/followup-workspace.component.css exceeded maximum budget. Budget 6.00 kB was not met by 3.73 kB with a total of 9.72 kB.
+
+
+▲ [WARNING] src/app/consultorios/clinics-tab.component.css exceeded maximum budget. Budget 6.00 kB was not met by 1.94 kB with a total of 7.94 kB.
+
+
+▲ [WARNING] src/app/clinical/clinical-identity.component.css exceeded maximum budget. Budget 6.00 kB was not met by 2.35 kB with a total of 8.35 kB.
+
+
+▲ [WARNING] src/app/recipes/prescription-workspace.component.css exceeded maximum budget. Budget 6.00 kB was not met by 1.11 kB with a total of 7.11 kB.
+
+
+▲ [WARNING] src/app/calendar/onboarding/calendar-practice-forms.css exceeded maximum budget. Budget 6.00 kB was not met by 1.22 kB with a total of 7.22 kB.
+
+
+▲ [WARNING] src/app/profile/tabs/google-review-settings.component.css exceeded maximum budget. Budget 6.00 kB was not met by 309 bytes with a total of 6.31 kB.
+
+
+▲ [WARNING] src/app/planes/pricing-catalog.component.css exceeded maximum budget. Budget 6.00 kB was not met by 723 bytes with a total of 6.72 kB.
+
+
+▲ [WARNING] src/app/patient-registration/public-registration.component.css exceeded maximum budget. Budget 6.00 kB was not met by 865 bytes with a total of 6.87 kB.
+
+
+▲ [WARNING] Module 'core-js/modules/es.promise.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.string.match.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.string.replace.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.string.starts-with.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.array.iterator.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/web.dom-collections.iterator.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.array.reduce.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.string.ends-with.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.string.split.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'raf' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.string.trim.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'rgbcolor' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.array.index-of.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.string.includes.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.array.reverse.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'core-js/modules/es.regexp.to-string.js' used by 'node_modules/canvg/lib/index.es.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'html2canvas' used by 'node_modules/jspdf/dist/jspdf.es.min.js' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'crypto-js' used by 'src/app/patient-registration/public-registration-api.service.ts' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+▲ [WARNING] Module 'qrcode' used by 'src/app/patient-registration/registration-link.component.ts' is not ESM
+
+  CommonJS or AMD dependencies can cause optimization bailouts.
+  For more information see: https://angular.dev/tools/cli/build#configuring-commonjs-dependencies
+
+
+Output location: D:\GitHub\nexus-admin-nexo-salud\dist\environment-check\production
+

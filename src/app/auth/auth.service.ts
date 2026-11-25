@@ -5,10 +5,21 @@ import { versionedFetch } from './sync-cache';
 import { API_URLS } from '../config/api-urls';
 import { SECURITY_CONFIG } from '../config/security.config';
 import * as CryptoJS from 'crypto-js';
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 @Injectable({ providedIn: 'root' })
-export class AuthService {
+export class AuthService implements OnDestroy {
+  constructor() {
+    window.addEventListener('storage', this.onCacheStorage);
+  }
+  ngOnDestroy() {
+    window.removeEventListener('storage', this.onCacheStorage);
+  }
+  private readonly onCacheStorage = (event: StorageEvent) => {
+    if (event.key === this.scopedKey(this.STORAGE_PATIENTS)) this.patientsUpdatedSource.next();
+    if (event.key === this.scopedKey(this.STORAGE_APPOINTMENTS)) this.notifyAppointmentsUpdated();
+  };
+
   readonly sessionRevision = signal(0);
   private readonly STORAGE_KEY = 'cliniq-go-session';
   private readonly STORAGE_SUCURSAL = 'cliniq-go-sucursal_data';
@@ -73,22 +84,30 @@ export class AuthService {
   }
 
   // 🔄 Sustituye este método en tu AuthService
-  saveCachedAppointments(appointments: any[], overwrite: boolean = false, serverVersion?: string) {
+  saveCachedAppointments(
+    appointments: any[],
+    overwrite: boolean = false,
+    serverVersion?: string,
+    officeId?: string,
+  ) {
     const appointmentsToStore = uniqueAppointments(
-      overwrite ? appointments : [...this.getCachedAppointments(), ...appointments],
+      overwrite ? appointments : [...this.getCachedAppointments(officeId), ...appointments],
     );
     localStorage.setItem(
-      this.scopedKey(this.STORAGE_APPOINTMENTS),
+      this.scopedKey(this.STORAGE_APPOINTMENTS, officeId),
       JSON.stringify(appointmentsToStore),
     );
 
     // 🚀 Notificar a todos los componentes suscritos que la caché cambió
     if (serverVersion)
-      localStorage.setItem(this.scopedKey(this.STORAGE_APPOINTMENTS_SYNC_DATE), serverVersion);
+      localStorage.setItem(
+        this.scopedKey(this.STORAGE_APPOINTMENTS_SYNC_DATE, officeId),
+        serverVersion,
+      );
     this.notifyAppointmentsUpdated();
   }
 
-  private scopedKey(key: string): string {
+  private scopedKey(key: string, officeId?: string): string {
     const raw = localStorage.getItem(this.STORAGE_KEY),
       session = raw ? JSON.parse(raw) : {};
     const office = this.getSucursal();
@@ -98,7 +117,7 @@ export class AuthService {
       JSON.stringify([
         session.email || '',
         session.idDoctor || session.email || '',
-        office?.idConsultorio || office?.id || '',
+        officeId || office?.idConsultorio || office?.id || '',
       ])
     );
   }
@@ -111,19 +130,21 @@ export class AuthService {
     // Nota: Mantenemos STORAGE_KEY (sesión) y STORAGE_SUCURSAL (se actualizará con la nueva)
   }
 
-  hasCachedAppointments(): boolean {
-    return localStorage.getItem(this.scopedKey(this.STORAGE_APPOINTMENTS)) !== null;
+  hasCachedAppointments(officeId?: string): boolean {
+    return localStorage.getItem(this.scopedKey(this.STORAGE_APPOINTMENTS, officeId)) !== null;
   }
-  hasCachedPatients(): boolean {
-    return localStorage.getItem(this.scopedKey(this.STORAGE_PATIENTS)) !== null;
+  hasCachedPatients(officeId?: string): boolean {
+    return localStorage.getItem(this.scopedKey(this.STORAGE_PATIENTS, officeId)) !== null;
   }
-  getCachedAppointments(): any[] {
-    const data = localStorage.getItem(this.scopedKey(this.STORAGE_APPOINTMENTS));
+  getCachedAppointments(officeId?: string): any[] {
+    const data = localStorage.getItem(this.scopedKey(this.STORAGE_APPOINTMENTS, officeId));
     return data ? uniqueAppointments(JSON.parse(data)) : [];
   }
 
-  getLastSyncDateAppointments(): string {
-    return localStorage.getItem(this.scopedKey(this.STORAGE_APPOINTMENTS_SYNC_DATE)) || '';
+  getLastSyncDateAppointments(officeId?: string): string {
+    return (
+      localStorage.getItem(this.scopedKey(this.STORAGE_APPOINTMENTS_SYNC_DATE, officeId)) || ''
+    );
   }
 
   private accessToken = '';
@@ -136,6 +157,18 @@ export class AuthService {
   saveSession(userData: any) {
     const { sessionToken, accessToken, refreshToken, ...metadata } = userData;
     const previous = this.getSession();
+    if (
+      previous &&
+      ['permissions', 'clinicalRole', 'allowedOfficeIds', 'idDoctor'].some(
+        (key) =>
+          Object.hasOwn(metadata, key) &&
+          JSON.stringify(previous[key]) !== JSON.stringify(metadata[key]),
+      )
+    ) {
+      this.clearBranchCache();
+      clearSyncCache();
+      localStorage.removeItem(this.STORAGE_ALL_BRANCHES);
+    }
     if (previous?.email && metadata.email && previous.email !== metadata.email) {
       this.clearBranchCache();
       localStorage.removeItem(this.STORAGE_SUCURSAL);
@@ -391,19 +424,20 @@ export class AuthService {
   }
 
   // 🔄 Gestión de caché de pacientes y fecha de sincronización
-  saveCachedPatients(patients: any[], serverVersion?: string) {
-    localStorage.setItem(this.scopedKey(this.STORAGE_PATIENTS), JSON.stringify(patients));
-    if (serverVersion) localStorage.setItem(this.scopedKey(this.STORAGE_SYNC_DATE), serverVersion);
+  saveCachedPatients(patients: any[], serverVersion?: string, officeId?: string) {
+    localStorage.setItem(this.scopedKey(this.STORAGE_PATIENTS, officeId), JSON.stringify(patients));
+    if (serverVersion)
+      localStorage.setItem(this.scopedKey(this.STORAGE_SYNC_DATE, officeId), serverVersion);
     this.patientsUpdatedSource.next();
   }
 
-  getCachedPatients(): any[] {
-    const data = localStorage.getItem(this.scopedKey(this.STORAGE_PATIENTS));
+  getCachedPatients(officeId?: string): any[] {
+    const data = localStorage.getItem(this.scopedKey(this.STORAGE_PATIENTS, officeId));
     return data ? JSON.parse(data) : [];
   }
 
-  getLastSyncDatePatients(): string {
-    return localStorage.getItem(this.scopedKey(this.STORAGE_SYNC_DATE)) || ''; // Si está vacío, el servidor sabrá que debe mandar todo
+  getLastSyncDatePatients(officeId?: string): string {
+    return localStorage.getItem(this.scopedKey(this.STORAGE_SYNC_DATE, officeId)) || ''; // Si está vacío, el servidor sabrá que debe mandar todo
   }
 
   getSession() {

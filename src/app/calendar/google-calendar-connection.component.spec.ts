@@ -1,3 +1,4 @@
+import { SyncGatewayService } from '../auth/sync-gateway.service';
 import { TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
@@ -25,6 +26,19 @@ function setup(employee = false, appearance: 'button' | 'card' = 'button') {
         },
       },
       { provide: ClinicApiService, useValue: api },
+      {
+        provide: SyncGatewayService,
+        useValue: {
+          updates: new Subject(),
+          peek: () => null,
+          invalidate: () => {},
+          accept: () => {},
+          load: () =>
+            api
+              .post(API_URLS.GET_GOOGLE_CALENDAR_CONNECTION, { idConsultorio: api.branchId() })
+              .then((data: any) => ({ resources: { calendar: data } })),
+        },
+      },
     ],
   });
   const fixture = TestBed.createComponent(GoogleCalendarConnectionComponent);
@@ -80,6 +94,7 @@ describe('Google Calendar connection', () => {
   it('shows the integration card and reuses the same office connection dialog', async () => {
     const { c, fixture, api } = setup(false, 'card');
     await fixture.whenStable();
+    await vi.waitFor(() => expect(c.busy()).toBe(false));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.integration-card h3').textContent).toContain(
       'Conexión Google Calendar',

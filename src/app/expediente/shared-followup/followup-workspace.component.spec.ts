@@ -390,7 +390,7 @@ describe('Specialty follow-up workspace', () => {
     expect(context.textContent).toContain('Tratamiento previo');
     expect(context.textContent).not.toContain('Dato de la consulta actual');
     expect(context.querySelector('input,textarea,select')).toBeNull();
-    expect(context.querySelectorAll('.history-grid > section').length).toBe(2);
+    expect(context.querySelectorAll('.history-grid > .history-card').length).toBe(2);
   });
 
   it('saves all tabs before opening server review and never finalizes without confirmation', async () => {
@@ -422,5 +422,141 @@ describe('Specialty follow-up workspace', () => {
     expect(workflow.review).not.toHaveBeenCalled();
     expect(c.reviewing()).toBe(false);
     expect(c.error()).toBe('Sin conexión');
+  });
+});
+
+describe('Automatic structured dictation mapping', () => {
+  it('fills the summary, consultation, prognosis, vitals and specialty tabs as soon as AI responds, without saving', async () => {
+    const { fixture, c, api } = setup('TRAUM');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const data = {
+      specialtyCode: 'TRAUM',
+      summaryText:
+        'Paciente con dolor de rodilla de tres días. Se indica reposo relativo. Pronóstico funcional reservado.',
+      clinicalCore: {
+        chiefComplaint: 'Dolor de rodilla derecha',
+        evolution: 'Tres días de evolución',
+        treatment: 'Reposo relativo y control en siete días',
+        prognosisLife: 'Bueno',
+        prognosisFunction: 'Reservado',
+        vitals: { weight: 72, heightCm: 171, systolic: 120, diastolic: 80 },
+      },
+      specialtyData: {
+        rangeOfMotion: 'Flexión limitada por dolor',
+        painEva: 6,
+        distalNeurovascular: 'Pulsos distales presentes',
+      },
+    };
+    const original = api.post.getMockImplementation()!;
+    api.post.mockImplementation(async (url, payload) =>
+      url === API_URLS.GENERATEMEDICALSUMMARY ? { data } : original(url, payload),
+    );
+    c.core.chiefComplaint = 'Sin definir';
+    c.transcript = 'Dictado de la consulta';
+    await c.extract();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(c.medicalSummary).toBe(data.summaryText);
+    expect(c.core).toMatchObject(data.clinicalCore);
+    expect(c.specialtyData).toMatchObject(data.specialtyData);
+    const root = fixture.nativeElement as HTMLElement;
+    expect(
+      Array.from(
+        root.querySelectorAll<HTMLTextAreaElement>('#followup-consultation textarea'),
+      ).some((el) => el.value === data.clinicalCore.treatment),
+    ).toBe(true);
+    expect(
+      Array.from(root.querySelectorAll<HTMLSelectElement>('#followup-consultation select')).some(
+        (el) => el.value === 'Reservado',
+      ),
+    ).toBe(true);
+    expect(
+      Array.from(root.querySelectorAll<HTMLInputElement>('#followup-clinical input')).some(
+        (el) => el.value === '72',
+      ),
+    ).toBe(true);
+    expect(
+      Array.from(root.querySelectorAll<HTMLTextAreaElement>('#followup-specialty textarea')).some(
+        (el) => el.value === 'Flexión limitada por dolor',
+      ),
+    ).toBe(true);
+    expect(
+      api.post.mock.calls.filter(([url]) => url === API_URLS.SAVEPATIENTFOLLOWUP),
+    ).toHaveLength(0);
+  });
+  it('preserves clinician text while completing other fields and allows explicit replacement after review', async () => {
+    const { c, api } = setup('PSI');
+    await c.load();
+    c.core.chiefComplaint = 'Motivo capturado manualmente';
+    c.transcript = 'Dictado de evolución';
+    await c.extract();
+    expect(c.medicalSummary).toBe('Resumen');
+    expect(c.core.chiefComplaint).toBe('Motivo capturado manualmente');
+    expect(c.specialtyData.mood).toBe('Capturado');
+    expect(c.proposal()).toBeTruthy();
+    c.replaceWithAi = true;
+    c.applyProposal();
+    expect(c.core.chiefComplaint).toBe('Del dictado');
+    expect(c.proposal()).toBeNull();
+  });
+  it('does not apply a different specialty or an empty generated summary', async () => {
+    const { c, api } = setup('TRAUM');
+    await c.load();
+    const original = api.post.getMockImplementation()!;
+    let data: any = {
+      specialtyCode: 'PED',
+      summaryText: 'Resumen de otra especialidad',
+      clinicalCore: { treatment: 'No aplicar' },
+    };
+    api.post.mockImplementation(async (url, payload) =>
+      url === API_URLS.GENERATEMEDICALSUMMARY ? { data } : original(url, payload),
+    );
+    c.transcript = 'Dictado';
+    await c.extract();
+    expect(c.medicalSummary).toBe('');
+    expect(c.core.treatment).toBe('');
+    expect(c.error()).toContain('especialidad');
+    data = { summaryText: '', clinicalCore: { treatment: 'No aplicar' } };
+    await c.extract();
+    expect(c.core.treatment).toBe('');
+    expect(c.error()).toContain('resumen clínico válido');
+  });
+});
+
+describe('Consultation layout and persistent actions', () => {
+  it('prioritizes the summary and dictation and keeps a single save action accessible across tabs', async () => {
+    const { fixture, c } = setup('TRAUM');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const consultation = root.querySelector('#followup-consultation')!;
+    expect(consultation.firstElementChild?.classList.contains('summary-section')).toBe(true);
+    expect(
+      root
+        .querySelector('.followup-tools')
+        ?.firstElementChild?.classList.contains('dictation-card'),
+    ).toBe(true);
+    expect(root.querySelector('.followup-tools .model-card')).toBeTruthy();
+    const actions = root.querySelector('[aria-label="Acciones de la consulta"]')!;
+    expect(actions.querySelectorAll('.floating-save')).toHaveLength(1);
+    expect(actions.textContent).toContain('Guardar consulta');
+    expect(actions.textContent).toContain('Expedir receta');
+    expect(actions.textContent).toContain('Dictar nota');
+    const tabs = root.querySelectorAll<HTMLButtonElement>('.consultation-tabs button');
+    tabs[1].click();
+    fixture.detectChanges();
+    expect(root.querySelector('.followup-floating .floating-save')).toBeTruthy();
+    tabs[2].click();
+    fixture.detectChanges();
+    expect(root.querySelector('.followup-floating .floating-save')).toBeTruthy();
+    const save = vi.spyOn(c, 'saveAndReview').mockImplementation(async () => {});
+    (root.querySelector('.followup-floating .floating-save') as HTMLButtonElement).click();
+    expect(save).toHaveBeenCalledWith(expect.anything());
+    const history = root.querySelector('details.history-disclosure') as HTMLDetailsElement;
+    expect(history.open).toBe(false);
+    expect(root.querySelector('.history-card.critical')?.textContent).toContain('Alergias');
   });
 });

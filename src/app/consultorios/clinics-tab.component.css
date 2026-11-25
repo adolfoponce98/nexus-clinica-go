@@ -469,3 +469,62 @@ textarea:disabled {
   margin-top: 16px;
   padding-top: 13px;
 }
+
+.reminder-notice {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, #338c8e 9%, transparent);
+  color: inherit;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  margin-bottom: 1rem;
+}
+.reminder-notice lucide-icon {
+  flex-shrink: 0;
+  color: #338c8e;
+  margin-top: 0.15rem;
+}
+.reminder-help {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  line-height: 1.6;
+}
+.reminder-help {
+  margin: 1rem 0 0;
+  font-size: 0.78rem;
+  opacity: 0.75;
+  line-height: 1.6;
+}
+.office-input select {
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border-color);
+  border-radius: 13px;
+  padding: 13px 30px 13px 39px;
+  background: var(--bg-primary);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+.office-input:has(select) > lucide-icon {
+  top: 50%;
+  transform: translateY(-50%);
+  left: 13px;
+  width: 16px;
+  height: 16px;
+}
+.office-input select:focus-visible {
+  border-color: #338c8e;
+  box-shadow: 0 0 0 3px #338c8e18;
+}
+.office-input select option {
+  color: var(--text-main);
+  background: var(--bg-primary);
+}

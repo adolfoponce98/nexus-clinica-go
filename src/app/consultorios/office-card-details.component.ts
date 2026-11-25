@@ -9,6 +9,8 @@ import {
   FileText,
   Utensils,
   KeyRound,
+  MessageCircle,
+  Globe,
 } from 'lucide-angular';
 import { normalizeOfficeHours } from '../scheduling/office-hours';
 @Component({
@@ -20,7 +22,18 @@ import { normalizeOfficeHours } from '../scheduling/office-hours';
 })
 export class OfficeCardDetailsComponent {
   @Input({ required: true }) office: any;
-  readonly icons = { MapPin, Phone, Clock, Accessibility, Building2, FileText, Utensils, KeyRound };
+  readonly icons = {
+    MapPin,
+    Phone,
+    Clock,
+    Accessibility,
+    Building2,
+    FileText,
+    Utensils,
+    KeyRound,
+    MessageCircle,
+    Globe,
+  };
   text(value: any) {
     return typeof value === 'string' && value.trim() && value.trim() !== '-'
       ? value.trim()
@@ -70,6 +83,31 @@ export class OfficeCardDetailsComponent {
     return values
       .map(([label, value]) => ({ label, value: this.text(value) }))
       .filter((v) => v.value);
+  }
+  get reminderSettings() {
+    const settings = this.office.appointmentReminders || {};
+    const days = [1, 2, 3].includes(Number(settings.daysBefore)) ? Number(settings.daysBefore) : 1;
+    const zone = settings.timeZone || 'America/Mexico_City';
+    const labels: Record<string, string> = {
+      'America/Mexico_City': 'Ciudad de México',
+      'America/Cancun': 'Cancún',
+      'America/Tijuana': 'Tijuana',
+      'America/Hermosillo': 'Hermosillo',
+      'America/Mazatlan': 'Mazatlán',
+      'America/Ciudad_Juarez': 'Ciudad Juárez',
+      'America/Chihuahua': 'Chihuahua',
+      'America/Matamoros': 'Matamoros',
+      'America/Ojinaga': 'Ojinaga',
+      'America/Bahia_Banderas': 'Bahía de Banderas',
+      'America/Merida': 'Mérida',
+      'America/Monterrey': 'Monterrey',
+    };
+    return {
+      days,
+      zone,
+      zoneLabel: labels[zone] || zone,
+      default: !this.office.appointmentReminders,
+    };
   }
   get accessibility() {
     return [

@@ -6,6 +6,7 @@ import {
   FileText,
   HeartPulse,
   Stethoscope,
+  ChevronDown,
 } from 'lucide-angular';
 @Component({
   selector: 'app-followup-context',
@@ -20,7 +21,7 @@ export class FollowupContextComponent {
   @Input() history: any = {};
   @Input() active = 'consultation';
   @Output() activeChange = new EventEmitter<string>();
-  readonly icons = { ShieldAlert, History };
+  readonly icons = { ShieldAlert, History, ChevronDown };
   readonly tabs = [
     {
       id: 'consultation',
@@ -41,6 +42,13 @@ export class FollowupContextComponent {
       icon: Stethoscope,
     },
   ];
+  get historyEntries() {
+    return this.fields
+      .map((field) => ({ ...field, value: String(this.history?.[field.key] || '').trim() }))
+      .filter(
+        (field) => field.value && !['-', 'No registrado', 'Sin registrar'].includes(field.value),
+      );
+  }
   readonly fields = [
     { key: 'familyHistory', label: 'Heredofamiliares' },
     { key: 'pathologicalHistory', label: 'Patológicos' },

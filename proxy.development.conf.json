@@ -1,0 +1,34 @@
+{
+  "/api/auth/login": {
+    "target": "https://loginuser-r5d3nvgypq-uc.a.run.app",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/auth/login$": "/"
+    }
+  },
+  "/api/auth/employee-login": {
+    "target": "https://loginemployes-r5d3nvgypq-uc.a.run.app",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/auth/employee-login$": "/"
+    }
+  },
+  "/api/auth/refresh": {
+    "target": "https://refreshtoken-r5d3nvgypq-uc.a.run.app",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/auth/refresh$": "/"
+    }
+  },
+  "/api/auth/logout": {
+    "target": "https://logoutsession-r5d3nvgypq-uc.a.run.app",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/auth/logout$": "/"
+    }
+  }
+}

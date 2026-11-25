@@ -1,3 +1,4 @@
+import { environment } from '../../environments/environment';
 import { Injectable, inject } from '@angular/core';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import { OfficeSyncService } from './office-sync.service';
@@ -9,8 +10,7 @@ export class FcmService {
   private unsubscribe?: () => void;
   private initialized = false;
   private registering = false;
-  private readonly VAPID_KEY =
-    'BOAWodenFSAHbDkNWvq9sXK118FQMqf_fM1iUKqjnpSwD9OOddSpjS6nG32hbjb64PrWmCdrcCy_RVjR9rOO6Kc';
+  private readonly VAPID_KEY = environment.vapidKey;
   async initPushNotifications() {
     this.sync.start();
     if (this.initialized) return;
@@ -48,7 +48,7 @@ export class FcmService {
       if (!(await isSupported())) return;
       const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
       const token = await getToken(getMessaging(), {
-        vapidKey: this.VAPID_KEY,
+        ...(this.VAPID_KEY ? { vapidKey: this.VAPID_KEY } : {}),
         serviceWorkerRegistration: registration,
       });
       if (token) await this.sync.register(token);

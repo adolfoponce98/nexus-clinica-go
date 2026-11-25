@@ -1,3 +1,5 @@
+import { Subject } from 'rxjs';
+import { SyncGatewayService } from '../auth/sync-gateway.service';
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { BillingService, Entitlements } from './billing.service';
@@ -27,6 +29,15 @@ function setup() {
   TestBed.configureTestingModule({
     providers: [
       BillingService,
+      {
+        provide: SyncGatewayService,
+        useValue: {
+          peek: () => null,
+          accept: () => {},
+          updates: new Subject(),
+          load: () => api.post().then((data) => ({ resources: { billing: data } })),
+        },
+      },
       { provide: ClinicApiService, useValue: api },
       { provide: AuthService, useValue: auth },
     ],

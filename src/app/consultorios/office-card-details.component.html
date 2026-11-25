@@ -98,6 +98,25 @@
       </ul>
     </section>
   </div>
+  @let reminder = reminderSettings;
+  <div class="reminder-summary" aria-label="Configuración de recordatorios WhatsApp">
+    <span class="reminder-title"
+      ><lucide-icon [img]="icons.MessageCircle" [size]="15" />Recordatorios WhatsApp</span
+    >
+    <span
+      ><lucide-icon [img]="icons.Clock" [size]="14" /><strong
+        >{{ reminder.days }} {{ reminder.days === 1 ? 'día' : 'días' }} antes</strong
+      >
+      · 8:00 a. m.</span
+    >
+    <span [title]="reminder.zone"
+      ><lucide-icon [img]="icons.Globe" [size]="14" />Zona horaria: {{ reminder.zoneLabel }}
+      <small>{{ reminder.zone }}</small></span
+    >
+    @if (reminder.default) {
+      <small class="reminder-default">Predeterminado</small>
+    }
+  </div>
   @if (services.length) {
     <section>
       <h3>

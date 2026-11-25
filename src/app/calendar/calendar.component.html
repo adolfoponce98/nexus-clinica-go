@@ -548,10 +548,16 @@
 
           <div>
             <h3 class="text-lg font-black uppercase tracking-tight" style="color: var(--text-main)">
-              Agendar Cita de Paciente
+              {{
+                isReassigningAppointment ? 'Reasignar horario de cita' : 'Agendar Cita de Paciente'
+              }}
             </h3>
             <p class="text-xs font-bold mt-0.5" style="color: var(--text-muted)">
-              Selecciona la fecha, duración y horario disponible
+              {{
+                isReassigningAppointment
+                  ? 'Elige una nueva fecha y un horario libre para asignar la cita.'
+                  : 'Selecciona la fecha, duración y horario disponible'
+              }}
             </p>
           </div>
 

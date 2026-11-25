@@ -1,0 +1,33 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.clinical-section {
+  padding: 16px;
+  border-radius: 18px;
+  margin-bottom: 14px;
+}
+.section-title {
+  margin-bottom: 12px;
+  gap: 9px;
+}
+.section-title p {
+  margin-top: 3px;
+}
+.fields-grid {
+  gap: 10px 14px;
+}
+@container consultation-form (min-width: 620px) {
+  :host.consultation-soap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: stretch;
+  }
+  :host.consultation-soap .clinical-section {
+    min-width: 0;
+  }
+  :host.consultation-soap .fields-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

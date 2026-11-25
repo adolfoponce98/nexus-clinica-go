@@ -1,3 +1,4 @@
+import { SyncGatewayService } from '../auth/sync-gateway.service';
 import {
   AfterViewInit,
   Input,
@@ -44,6 +45,7 @@ export class GoogleCalendarConnectionComponent implements AfterViewInit, OnDestr
     CheckCircle2,
     MapPin,
   };
+  private gateway = inject(SyncGatewayService);
   private auth = inject(AuthService);
   private api = inject(ClinicApiService);
   @ViewChild('connectionDialog', { static: true }) dialog!: ElementRef<HTMLDialogElement>;
@@ -56,6 +58,13 @@ export class GoogleCalendarConnectionComponent implements AfterViewInit, OnDestr
   confirmDisconnect = false;
   private scope = 0;
   private branch?: Subscription;
+  private updates?: Subscription;
+  constructor() {
+    this.updates = this.gateway.updates.subscribe(({ type, data, office }) => {
+      if (type === 'calendar' && office === this.api.branchId() && !this.busy())
+        this.state.set(data);
+    });
+  }
   get owner() {
     const s = this.auth.getSession();
     return !!s && !s.idDoctor && Number(s.typeUser ?? s.role) === 1;
@@ -94,6 +103,7 @@ export class GoogleCalendarConnectionComponent implements AfterViewInit, OnDestr
     }
     this.noticeTone.set(result === 'connected' ? 'success' : 'warning');
     const office = query.get('googleCalendarOffice');
+    if (office) this.gateway.invalidate('calendar', office);
     query.delete('googleCalendar');
     query.delete('googleCalendarOffice');
     history.replaceState(
@@ -134,9 +144,8 @@ export class GoogleCalendarConnectionComponent implements AfterViewInit, OnDestr
     this.busy.set(true);
     const scope = ++this.scope;
     try {
-      const state = await this.api.post(API_URLS.GET_GOOGLE_CALENDAR_CONNECTION, {
-        idConsultorio: this.api.branchId(),
-      });
+      const state =
+        this.gateway.peek('calendar') || (await this.gateway.load(['calendar'])).resources.calendar;
       if (scope === this.scope) {
         this.state.set(state);
         this.timeZone = state.timeZone;
@@ -181,6 +190,7 @@ export class GoogleCalendarConnectionComponent implements AfterViewInit, OnDestr
       });
       if (scope === this.scope) {
         this.state.set({ connected: false, timeZone: this.timeZone });
+        this.gateway.accept('calendar', { connected: false, timeZone: this.timeZone, version: '' });
         this.consent = false;
         this.confirmDisconnect = false;
         this.noticeTone.set('info');
@@ -197,5 +207,6 @@ export class GoogleCalendarConnectionComponent implements AfterViewInit, OnDestr
   ngOnDestroy() {
     this.scope++;
     this.branch?.unsubscribe();
+    this.updates?.unsubscribe();
   }
 }

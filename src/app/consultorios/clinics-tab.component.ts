@@ -138,6 +138,28 @@ export class ClinicsComponent implements OnInit, OnDestroy {
     { key: 'visualDisability', label: 'Discapacidad visual' },
     { key: 'hearingDisability', label: 'Discapacidad auditiva' },
   ];
+  readonly reminderZones = [
+    { value: 'America/Mexico_City', label: 'Centro · Ciudad de México' },
+    { value: 'America/Cancun', label: 'Quintana Roo · Cancún' },
+    { value: 'America/Tijuana', label: 'Baja California · Tijuana' },
+    { value: 'America/Hermosillo', label: 'Sonora · Hermosillo' },
+    { value: 'America/Mazatlan', label: 'Pacífico · Mazatlán' },
+    { value: 'America/Ciudad_Juarez', label: 'Frontera · Ciudad Juárez' },
+    { value: 'America/Chihuahua', label: 'Chihuahua' },
+    { value: 'America/Matamoros', label: 'Frontera · Matamoros' },
+    { value: 'America/Ojinaga', label: 'Frontera · Ojinaga' },
+    { value: 'America/Bahia_Banderas', label: 'Bahía de Banderas' },
+    { value: 'America/Merida', label: 'Mérida' },
+    { value: 'America/Monterrey', label: 'Monterrey' },
+  ];
+  reminderDefaults(value: any = {}) {
+    return {
+      enabled: true,
+      daysBefore: [1, 2, 3].includes(Number(value?.daysBefore)) ? Number(value.daysBefore) : 1,
+      sendTime: '08:00',
+      timeZone: value?.timeZone || 'America/Mexico_City',
+    };
+  }
   get canEdit() {
     return this.isEditingMode && this.permissions.can('consultorios', 'write');
   }
@@ -160,11 +182,14 @@ export class ClinicsComponent implements OnInit, OnDestroy {
     this.disableDialog?.nativeElement.close();
     this.feedbackDialog?.nativeElement.close();
   }
-  async cargarConsultorios() {
-    this.isLoading.set(true);
+  async cargarConsultorios(refresh = false) {
+    const cached = this.auth.getAllBranches();
+    this.isLoading.set(cached.length === 0);
     this.loadError.set('');
     try {
-      const data = await this.api.post(API_URLS.GETDOCTORSOFFICE, {});
+      if (refresh) await this.sync.refresh('offices', false);
+      else await this.sync.ensureOfficeContext();
+      const data = { consultorios: this.auth.getAllBranches() };
       if (!Array.isArray(data.consultorios))
         throw new Error('No se pudieron consultar los consultorios.');
       const rows = data.consultorios.filter(
@@ -199,15 +224,22 @@ export class ClinicsComponent implements OnInit, OnDestroy {
       },
       paymentMethods: { cash: true },
       patientTypes: { adults: true },
+      appointmentReminders: this.reminderDefaults(),
     });
     this.isEditingMode = true;
   }
   verDetalle(c: any, _index?: number) {
-    this.selectedConsultorio.set(structuredClone(c));
+    this.selectedConsultorio.set({
+      ...structuredClone(c),
+      appointmentReminders: this.reminderDefaults(c.appointmentReminders),
+    });
     this.isEditingMode = false;
   }
   editarConsultorio(c: any, _index?: number) {
-    this.selectedConsultorio.set(structuredClone(c));
+    this.selectedConsultorio.set({
+      ...structuredClone(c),
+      appointmentReminders: this.reminderDefaults(c.appointmentReminders),
+    });
     this.isEditingMode = true;
   }
   regresarAListado() {
@@ -237,6 +269,7 @@ export class ClinicsComponent implements OnInit, OnDestroy {
         ...Object.fromEntries(this.fields.map((f) => [f.key, String(office[f.key] || '').trim()])),
         idConsultorio: office.idConsultorio || office.id || null,
         officeHours: normalizeOfficeHours(office.officeHours),
+        appointmentReminders: this.reminderDefaults(office.appointmentReminders),
         accessibility: office.accessibility || {},
         directions: office.directions || '',
         paymentMethods: office.paymentMethods || {},
@@ -245,7 +278,7 @@ export class ClinicsComponent implements OnInit, OnDestroy {
       };
       await this.api.post(API_URLS.SAVEORUPDATECONSULTORIO, payload);
       this.selectedConsultorio.set(null);
-      await this.cargarConsultorios();
+      await this.cargarConsultorios(true);
       await this.billing.refresh();
       this.showFeedback('Consultorio guardado correctamente.');
     } catch (e: any) {
@@ -283,7 +316,7 @@ export class ClinicsComponent implements OnInit, OnDestroy {
       this.auth.saveAllBranches(this.consultorios());
       this.disableDialog?.nativeElement.close();
       this.disableTarget.set(null);
-      await this.cargarConsultorios();
+      await this.cargarConsultorios(true);
       await this.billing.refresh();
     } catch (e: any) {
       this.operationError.set(e.message || 'No se pudo deshabilitar el consultorio.');

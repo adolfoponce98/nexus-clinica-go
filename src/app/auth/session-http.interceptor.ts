@@ -1,4 +1,4 @@
-import { prepareSync, finishSync } from './sync-cache';
+import { prepareSync, finishSync, publishLocalMutation } from './sync-cache';
 import { inject, Injectable } from '@angular/core';
 import {
   HttpErrorResponse,
@@ -36,7 +36,8 @@ export class SessionHttpInterceptor implements HttpInterceptor {
         .pipe(
           map((event) =>
             event instanceof HttpResponse
-              ? event.clone({ body: finishSync(cached, event.body) })
+              ? (publishLocalMutation(request.url, event.body, request.body),
+                event.clone({ body: finishSync(cached, event.body) }))
               : event,
           ),
         );

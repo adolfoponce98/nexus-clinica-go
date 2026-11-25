@@ -1,3 +1,4 @@
+import { SyncGatewayService } from '../auth/sync-gateway.service';
 import { Injectable, inject, signal, computed, effect, OnDestroy } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { ClinicApiService } from '../reporting/clinic-api.service';
@@ -23,6 +24,7 @@ export interface Entitlements {
 }
 @Injectable({ providedIn: 'root' })
 export class BillingService implements OnDestroy {
+  private readonly gateway = inject(SyncGatewayService);
   private readonly auth = inject(AuthService);
   private readonly api = inject(ClinicApiService);
   readonly state = signal<Entitlements | null>(null);
@@ -82,7 +84,14 @@ export class BillingService implements OnDestroy {
         this.canManage.set(false);
         this.lastChecked = 0;
       }
-      if (scope) void this.ensureFresh();
+      if (scope) {
+        const cached = this.gateway.peek('billing');
+        if (cached?.entitlements) this.accept(cached.entitlements, cached.canManage, true);
+        void this.ensureFresh();
+      }
+    });
+    this.gateway.updates.subscribe(({ type, data }) => {
+      if (type === 'billing') this.accept(data.entitlements, data.canManage, true);
     });
     window.addEventListener('focus', this.onFocus);
     window.addEventListener('clinic-billing-refresh', this.update);
@@ -102,7 +111,13 @@ export class BillingService implements OnDestroy {
       : { patients: 5, offices: 1, services: 3, employees: 1 }[module];
     return limit === null || s.usage[module] < limit;
   }
-  accept(state: Entitlements, canManage?: boolean): void {
+  accept(state: Entitlements, canManage?: boolean, fromGateway = false): void {
+    if (!fromGateway)
+      this.gateway.accept('billing', {
+        entitlements: state,
+        canManage: canManage ?? this.canManage(),
+        version: '',
+      });
     this.accepted++;
     this.lastChecked = Date.now();
     this.state.set(state);
@@ -121,11 +136,11 @@ export class BillingService implements OnDestroy {
     const generation = this.generation,
       accepted = this.accepted;
     this.loading.set(true);
-    const task = this.api
-      .post(API_URLS.GET_ACCOUNT_ENTITLEMENTS, {})
+    const task = this.gateway
+      .load(['billing'])
       .then((r) => {
         if (generation === this.generation && accepted === this.accepted)
-          this.accept(r.entitlements, r.canManage);
+          this.accept(r.resources.billing.entitlements, r.resources.billing.canManage, true);
       })
       .catch((e) => {
         if (generation === this.generation && accepted === this.accepted) {

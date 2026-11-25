@@ -1,0 +1,145 @@
+
+> beast-admin-angular@0.0.0 build:dev
+> ng build --configuration development --output-path dist/environment-check/development
+
+> Building...
+√ Building...
+Initial chunk files | Names                         |  Raw size
+main.js             | main                          |   4.90 MB | 
+chunk-EWXFDSQT.js   | -                             |   1.17 MB | 
+chunk-N6U3VQ4Y.js   | -                             | 753.17 kB | 
+chunk-P64AMCZX.js   | -                             | 433.00 kB | 
+styles.css          | styles                        | 162.93 kB | 
+chunk-A7YNIS3V.js   | -                             | 153.00 kB | 
+chunk-UJBOQMNM.js   | -                             |  58.88 kB | 
+chunk-FNBZV3MW.js   | -                             |  35.20 kB | 
+chunk-SCI2D7BZ.js   | -                             |  19.41 kB | 
+chunk-3VIAW2Y3.js   | -                             |  13.69 kB | 
+chunk-WMSCTKGG.js   | -                             |   9.27 kB | 
+chunk-722Y5U7G.js   | -                             |   4.43 kB | 
+chunk-VL5VAURS.js   | -                             |   3.01 kB | 
+chunk-ZX7YSBXH.js   | -                             |   1.51 kB | 
+
+                    | Initial total                 |   7.71 MB
+
+Lazy chunk files    | Names                         |  Raw size
+chunk-476PJWJ5.js   | model-viewer                  |   2.29 MB | 
+chunk-FTI6GQYR.js   | jspdf-es-min                  | 644.82 kB | 
+chunk-WLMCMWGZ.js   | html2canvas                   | 399.43 kB | 
+chunk-SVJ7YBZZ.js   | index-es                      | 368.83 kB | 
+chunk-67Z7TWXT.js   | pricing-catalog-component     |  95.90 kB | 
+chunk-IXVXAF5H.js   | public-registration-component |  82.33 kB | 
+chunk-O2DSMAQL.js   | purify-es                     |  67.42 kB | 
+chunk-DSQ3CQMT.js   | -                             |  61.93 kB | 
+chunk-E64IIPBS.js   | notifications-page-component  |  42.45 kB | 
+chunk-H4IZM3J2.js   | password-recovery-component   |  40.47 kB | 
+chunk-YYLKXA5W.js   | payment-result-component      |  27.93 kB | 
+chunk-R5TWRK23.js   | privacy-notice-component      |  27.80 kB | 
+chunk-7NIG4VSW.js   | -                             |  22.34 kB | 
+chunk-KKEJ5DEO.js   | browser                       |   1.39 kB | 
+chunk-7YWLATDR.js   | -                             | 459 bytes | 
+
+Application bundle generation complete. [17.358 seconds] - 2026-11-25T23:52:53.488Z
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:620:39:
+      620 │ ... Cobrado: {{ appointment?.amountPaid ?? 0 | currency: 'MXN' : ...
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:631:26:
+      631 │         @if (appointment?.finalCost !== null && appointment?.fina...
+          ╵                           ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:631:61:
+      631 │ ...nt?.finalCost !== null && appointment?.finalCost !== undefined) {
+          ╵                                           ~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:633:33:
+      633 │ ... } @else if (appointment?.quotedCost !== null && appointment?....
+          ╵                              ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107 [plugin angular-compiler]
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.html:633:69:
+      633 │ ...?.quotedCost !== null && appointment?.quotedCost !== undefined) {
+          ╵                                          ~~~~~~~~~~
+
+  Warning occurs in the template of component CalendarPracticeDialogsComponent.
+
+    src/app/calendar/onboarding/calendar-practice-dialogs.component.ts:11:15:
+      11 │   templateUrl: './calendar-practice-dialogs.component.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: QuickActionsComponent is not used within the template of HomeComponent [plugin angular-compiler]
+
+    src/app/home/home.component.ts:66:4:
+      66 │     QuickActionsComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: FloatingChatComponent is not used within the template of MainLayoutComponent [plugin angular-compiler]
+
+    src/app/main/main-layout.component.ts:120:4:
+      120 │     FloatingChatComponent,
+          ╵     ~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: PatientIntakeComponent is not used within the template of ListaPacientesComponent [plugin angular-compiler]
+
+    src/app/patient/patient-list/lista-pacientes.component.ts:70:4:
+      70 │     PatientIntakeComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: Advanced3DViewerComponent is not used within the template of MedicalFollowupViewComponent [plugin angular-compiler]
+
+    src/app/profile/tabs/medical-followup-view.ts:30:4:
+      30 │     Advanced3DViewerComponent,
+         ╵     ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+▲ [WARNING] NG8113: RouterOutlet is not used within the template of LayoutComponent [plugin angular-compiler]
+
+    src/app/sidemenu/layout.component.ts:23:12:
+      23 │   imports: [RouterOutlet, RouterLink, RouterLinkActive, LucideAngu...
+         ╵             ~~~~~~~~~~~~
+
+
+Output location: D:\GitHub\nexus-admin-nexo-salud\dist\environment-check\development
+

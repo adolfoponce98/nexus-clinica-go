@@ -12,7 +12,6 @@
             {{ readOnly ? 'DETALLE DE CONSULTA' : 'SEGUIMIENTO CLÍNICO' }}</span
           >
           <h1>{{ readOnly ? 'Consulta de seguimiento' : 'Nueva consulta' }}</h1>
-          <p>Información común y valoración específica de la especialidad.</p>
         </div>
         @if (note) {
           <span class="state-pill" [class.locked]="note.state === 'LOCKED'">{{
@@ -79,7 +78,6 @@
         </div>
         <div id="followup-specialty" [hidden]="activeTab !== 'specialty'">
           <div class="block-label">
-            <span>02</span>
             <div>
               <h2>Valoración de {{ schema.name }}</h2>
               <p>Campos opcionales y herramientas de la especialidad.</p>
@@ -118,12 +116,6 @@
           }
         </div>
         <div id="followup-consultation" [hidden]="activeTab !== 'consultation'">
-          <app-followup-soap
-            section="consultation"
-            [data]="core"
-            [disabled]="disabled"
-            (changed)="changed()"
-          />
           <section class="summary-section">
             <div class="section-header">
               <span class="section-icon violet"><lucide-icon [img]="icons.FileText" /></span>
@@ -139,14 +131,22 @@
               [disabled]="disabled"
               rows="6"
               maxlength="20000"
-              placeholder="Escribe el resumen o aplícalo desde el dictado revisado."
+              placeholder="Escribe el resumen de la consulta o utiliza Dictar nota para completarlo con IA."
             ></textarea>
           </section>
+          <app-followup-soap
+            section="consultation"
+            [data]="core"
+            [disabled]="disabled"
+            (changed)="changed()"
+          />
           <section class="attachments-section">
             <div class="section-header">
               <span class="section-icon"><lucide-icon [img]="icons.Paperclip" /></span>
               <div>
-                <h3>Archivos adjuntos</h3>
+                <h3>
+                  Archivos adjuntos <span class="attachment-count">{{ attachments().length }}</span>
+                </h3>
                 <p>Imágenes, documentos y recetas de esta consulta.</p>
               </div>
             </div>
@@ -256,37 +256,16 @@
             }
           </details>
         }
-        <section class="save-section">
-          @if (!readOnly) {
-            <div class="attachment-actions">
-              <button
-                type="button"
-                class="primary"
-                (click)="saveAndReview(workflow)"
-                [disabled]="disabled || aiBusy() || recording() || reviewing()"
-              >
-                @if (saving() || reviewing()) {
-                  <span class="spinner light"></span>
-                } @else {
-                  <lucide-icon [img]="icons.Save" class="w-4 h-4" />
-                }
-                {{
-                  saving()
-                    ? 'Guardando consulta…'
-                    : reviewing()
-                      ? 'Abriendo revisión…'
-                      : 'Guardar consulta'
-                }}
-              </button>
-            </div>
-          } @else if (
-            note?.state === 'DRAFT' &&
-            note?.registeredBy === auth.getSession()?.email &&
-            permissions.can('followUps', 'write')
-          ) {
+        @if (
+          readOnly &&
+          note?.state === 'DRAFT' &&
+          note?.registeredBy === auth.getSession()?.email &&
+          permissions.can('followUps', 'write')
+        ) {
+          <section class="save-section">
             <button type="button" class="primary" (click)="editDraft()">Editar borrador</button>
-          }
-        </section>
+          </section>
+        }
         <app-clinical-note-workflow
           #workflow
           [showActions]="readOnly"
@@ -298,30 +277,6 @@
         />
       </section>
       <aside class="followup-tools" [style.display]="activeTab === 'consultation' ? null : 'none'">
-        <section class="model-card">
-          <div class="section-header">
-            <span class="section-icon"><lucide-icon [img]="icons.Box" /></span>
-            <div>
-              <h3>Infografía 3D</h3>
-              <p>Apoyo visual durante la consulta.</p>
-            </div>
-          </div>
-          <div class="model-preview">
-            <img [src]="activeModel.thumbnail" alt="Modelo anatómico de apoyo" />
-          </div>
-          <select
-            [ngModel]="selectedModel()"
-            (ngModelChange)="selectedModel.set($event)"
-            [ngModelOptions]="{ standalone: true }"
-            aria-label="Modelo anatómico"
-          >
-            @for (m of models; track m.id) {
-              <option [value]="m.id">{{ m.name }}</option>
-            }</select
-          ><button type="button" class="secondary full-width" (click)="open3D()">
-            <lucide-icon [img]="icons.Box" class="w-4 h-4" />Explorar modelo 3D
-          </button>
-        </section>
         @if (!readOnly) {
           <section class="dictation-card">
             <div class="section-header">
@@ -339,7 +294,7 @@
               [(ngModel)]="transcript"
               [ngModelOptions]="{ standalone: true }"
               [disabled]="disabled || recording() || aiBusy()"
-              rows="8"
+              rows="5"
               maxlength="40000"
               placeholder="Dicta, escribe o pega la transcripción. Incluye los valores, unidades y lateralidad."
             ></textarea>
@@ -416,7 +371,9 @@
                 />Reemplazar también los campos que ya tienen información</label
               >
               <p class="dictation-hint">
-                Por defecto solo se completan los campos vacíos. La IA no firma ni guarda la nota.
+                Los campos vacíos ya se completaron automáticamente. Revisa todas las pestañas;
+                puedes corregirlos o reemplazar también la información existente. La IA no guarda ni
+                firma la consulta.
               </p>
               <button
                 type="button"
@@ -424,17 +381,64 @@
                 (click)="applyProposal()"
                 [disabled]="disabled"
               >
-                Aplicar información revisada</button
+                {{
+                  replaceWithAi
+                    ? 'Reemplazar con la información revisada'
+                    : 'Completar campos vacíos'
+                }}</button
               ><button type="button" class="link-button full-width" (click)="proposal.set(null)">
-                Descartar propuesta
+                Cerrar revisión
               </button>
             </section>
           }
         }
+        <section class="model-card">
+          <div class="section-header">
+            <span class="section-icon"><lucide-icon [img]="icons.Box" /></span>
+            <div>
+              <h3>Infografía 3D</h3>
+              <p>Apoyo visual durante la consulta.</p>
+            </div>
+          </div>
+          <div class="model-preview">
+            <img [src]="activeModel.thumbnail" alt="Modelo anatómico de apoyo" />
+          </div>
+          <select
+            [ngModel]="selectedModel()"
+            (ngModelChange)="selectedModel.set($event)"
+            [ngModelOptions]="{ standalone: true }"
+            aria-label="Modelo anatómico"
+          >
+            @for (m of models; track m.id) {
+              <option [value]="m.id">{{ m.name }}</option>
+            }</select
+          ><button type="button" class="secondary full-width" (click)="open3D()">
+            <lucide-icon [img]="icons.Box" class="w-4 h-4" />Explorar modelo 3D
+          </button>
+        </section>
       </aside>
     </div>
     @if (!readOnly) {
-      <div class="followup-floating">
+      <div class="followup-floating" role="group" aria-label="Acciones de la consulta">
+        <button
+          type="button"
+          class="floating-save"
+          (click)="saveAndReview(workflow)"
+          [disabled]="disabled || aiBusy() || recording() || reviewing()"
+        >
+          @if (saving() || reviewing()) {
+            <span class="spinner light"></span>
+          } @else {
+            <lucide-icon [img]="icons.Save" class="w-4 h-4" />
+          }
+          {{
+            saving()
+              ? 'Guardando consulta…'
+              : reviewing()
+                ? 'Abriendo revisión…'
+                : 'Guardar consulta'
+          }}
+        </button>
         <button
           type="button"
           class="floating-rx"

@@ -1,3 +1,4 @@
+import { SyncGatewayService } from './sync-gateway.service';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { OfficeSyncService } from './office-sync.service';
@@ -62,12 +63,13 @@ describe('Office push coordinator', () => {
   it('replaces appointment snapshots, including removal of every appointment', async () => {
     auth.saveCachedAppointments([{ syncId: 'old', date: '2026-11-18' }], true);
     const call = vi
-      .spyOn(sync, 'call')
-      .mockResolvedValue({ success: true, appointments: [], lastUpdated: '2026-11-18T12:00:00Z' });
+      .spyOn(TestBed.inject(SyncGatewayService), 'load')
+      .mockResolvedValue({
+        idConsultorio: 'office-a',
+        resources: { appointments: { appointments: [], lastUpdated: '2026-11-18T12:00:00Z' } },
+      });
     await sync.refresh('appointments');
-    expect(call).toHaveBeenCalledWith(API_URLS.SYNCFOLLOWINGAPPOINTMENTS, {
-      idConsultorio: 'office-a',
-    });
+    expect(call).toHaveBeenCalledWith(['appointments']);
     expect(auth.getCachedAppointments()).toEqual([]);
     expect(auth.getLastSyncDateAppointments()).toBe('2026-11-18T12:00:00Z');
   });
@@ -113,19 +115,18 @@ describe('Office push coordinator', () => {
   it('does not poll every 45 seconds or refetch on repeated focus, but reconciles after 15 minutes', async () => {
     vi.useFakeTimers();
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
-    const check = vi.spyOn(sync, 'check').mockResolvedValue(),
-      refresh = vi.spyOn(sync, 'refresh').mockResolvedValue();
+    const load = vi
+      .spyOn(TestBed.inject(SyncGatewayService), 'load')
+      .mockResolvedValue({ idConsultorio: 'office-a', resources: {} });
     sync.start();
     await vi.advanceTimersByTimeAsync(0);
-    expect(check).toHaveBeenCalledTimes(1);
-    expect(refresh).toHaveBeenCalledTimes(4);
+    expect(load).toHaveBeenCalledTimes(1);
     window.dispatchEvent(new Event('focus'));
     window.dispatchEvent(new Event('focus'));
     await vi.advanceTimersByTimeAsync(14 * 60_000);
-    expect(check).toHaveBeenCalledTimes(1);
+    expect(load).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(60_000);
-    expect(check).toHaveBeenCalledTimes(2);
-    expect(refresh).toHaveBeenCalledTimes(8);
+    expect(load).toHaveBeenCalledTimes(2);
   });
   it('does not publish a session revision when the server authorization has not changed', async () => {
     vi.spyOn(sync, 'call').mockResolvedValue({ authorization: { email: 'doctor@example.test' } });

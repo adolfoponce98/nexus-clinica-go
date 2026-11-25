@@ -603,6 +603,7 @@ export class MainLayoutComponent implements OnInit {
         this.initSelectedBranch();
       }
       if (type === 'notifications') this.restoreNotifications();
+      if (type === 'profile') this.userData = this.authService.getSession();
       this.cdr.detectChanges();
     });
     this.restoreNotifications();
@@ -673,74 +674,7 @@ export class MainLayoutComponent implements OnInit {
 
   async cargarFollowingAppointments(consultorioId: string) {
     if (!consultorioId || !this.permissions.can('calendar')) return;
-    try {
-      const requestSession = this.authService.getSession();
-      const clientLastUpdate = this.authService.getLastSyncDateAppointments();
-
-      // 1️⃣ Ejecutamos la petición a través del interceptor centralizado para soportar Refresh Token
-      const response = await this.tokenInterceptor.executeWithAuth(async (token) => {
-        const payload = {
-          idConsultorio: consultorioId,
-          client_last_update: clientLastUpdate,
-        };
-
-        // 🔍 LOG: Muestra el payload plano antes de ser encriptado
-        console.log('📤 [Request Payload - cargarFollowingAppointments]:', payload);
-
-        const ciphertext = CryptoJS.AES.encrypt(
-          JSON.stringify(payload),
-          this.ENCRYPTION_KEY,
-        ).toString();
-
-        const fetchRes = await versionedFetch(this.GET_FOLLOWING_APPOINTMENTS_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-app-signature': this.APP_SECRET_HEADER,
-            'x-client-source': 'angular',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ encryptedData: ciphertext }),
-        });
-
-        console.log('📥 [cargarFollowingAppointments] Status HTTP recibido:', fetchRes.status);
-        return fetchRes;
-      });
-
-      const jsonRes = await response.json();
-      if (!response.ok) {
-        console.error('❌ Error HTTP en la respuesta:', jsonRes);
-        return;
-      }
-
-      const bytes = CryptoJS.AES.decrypt(jsonRes.encryptedData, this.ENCRYPTION_KEY);
-      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-
-      // 🔍 LOG: Muestra el objeto completo que respondió el servidor tras desencriptarlo
-      console.log('📥 [Decrypted Response - cargarFollowingAppointments]:', decryptedData);
-
-      const active = this.authService.getSucursal(),
-        current = this.authService.getSession();
-      if (
-        (active?.idConsultorio || active?.id) !== consultorioId ||
-        current?.email !== requestSession?.email ||
-        current?.idDoctor !== requestSession?.idDoctor ||
-        current?.sessionId !== requestSession?.sessionId
-      )
-        return;
-      if (decryptedData.success && Array.isArray(decryptedData.appointments)) {
-        // Guardar en caché y combinar con las existentes
-        this.authService.saveCachedAppointments(
-          decryptedData.appointments,
-          !!decryptedData.replace,
-          decryptedData.lastUpdated,
-        );
-        this.upcomingAppointments.set(this.authService.getCachedAppointments());
-        this.cdr.detectChanges();
-      }
-    } catch (err) {
-      console.error('❌ Error al sincronizar las siguientes citas:', err);
-    }
+    await this.officeSync.ensureResource('appointments');
   }
   // 🔍 Mostrar pacientes en caché al hacer clic o dar foco al input
   onPatientFocus() {

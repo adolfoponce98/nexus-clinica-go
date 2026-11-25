@@ -13,16 +13,17 @@ export class NotificationUiService {
   // Signal para almacenar la notificación actual que se mostrará en pantalla
   activeNotification = signal<AppNotification | null>(null);
 
+  readonly durationMs = 10000;
   private timer?: ReturnType<typeof setTimeout>;
 
   show(title: string, body: string, data?: any) {
     if (this.timer) clearTimeout(this.timer);
     this.activeNotification.set({ title, body, data });
 
-    // Ocultar automáticamente el popup después de 6 segundos (opcional)
+    // Los avisos locales permanecen visibles diez segundos.
     this.timer = setTimeout(() => {
       this.dismiss();
-    }, 10000);
+    }, this.durationMs);
   }
 
   dismiss() {
